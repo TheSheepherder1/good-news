@@ -159,7 +159,8 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t.searchPlaceholder}
-                  className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none"
+                  className="flex-1 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none"
+                  style={{ fontSize: '16px' }}
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery('')} className="text-gray-400 hover:text-gray-600">
