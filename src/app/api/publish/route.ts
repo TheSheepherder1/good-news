@@ -8,6 +8,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const { mode } = await req.json() as { mode: 'replace' | 'add' }
+
+  // Replace mode: delete all currently published stories first
+  if (mode === 'replace') {
+    const { error: deleteError } = await supabaseAdmin
+      .from('stories')
+      .delete()
+      .eq('status', 'published')
+    if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
+  }
+
+  // Move all approved → published
   const { data, error } = await supabaseAdmin
     .from('stories')
     .update({ status: 'published' })

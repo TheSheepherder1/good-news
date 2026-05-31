@@ -22,6 +22,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('pending')
   const [msg, setMsg] = useState('')
   const [featureConflict, setFeatureConflict] = useState<FeatureConflict | null>(null)
+  const [showPublishModal, setShowPublishModal] = useState(false)
 
   const fetchStories = useCallback(async (status: Tab) => {
     setLoading(true)
@@ -113,13 +114,15 @@ export default function AdminPage() {
     setIngesting(false)
   }
 
-  async function publishStories() {
+  async function publishStories(mode: 'replace' | 'add') {
+    setShowPublishModal(false)
     setPublishing(true)
     setMsg('')
-    const res = await callAPI('/api/publish')
+    const res = await callAPI('/api/publish', { mode })
     const data = await res.json()
     if (data.ok) {
-      setMsg(`${data.published} ${data.published === 1 ? 'story' : 'stories'} published to the public site.`)
+      const action = mode === 'replace' ? 'replaced the public page with' : 'added'
+      setMsg(`Published — ${action} ${data.published} ${data.published === 1 ? 'story' : 'stories'}.`)
       if (tab === 'approved') fetchStories('approved')
     } else {
       setMsg(`Error: ${data.error}`)
@@ -155,6 +158,38 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
+      {/* Publish mode modal */}
+      {showPublishModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h2 className="font-bold text-gray-900 mb-2">Publish Stories</h2>
+            <p className="text-gray-500 text-sm mb-6">How would you like to update the public page?</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => publishStories('replace')}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg py-3 px-4 text-sm font-medium text-left transition-colors"
+              >
+                <div className="font-semibold">Replace public page</div>
+                <div className="text-emerald-100 text-xs mt-0.5">Remove current stories and publish today's approvals</div>
+              </button>
+              <button
+                onClick={() => publishStories('add')}
+                className="w-full bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg py-3 px-4 text-sm font-medium text-left transition-colors"
+              >
+                <div className="font-semibold">Add to public page</div>
+                <div className="text-indigo-100 text-xs mt-0.5">Keep existing stories and add today's approvals alongside</div>
+              </button>
+              <button
+                onClick={() => setShowPublishModal(false)}
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg py-2 text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Featured conflict modal */}
       {featureConflict && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -203,7 +238,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-3 flex-wrap">
           {msg && <span className="text-xs text-gray-500 max-w-sm">{msg}</span>}
           <button
-            onClick={publishStories}
+            onClick={() => setShowPublishModal(true)}
             disabled={publishing}
             className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
