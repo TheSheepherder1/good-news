@@ -137,8 +137,7 @@ export default function AdminPage() {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('storyId', storyId)
-    formData.append('auth', password)
-    const res = await fetch('/api/upload-image', { method: 'POST', body: formData })
+    const res = await fetch(`/api/upload-image?auth=${encodeURIComponent(password)}`, { method: 'POST', body: formData })
     const data = await res.json()
     if (data.ok) {
       setStories((prev) => prev.map((s) => s.id === storyId ? { ...s, image_url: data.url } : s))
