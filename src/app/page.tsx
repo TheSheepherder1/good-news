@@ -52,9 +52,9 @@ export default async function Home() {
     <main className="min-h-screen bg-gradient-to-br from-emerald-50 to-white">
       <div className="sticky top-0 z-40 bg-emerald-50/95 backdrop-blur-sm shadow-sm md:relative md:top-auto md:bg-transparent md:shadow-none md:backdrop-blur-none">
       <header className="max-w-6xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Good News</h1>
+        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">The Bright Spot</h1>
         <p className="mt-2 text-gray-500 text-lg">
-          Uplifting stories from the People around our World
+          Stories of Kindness, Progress, and Hope from Around the World
         </p>
         {publishDate && (
           <p className="mt-1 text-emerald-600 font-medium text-sm">{publishDate}</p>

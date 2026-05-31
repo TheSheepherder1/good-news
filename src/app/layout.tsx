@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Good News",
-  description: "Uplifting stories from the People around our World",
+  title: "The Bright Spot",
+  description: "Stories of Kindness, Progress, and Hope from Around the World",
 };
 
 export default function RootLayout({
