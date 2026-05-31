@@ -21,12 +21,15 @@ type Props = {
 
 export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, onUnpublish, onRemoveImage, adminMode, tab }: Props) {
   const [uploading, setUploading] = useState(false)
+  const [uploadDone, setUploadDone] = useState(false)
 
   async function handleUpload(file: File) {
     if (!onUploadImage) return
     setUploading(true)
     await onUploadImage(story.id, file)
     setUploading(false)
+    setUploadDone(true)
+    setTimeout(() => setUploadDone(false), 2500)
   }
   return (
     <div
@@ -130,8 +133,12 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
 
         {adminMode && onUploadImage && (
           <div className="border-t border-gray-100 pt-2 mt-1 flex flex-col gap-1">
-            <label className={`flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 text-xs font-medium py-1.5 rounded-lg transition-colors ${uploading ? 'bg-emerald-50 text-emerald-600 cursor-wait' : 'bg-gray-50 hover:bg-gray-100 text-gray-500 cursor-pointer'}`}>
-              {uploading ? 'Uploading…' : story.image_url ? 'Replace Image' : 'Add Image'}
+            <label className={`flex items-center justify-center gap-2 w-full border text-xs font-medium py-1.5 rounded-lg transition-colors ${
+              uploading ? 'bg-emerald-50 text-emerald-600 border-emerald-200 cursor-wait' :
+              uploadDone ? 'bg-emerald-500 text-white border-emerald-500 cursor-default' :
+              'bg-gray-50 hover:bg-gray-100 text-gray-500 border-dashed border-gray-300 cursor-pointer'
+            }`}>
+              {uploading ? 'Uploading…' : uploadDone ? '✓ Image added!' : story.image_url ? 'Replace Image' : 'Add Image'}
               <input
                 type="file"
                 accept="image/*"
