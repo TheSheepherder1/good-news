@@ -164,18 +164,6 @@ export const RSS_FEEDS: Feed[] = [
   },
   // === International ===
   {
-    name: 'The Guardian',
-    url: 'https://www.theguardian.com/environment/rss',
-    category: 'Environment',
-    curated: false,
-  },
-  {
-    name: 'The Guardian',
-    url: 'https://www.theguardian.com/science/rss',
-    category: 'Science',
-    curated: false,
-  },
-  {
     name: 'ABC Australia',
     url: 'https://www.abc.net.au/news/feed/51120/rss.xml',
     category: 'Science',
