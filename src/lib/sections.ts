@@ -1,4 +1,5 @@
 export const SECTIONS = [
+  'Art',
   'Culture',
   'Environment',
   'Good News',
