@@ -220,7 +220,7 @@ export default function AdminPage() {
 
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
-          <h1 className="text-lg font-bold text-gray-900">The Bright Spot · Admin</h1>
+          <h1 className="text-lg font-bold text-gray-900">The Good I Found · Admin</h1>
           <div className="flex gap-1">
             {(['pending', 'approved', 'skipped'] as Tab[]).map((t) => (
               <button
