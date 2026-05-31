@@ -75,7 +75,7 @@ export default async function Home() {
           <>
             {/* Featured hero */}
             {featured && (
-              <div id="featured" className="scroll-mt-6">
+              <div id="featured" className="scroll-mt-44 md:scroll-mt-6">
                 <h2 className="text-xs font-semibold text-yellow-600 uppercase tracking-widest mb-3">
                   Featured Story
                 </h2>
@@ -115,7 +115,7 @@ export default async function Home() {
             {sortedCategories.map((category) => {
               const categoryStories = grouped.get(category) || []
               return (
-                <div key={category} id={slugify(category)} className="scroll-mt-6">
+                <div key={category} id={slugify(category)} className="scroll-mt-44 md:scroll-mt-6">
                   <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
                     {category}
                   </h2>
