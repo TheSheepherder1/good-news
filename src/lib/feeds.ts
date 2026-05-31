@@ -205,6 +205,44 @@ export const RSS_FEEDS: Feed[] = [
     category: 'Science',
     curated: false,
   },
+  // === International (additional) ===
+  {
+    name: 'BBC Science & Environment',
+    url: 'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
+    category: 'Science',
+    curated: false,
+  },
+  {
+    name: 'Japan Times',
+    url: 'https://www.japantimes.co.jp/feed/',
+    category: 'Good News',
+    curated: false,
+  },
+  {
+    name: 'Al Jazeera',
+    url: 'https://www.aljazeera.com/xml/rss/all.xml',
+    category: 'Good News',
+    curated: false,
+  },
+  {
+    name: 'Arab News',
+    url: 'https://www.arabnews.com/rss.xml',
+    category: 'Good News',
+    curated: false,
+  },
+  {
+    name: 'IOL South Africa',
+    url: 'https://www.iol.co.za/rss',
+    category: 'Good News',
+    curated: false,
+  },
+  // === Animals (additional) ===
+  {
+    name: 'Audubon Society',
+    url: 'https://www.audubon.org/rss.xml',
+    category: 'Animals',
+    curated: false,
+  },
   // === Technology (breakthroughs, not drama) ===
   {
     name: 'MIT Technology Review',
