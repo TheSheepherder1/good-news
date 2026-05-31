@@ -43,7 +43,7 @@ export default function AdminPage() {
 
   const fetchStories = useCallback(async (status: Tab) => {
     setLoading(true)
-    const res = await fetch(`/api/stories?status=${status}&limit=100`)
+    const res = await fetch(`/api/stories?status=${status}&limit=150`)
     const data = await res.json()
     const stories = Array.isArray(data) ? data : []
     setStories(status === 'published' ? sortPublished(stories) : stories)

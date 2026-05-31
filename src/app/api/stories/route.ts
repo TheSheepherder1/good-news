@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   const status = req.nextUrl.searchParams.get('status') || 'published'
-  const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || '50'), 200)
+  const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || '50'), 300)
 
   const { data, error } = await supabaseAdmin
     .from('stories')
