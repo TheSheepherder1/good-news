@@ -108,6 +108,13 @@ export const RSS_FEEDS: Feed[] = [
     category: 'Culture',
     curated: false,
   },
+  // === Human interest / solutions ===
+  {
+    name: 'Yes! Magazine',
+    url: 'https://www.yesmagazine.org/feed',
+    category: 'Good News',
+    curated: false,
+  },
   // === Technology (breakthroughs, not drama) ===
   {
     name: 'MIT Technology Review',
