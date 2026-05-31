@@ -4,6 +4,7 @@ import { type Story } from '@/lib/supabase'
 
 type Props = {
   story: Story
+  onOpen?: (story: Story) => void
   onApprove?: (id: string) => void
   onSkip?: (id: string) => void
   onFeature?: (story: Story) => void
@@ -12,9 +13,12 @@ type Props = {
   tab?: 'pending' | 'approved' | 'skipped'
 }
 
-export default function StoryCard({ story, onApprove, onSkip, onFeature, onRescue, adminMode, tab }: Props) {
+export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, adminMode, tab }: Props) {
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col ${story.is_featured ? 'border-yellow-300 ring-2 ring-yellow-200' : 'border-gray-100'}`}>
+    <div
+      className={`bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col ${story.is_featured ? 'border-yellow-300 ring-2 ring-yellow-200' : 'border-gray-100'} ${onOpen ? 'cursor-pointer' : ''}`}
+      onClick={onOpen ? () => onOpen(story) : undefined}
+    >
       {story.image_url && (
         <img
           src={story.image_url}
@@ -36,14 +40,20 @@ export default function StoryCard({ story, onApprove, onSkip, onFeature, onRescu
           <span>{story.source}</span>
         </div>
 
-        <a
-          href={story.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-900 font-semibold text-sm leading-snug hover:text-emerald-700 transition-colors"
-        >
-          {story.title}
-        </a>
+        {onOpen ? (
+          <p className="text-gray-900 font-semibold text-sm leading-snug">
+            {story.title}
+          </p>
+        ) : (
+          <a
+            href={story.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-900 font-semibold text-sm leading-snug hover:text-emerald-700 transition-colors"
+          >
+            {story.title}
+          </a>
+        )}
 
         {story.summary && (
           <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">{story.summary}</p>
