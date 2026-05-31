@@ -24,11 +24,18 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { id, status, is_featured, category } = body
+  const { id, status, is_featured, category, image_url } = body
 
   // Handle category update
   if (category !== undefined) {
     const { error } = await supabaseAdmin.from('stories').update({ category }).eq('id', id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true })
+  }
+
+  // Handle image_url update (including null to remove)
+  if ('image_url' in body) {
+    const { error } = await supabaseAdmin.from('stories').update({ image_url: image_url ?? null }).eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })
   }

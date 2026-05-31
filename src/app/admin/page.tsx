@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import StoryCard from '@/components/StoryCard'
 import { type Story } from '@/lib/supabase'
 
-type Tab = 'pending' | 'approved' | 'skipped'
+type Tab = 'pending' | 'approved' | 'skipped' | 'published'
 
 type FeatureConflict = {
   newStory: Story
@@ -97,6 +97,18 @@ export default function AdminPage() {
     )
     setFeatureConflict(null)
     setMsg(`"${story.title.slice(0, 60)}…" set as featured.`)
+  }
+
+  async function unpublishStory(id: string) {
+    await patchStory(id, { status: 'skipped' })
+    setStories((prev) => prev.filter((s) => s.id !== id))
+    setMsg('Story unpublished and moved to Skipped.')
+  }
+
+  async function removeImage(id: string) {
+    await patchStory(id, { image_url: null })
+    setStories((prev) => prev.map((s) => s.id === id ? { ...s, image_url: null } : s))
+    setMsg('Image removed.')
   }
 
   async function changeCategory(id: string, category: string) {
@@ -245,7 +257,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-bold text-gray-900">The Good I Found · Admin</h1>
           <div className="flex gap-1">
-            {(['pending', 'approved', 'skipped'] as Tab[]).map((t) => (
+            {(['pending', 'approved', 'skipped', 'published'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -285,6 +297,7 @@ export default function AdminPage() {
             {tab === 'pending' && 'Queue is empty — fetch new stories to fill it up.'}
             {tab === 'approved' && 'No approved stories yet. Review the Pending queue.'}
             {tab === 'skipped' && 'Nothing skipped yet.'}
+            {tab === 'published' && 'Nothing published yet.'}
           </div>
         ) : (
           <>
@@ -302,6 +315,8 @@ export default function AdminPage() {
                   onRescue={rescueStory}
                   onUploadImage={uploadFeaturedImage}
                   onCategoryChange={changeCategory}
+                  onUnpublish={unpublishStory}
+                  onRemoveImage={removeImage}
                 />
               ))}
             </div>

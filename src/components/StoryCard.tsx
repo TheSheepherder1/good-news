@@ -12,11 +12,13 @@ type Props = {
   onRescue?: (id: string) => void
   onUploadImage?: (id: string, file: File) => void
   onCategoryChange?: (id: string, category: string) => void
+  onUnpublish?: (id: string) => void
+  onRemoveImage?: (id: string) => void
   adminMode?: boolean
-  tab?: 'pending' | 'approved' | 'skipped'
+  tab?: 'pending' | 'approved' | 'skipped' | 'published'
 }
 
-export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, adminMode, tab }: Props) {
+export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, onUnpublish, onRemoveImage, adminMode, tab }: Props) {
   return (
     <div
       className={`bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col ${story.is_featured ? 'border-yellow-300 ring-2 ring-yellow-200' : 'border-gray-100'} ${onOpen ? 'cursor-pointer' : ''}`}
@@ -66,7 +68,7 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
           <p className="text-xs text-indigo-500 italic">AI: {story.ai_reason} (score: {story.ai_score}/10)</p>
         )}
 
-        {adminMode && tab === 'pending' && onCategoryChange && (
+        {adminMode && (tab === 'pending' || tab === 'published') && onCategoryChange && (
           <div className="pt-1">
             <label className="text-xs text-gray-400 mb-1 block">Section</label>
             <select
@@ -118,7 +120,7 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
         )}
 
         {adminMode && onUploadImage && (
-          <div className="border-t border-gray-100 pt-2 mt-1">
+          <div className="border-t border-gray-100 pt-2 mt-1 flex flex-col gap-1">
             <label className="flex items-center justify-center gap-2 w-full bg-gray-50 hover:bg-gray-100 border border-dashed border-gray-300 text-gray-500 text-xs font-medium py-1.5 rounded-lg cursor-pointer transition-colors">
               {story.image_url ? 'Replace Image' : 'Add Image'}
               <input
@@ -131,6 +133,25 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
                 }}
               />
             </label>
+            {story.image_url && onRemoveImage && (
+              <button
+                onClick={() => onRemoveImage(story.id)}
+                className="w-full bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-400 text-xs font-medium py-1.5 rounded-lg transition-colors"
+              >
+                Remove Image
+              </button>
+            )}
+          </div>
+        )}
+
+        {adminMode && tab === 'published' && onUnpublish && (
+          <div className="mt-auto pt-2">
+            <button
+              onClick={() => onUnpublish(story.id)}
+              className="w-full bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-500 text-sm font-medium py-1.5 rounded-lg transition-colors"
+            >
+              Unpublish
+            </button>
           </div>
         )}
 
