@@ -46,7 +46,8 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-emerald-50 to-white">
-      <header className="max-w-6xl mx-auto px-4 pt-10 pb-6 text-center">
+      <div className="sticky top-0 z-40 bg-emerald-50/95 backdrop-blur-sm shadow-sm md:relative md:top-auto md:bg-transparent md:shadow-none md:backdrop-blur-none">
+      <header className="max-w-6xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">
         <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Good News</h1>
         <p className="mt-2 text-gray-500 text-lg">
           Uplifting stories from the People around our World
@@ -63,6 +64,7 @@ export default async function Home() {
           </div>
         )}
       </header>
+      </div>
 
       <section className="max-w-6xl mx-auto px-4 pb-16 flex flex-col gap-12">
         {stories.length === 0 ? (
