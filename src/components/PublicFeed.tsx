@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import StoryCard from '@/components/StoryCard'
 import SectionNav from '@/components/SectionNav'
 import ArticleSheet from '@/components/ArticleSheet'
+import FooterModal from '@/components/FooterModal'
 import { type Story } from '@/lib/supabase'
 
 type Section = { category: string; stories: Story[] }
@@ -31,6 +32,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
   const [sheetStory, setSheetStory] = useState<Story | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [modal, setModal] = useState<'about' | 'ai-policy' | null>(null)
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const desktopInputRef = useRef<HTMLInputElement>(null)
 
@@ -225,9 +227,24 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
         )}
       </section>
 
-      <footer className="border-t border-gray-200 mt-4 py-6 text-center text-xs text-gray-400 px-4">
-        All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.
+      <footer className="border-t border-gray-200 mt-4 py-6 text-center text-xs text-gray-400 px-4 flex flex-col gap-3">
+        <div className="flex justify-center gap-6">
+          <button onClick={() => setModal('about')} className="hover:text-emerald-600 transition-colors font-medium">About</button>
+          <button onClick={() => setModal('ai-policy')} className="hover:text-emerald-600 transition-colors font-medium">AI Policy</button>
+        </div>
+        <p>All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.</p>
       </footer>
+
+      {modal === 'about' && (
+        <FooterModal title="About" onClose={() => setModal(null)}>
+          <p>Content coming soon.</p>
+        </FooterModal>
+      )}
+      {modal === 'ai-policy' && (
+        <FooterModal title="AI Policy" onClose={() => setModal(null)}>
+          <p>Content coming soon.</p>
+        </FooterModal>
+      )}
     </>
   )
 }
