@@ -162,6 +162,49 @@ export const RSS_FEEDS: Feed[] = [
     category: 'Science',
     curated: false,
   },
+  // === International ===
+  {
+    name: 'The Guardian',
+    url: 'https://www.theguardian.com/environment/rss',
+    category: 'Environment',
+    curated: false,
+  },
+  {
+    name: 'The Guardian',
+    url: 'https://www.theguardian.com/science/rss',
+    category: 'Science',
+    curated: false,
+  },
+  {
+    name: 'ABC Australia',
+    url: 'https://www.abc.net.au/news/feed/51120/rss.xml',
+    category: 'Science',
+    curated: false,
+  },
+  {
+    name: 'RNZ (New Zealand)',
+    url: 'https://www.rnz.co.nz/rss/news.xml',
+    category: 'Good News',
+    curated: false,
+  },
+  {
+    name: 'Global Citizen',
+    url: 'https://www.globalcitizen.org/en/content/feed/',
+    category: 'Good News',
+    curated: false,
+  },
+  {
+    name: 'UN News',
+    url: 'https://news.un.org/feed/subscribe/en/news/all/rss.xml',
+    category: 'Good News',
+    curated: false,
+  },
+  {
+    name: 'The Hindu',
+    url: 'https://www.thehindu.com/sci-tech/science/?service=rss',
+    category: 'Science',
+    curated: false,
+  },
   // === Technology (breakthroughs, not drama) ===
   {
     name: 'MIT Technology Review',
