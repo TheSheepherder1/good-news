@@ -148,13 +148,6 @@ export const RSS_FEEDS: Feed[] = [
     category: 'Health',
     curated: false,
   },
-  // === Education ===
-  {
-    name: 'Edutopia',
-    url: 'https://news.google.com/rss/search?q=site:edutopia.org&hl=en&gl=US&ceid=US:en',
-    category: 'Good News',
-    curated: false,
-  },
   // === Science (additional) ===
   {
     name: 'Phys.org',
