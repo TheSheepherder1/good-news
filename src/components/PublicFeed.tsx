@@ -112,8 +112,31 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                 <p className="mt-1 text-emerald-600 font-medium text-sm">{publishDate}</p>
               )}
               {(featured || sections.length > 0) && (
-                <div className="mt-4 flex justify-center items-center gap-3">
+                <div className="mt-4 flex justify-center items-center gap-3 flex-wrap">
                   <SectionNav categories={sortedCategories} hasFeatured={!!filteredFeatured} />
+
+                  {/* Desktop search bar — inline with Sections */}
+                  <div className="hidden md:flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm w-64 hover:border-emerald-300 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
+                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                    </svg>
+                    <input
+                      ref={desktopInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search stories…"
+                      className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none min-w-0"
+                    />
+                    {searchQuery && (
+                      <button onClick={clearDesktopSearch} className="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+
                   {/* Mobile search icon */}
                   <button
                     onClick={openMobileSearch}
@@ -127,30 +150,6 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
               )}
             </>
           )}
-
-          {/* Desktop search bar — always visible */}
-          <div className="hidden md:flex justify-center mt-4">
-            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm w-full max-w-md hover:border-emerald-300 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
-              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-              </svg>
-              <input
-                ref={desktopInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by title, description, or source…"
-                className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none"
-              />
-              {searchQuery && (
-                <button onClick={clearDesktopSearch} className="text-gray-400 hover:text-gray-600 transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
 
         </header>
       </div>
