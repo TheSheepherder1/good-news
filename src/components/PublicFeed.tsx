@@ -37,7 +37,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
       <ArticleSheet story={sheetStory} onClose={() => setSheetStory(null)} />
 
       <div className="sticky top-0 z-40 bg-emerald-50/95 backdrop-blur-sm shadow-sm md:relative md:top-auto md:bg-transparent md:shadow-none md:backdrop-blur-none">
-        <header className="max-w-6xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">
+        <header className="max-w-7xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">
           <h1 className="text-[2.7rem] font-bold text-gray-900 tracking-tight">The Good I Found</h1>
           <p className="mt-2 text-gray-500 text-lg">
             Stories of Kindness, Progress, and Hope from Around the World
@@ -53,7 +53,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
         </header>
       </div>
 
-      <section className="max-w-6xl mx-auto px-4 pb-16 flex flex-col gap-12">
+      <section className="max-w-7xl mx-auto px-4 pb-16 flex flex-col gap-12">
         {featured === null && sections.length === 0 ? (
           <div className="text-center text-gray-400 py-20 text-lg">
             No stories yet — check back soon!

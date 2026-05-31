@@ -272,7 +272,7 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto px-4 py-8">
+      <section className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center text-gray-400 py-20">Loading…</div>
         ) : stories.length === 0 ? (
