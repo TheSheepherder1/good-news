@@ -32,7 +32,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
   const [sheetStory, setSheetStory] = useState<Story | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const [modal, setModal] = useState<'about' | 'ai-policy' | null>(null)
+  const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const desktopInputRef = useRef<HTMLInputElement>(null)
 
@@ -231,6 +231,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
         <div className="flex justify-center gap-6">
           <button onClick={() => setModal('about')} className="hover:text-emerald-600 transition-colors font-medium">About</button>
           <button onClick={() => setModal('ai-policy')} className="hover:text-emerald-600 transition-colors font-medium">AI Policy</button>
+          <button onClick={() => setModal('advertising')} className="hover:text-emerald-600 transition-colors font-medium">Advertising Policy</button>
         </div>
         <p>All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.</p>
       </footer>
@@ -242,6 +243,11 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
       )}
       {modal === 'ai-policy' && (
         <FooterModal title="AI Policy" onClose={() => setModal(null)}>
+          <p>Content coming soon.</p>
+        </FooterModal>
+      )}
+      {modal === 'advertising' && (
+        <FooterModal title="Advertising Policy" onClose={() => setModal(null)}>
           <p>Content coming soon.</p>
         </FooterModal>
       )}
