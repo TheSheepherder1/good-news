@@ -8,9 +8,11 @@ A daily curated good-news website. Stories are fetched from RSS feeds, filtered 
 ## Tech Stack
 - **Framework:** Next.js (App Router, TypeScript, Tailwind CSS)
 - **Database:** Supabase (PostgreSQL with RLS enabled)
+- **Storage:** Supabase Storage (`featured-images` bucket) — used for all admin-uploaded images
 - **AI Filtering:** Anthropic Claude Haiku (fast, cheap, good enough for classification)
 - **Deployment:** Vercel (auto-deploys on push to GitHub)
 - **RSS Parsing:** rss-parser
+- **Fonts:** Geist Sans (body), Merriweather Bold (site title)
 
 ---
 
@@ -52,17 +54,32 @@ When clicking "Publish Stories" the admin chooses:
 - **Replace** — deletes all current `published` stories, replaces with today's `approved`
 - **Add** — keeps existing `published` stories, adds today's `approved` alongside
 
-### Featured story
-One story can be marked as Featured. It appears as a full-width hero card above all category sections. Only one story can be featured at a time (enforced by a unique partial index in Postgres). Setting a new featured story when one already exists prompts a confirmation showing the current featured story's title.
+### Featured story (Today's Bright Spot)
+One story can be marked as Featured. It appears as a hero card above all category sections with the image in the left 1/3 column and content in the right 2/3 on desktop; image at top on mobile. Only one story can be featured at a time (enforced by a unique partial index in Postgres). Setting a new featured story when one already exists prompts a confirmation showing the current featured story's title. Can be changed from both the Approved and Published admin tabs.
+
+### Image uploads
+Admin can upload images to any story card from any tab (Pending, Approved, Skipped, Published). Images are stored in Supabase Storage (`featured-images` bucket) and saved to `story.image_url`. Upload button shows "Uploading…" while in progress and "✓ Image added!" on success. Auth is passed as a URL query parameter for FormData requests (header approach caused issues on Vercel).
+
+### Admin Published tab
+Mirrors the public page card order exactly (featured first, then by category order, then by AI score). Allows: section change, image add/replace/remove, unpublish (moves to Skipped), and featured story change.
+
+### Section override
+Admin can change the AI-assigned category on any card in Pending or Published tabs. Dropdown shows the static section list with "(AI suggested)" permanently on the original AI-assigned value — does not move when admin selects a different section.
+
+### Admin sections list (alphabetical)
+Art, Culture, Environment, Good News, Health, Science, Sports
 
 ### Mobile article sheet
 On mobile, tapping a story card opens a slide-up bottom sheet showing the image, full summary, and a "Read Full Article" button. Swipe down or tap X to close. Desktop behavior unchanged (opens new tab). A small number of news outlets force a new tab regardless due to their own redirect behavior — accepted limitation.
 
 ### Sticky header (mobile only)
-On mobile, the site header (title, tagline, date, Sections dropdown) sticks to the top of the screen while scrolling. On desktop it scrolls with the page.
+On mobile, the site header (title, tagline, date, Sections dropdown) sticks to the top of the screen while scrolling. On desktop it scrolls with the page. Scroll margin set to 224px on mobile to clear the sticky header.
 
 ### Sections dropdown
-Dynamically populated from whichever categories have published stories that day — no hardcoded list. Includes "Top of Page" as the first option always. On mobile only (hidden on desktop via Tailwind).
+Dynamically populated from whichever categories have published stories that day — no hardcoded list. Includes "Top of Page" as the first option always. Visible on all screen sizes.
+
+### Layout width
+Max width `max-w-7xl` (1280px) on both public site and admin. 3-column card grid on desktop.
 
 ---
 
@@ -111,7 +128,7 @@ stories (
 )
 ```
 
-RLS enabled. One policy: public can SELECT where status = 'approved'. All writes use service role key (bypasses RLS).
+RLS enabled. One policy: public can SELECT where status = `published`. All writes use service role key (bypasses RLS).
 
 ---
 
@@ -125,19 +142,18 @@ RLS enabled. One policy: public can SELECT where status = 'approved'. All writes
 
 ## Deployment
 - **Repo:** https://github.com/TheSheepherder1/good-news
-- **Live site:** https://good-news-ten-teal.vercel.app
-- **Admin:** https://good-news-ten-teal.vercel.app/admin
-- **Target domain:** thegoodifound.com (to be connected)
+- **Live site:** https://thegoodifound.com
+- **Admin:** https://thegoodifound.com/admin
+- **Vercel URL:** https://good-news-ten-teal.vercel.app
+- **Domain registrar:** GoDaddy — DNS pointed to Vercel (A record + CNAME)
 - Auto-deploys on push to `main`
 
 ---
 
 ## To Do
-1. **Connect custom domain** — buy `thegoodifound.com`, add to Vercel project settings, point DNS records
-2. **Custom story creator** — admin form to write your own story card: section/category, source name, article title, optional photo, article text
-3. **Daily automation** — schedule the fetch to run each morning automatically via Vercel cron
-4. **Section override on pending** — in the pending review queue, allow admin to change the AI-assigned category before approving; dropdown of static section list, defaults to AI-recommended value
-5. **Additional RSS feeds to evaluate** — verify RSS URLs and add the ones that work:
+1. **Custom story creator** — admin form to write your own story card: section/category, source name, article title, optional photo, article text
+2. **Daily automation** — schedule the fetch to run each morning automatically via Vercel cron
+3. **Additional RSS feeds to evaluate** — verify RSS URLs and add the ones that work:
    - *Good News / Uplifting:* Sunny Skyz, Some Good News, The Happy Broadcast, Good News Movement
    - *Science & Discovery:* EurekAlert, Phys.org, Live Science, Popular Science
    - *Nature & Animals:* The Dodo, National Geographic (animals feed), Wildlife Conservation Society
