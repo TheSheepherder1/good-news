@@ -134,6 +134,9 @@ export default async function Home() {
           </>
         )}
       </section>
+      <footer className="border-t border-gray-200 mt-4 py-6 text-center text-xs text-gray-400 px-4">
+        All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.
+      </footer>
     </main>
   )
 }
