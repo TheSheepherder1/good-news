@@ -99,6 +99,24 @@ export default function AdminPage() {
     setMsg(`"${story.title.slice(0, 60)}…" set as featured.`)
   }
 
+  async function uploadFeaturedImage(storyId: string, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('storyId', storyId)
+    const res = await fetch('/api/upload-image', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${password}` },
+      body: formData,
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setStories((prev) => prev.map((s) => s.id === storyId ? { ...s, image_url: data.url } : s))
+      setMsg('Featured image uploaded.')
+    } else {
+      setMsg(`Upload error: ${data.error}`)
+    }
+  }
+
   async function runIngest() {
     setIngesting(true)
     setMsg('')
@@ -277,6 +295,7 @@ export default function AdminPage() {
                   onSkip={(id) => updateStatus(id, 'skipped')}
                   onFeature={handleFeature}
                   onRescue={rescueStory}
+                  onUploadImage={uploadFeaturedImage}
                 />
               ))}
             </div>

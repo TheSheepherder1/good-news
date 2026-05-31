@@ -66,18 +66,18 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                   Today's Bright Spot
                 </h2>
                 <div
-                  className="bg-white rounded-3xl shadow-md border border-yellow-200 overflow-hidden flex flex-col md:flex-row cursor-pointer md:cursor-default"
+                  className="bg-white rounded-3xl shadow-md border border-yellow-200 overflow-hidden flex flex-col md:grid md:grid-cols-3 cursor-pointer md:cursor-default"
                   onClick={() => handleOpen(featured)}
                 >
                   {featured.image_url && (
                     <img
                       src={featured.image_url}
                       alt=""
-                      className="w-full md:w-96 h-56 md:h-auto object-cover flex-shrink-0"
+                      className="w-full h-52 md:h-full object-cover md:col-span-1"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                     />
                   )}
-                  <div className="p-6 flex flex-col gap-3 justify-center">
+                  <div className={`p-6 flex flex-col gap-3 justify-center ${featured.image_url ? 'md:col-span-2' : 'md:col-span-3'}`}>
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
                         {featured.category || featured.source}
