@@ -63,7 +63,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
             {featured && (
               <div id="featured" className="scroll-mt-44 md:scroll-mt-6">
                 <h2 className="text-xs font-semibold text-yellow-600 uppercase tracking-widest mb-3">
-                  Featured Story
+                  Today's Bright Spot
                 </h2>
                 <div
                   className="bg-white rounded-3xl shadow-md border border-yellow-200 overflow-hidden flex flex-col md:flex-row cursor-pointer md:cursor-default"

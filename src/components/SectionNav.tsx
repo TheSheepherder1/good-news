@@ -34,7 +34,7 @@ export default function SectionNav({ categories, hasFeatured }: Props) {
 
   const sections = [
     { label: 'Top of Page', id: '__top' },
-    ...(hasFeatured ? [{ label: 'Featured Story', id: 'featured' }] : []),
+    ...(hasFeatured ? [{ label: "Today's Bright Spot", id: 'featured' }] : []),
     ...categories.map((c) => ({ label: c, id: slugify(c) })),
   ]
 
