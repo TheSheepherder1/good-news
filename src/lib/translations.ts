@@ -43,9 +43,9 @@ export const UI: Record<Language, UIStrings> = {
     advertisingPolicy: 'Advertising Policy',
     footerCopyright: 'All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.',
     categories: {
-      'Good News': 'Good News', 'Science': 'Science', 'Health': 'Health',
+      'Animals': 'Animals', 'Good News': 'Good News', 'Science': 'Science', 'Health': 'Health',
       'Environment': 'Environment', 'Culture': 'Culture', 'Art': 'Art',
-      'Sports': 'Sports', 'Animals': 'Animals', 'Technology': 'Technology',
+      'Sports': 'Sports', 'Technology': 'Technology',
     },
   },
   es: {
