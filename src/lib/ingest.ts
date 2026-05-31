@@ -3,6 +3,12 @@ import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin } from './supabase'
 import { RSS_FEEDS, type Feed } from './feeds'
 
+// ── Tuning knobs ──────────────────────────────────────────────
+const ITEMS_PER_CURATED_FEED = 15   // curated good-news outlets
+const ITEMS_PER_GENERAL_FEED = 8    // general / international feeds
+const MIN_AI_SCORE = 6              // stories below this score are rejected
+// ─────────────────────────────────────────────────────────────
+
 const parser = new Parser({
   timeout: 10000,
   headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
@@ -46,9 +52,10 @@ type RawStory = {
 }
 
 async function fetchFeed(feed: Feed): Promise<RawStory[]> {
+  const limit = feed.curated ? ITEMS_PER_CURATED_FEED : ITEMS_PER_GENERAL_FEED
   try {
     const parsed = await parser.parseURL(feed.url)
-    return (parsed.items || []).slice(0, 15).map((item) => ({
+    return (parsed.items || []).slice(0, limit).map((item) => ({
       title: item.title?.trim() || '',
       url: item.link || item.guid || '',
       summary: item.contentSnippet?.slice(0, 500) || item.summary?.slice(0, 500) || '',
@@ -64,13 +71,9 @@ async function fetchFeed(feed: Feed): Promise<RawStory[]> {
   }
 }
 
-// Deduplicate stories by title similarity.
-// Within the batch: keep the curated source version; otherwise keep first seen.
-// Against DB: drop anything too similar to a story fetched in the last 14 days.
 async function deduplicateStories(stories: RawStory[]): Promise<RawStory[]> {
   const SIMILARITY_THRESHOLD = 0.6
 
-  // Fetch recent titles from DB to compare against
   const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
   const { data: recentRows } = await supabaseAdmin
     .from('stories')
@@ -78,12 +81,10 @@ async function deduplicateStories(stories: RawStory[]): Promise<RawStory[]> {
     .gte('fetched_at', cutoff)
   const recentTitles: string[] = (recentRows || []).map((r: { title: string }) => r.title)
 
-  // Drop stories too similar to anything already in DB
   const notInDb = stories.filter(
     (s) => !recentTitles.some((t) => titleSimilarity(s.title, t) >= SIMILARITY_THRESHOLD)
   )
 
-  // Within the batch: deduplicate, preferring curated sources
   const dedupedBatch: RawStory[] = []
   for (const story of notInDb) {
     const duplicate = dedupedBatch.find(
@@ -92,7 +93,6 @@ async function deduplicateStories(stories: RawStory[]): Promise<RawStory[]> {
     if (!duplicate) {
       dedupedBatch.push(story)
     } else if (story.curated && !duplicate.curated) {
-      // Replace with curated version
       dedupedBatch.splice(dedupedBatch.indexOf(duplicate), 1, story)
     }
   }
@@ -141,11 +141,8 @@ Be strict about politics — even indirect political stories should be rejected.
 }
 
 export async function runIngestion(): Promise<{ fetched: number; inserted: number; skipped: number }> {
-  // Clear previous session: delete pending, approved (unpublished), and skipped stories
-  // Published stories are the permanent record and are never deleted here
   await supabaseAdmin.from('stories').delete().in('status', ['pending', 'approved', 'skipped'])
 
-  // Fetch all feeds in parallel
   const feedResults = await Promise.allSettled(RSS_FEEDS.map(fetchFeed))
   const allStories: RawStory[] = feedResults
     .filter((r): r is PromiseFulfilledResult<RawStory[]> => r.status === 'fulfilled')
@@ -153,7 +150,6 @@ export async function runIngestion(): Promise<{ fetched: number; inserted: numbe
 
   if (allStories.length === 0) return { fetched: 0, inserted: 0, skipped: 0 }
 
-  // Check which URLs already exist
   const urls = allStories.map((s) => s.url)
   const { data: existing } = await supabaseAdmin
     .from('stories')
@@ -164,12 +160,10 @@ export async function runIngestion(): Promise<{ fetched: number; inserted: numbe
 
   if (urlDeduped.length === 0) return { fetched: allStories.length, inserted: 0, skipped: allStories.length }
 
-  // Title similarity dedup — removes cross-source duplicates
   const newStories = await deduplicateStories(urlDeduped)
 
   if (newStories.length === 0) return { fetched: allStories.length, inserted: 0, skipped: allStories.length }
 
-  // Classify in batches of 20
   const batchSize = 20
   const classified: (RawStory & AIResult)[] = []
   for (let i = 0; i < newStories.length; i += batchSize) {
@@ -178,13 +172,14 @@ export async function runIngestion(): Promise<{ fetched: number; inserted: numbe
     classified.push(...results)
   }
 
+  // Apply minimum score threshold — stories below MIN_AI_SCORE are rejected
   const rows = classified.map((s) => ({
     title: s.title,
     summary: s.summary || null,
     url: s.url,
     source: s.source,
     published_at: s.published_at,
-    status: s.approved ? 'pending' : 'rejected',
+    status: s.approved && s.score >= MIN_AI_SCORE ? 'pending' : 'rejected',
     ai_score: s.score,
     ai_reason: s.reason,
     image_url: s.image_url,

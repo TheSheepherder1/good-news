@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     .from('stories')
     .select('*')
     .eq('status', status)
-    .order(status === 'pending' ? 'fetched_at' : 'approved_at', { ascending: false })
+    .order(status === 'pending' ? 'ai_score' : 'approved_at', { ascending: false })
     .limit(limit)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
