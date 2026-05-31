@@ -61,7 +61,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
         ) : (
           <>
             {featured && (
-              <div id="featured" className="scroll-mt-44 md:scroll-mt-6">
+              <div id="featured" className="scroll-mt-56 md:scroll-mt-6">
                 <h2 className="text-base font-semibold text-yellow-600 uppercase tracking-widest mb-3">
                   Today's Bright Spot
                 </h2>
@@ -96,7 +96,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
             )}
 
             {sections.map(({ category, stories }) => (
-              <div key={category} id={slugify(category)} className="scroll-mt-44 md:scroll-mt-6">
+              <div key={category} id={slugify(category)} className="scroll-mt-56 md:scroll-mt-6">
                 <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
                   {category}
                 </h2>
