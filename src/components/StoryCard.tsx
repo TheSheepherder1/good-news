@@ -6,6 +6,10 @@ import { SECTIONS } from '@/lib/sections'
 
 type Props = {
   story: Story
+  displayTitle?: string
+  displaySummary?: string
+  sourcePrefix?: string
+  categoryLabel?: string
   onOpen?: (story: Story) => void
   onApprove?: (id: string) => void
   onSkip?: (id: string) => void
@@ -20,7 +24,10 @@ type Props = {
   tab?: 'pending' | 'approved' | 'skipped' | 'published'
 }
 
-export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, onUnpublish, onRemoveImage, aiCategory, adminMode, tab }: Props) {
+export default function StoryCard({ story, displayTitle, displaySummary, sourcePrefix = 'Source: ', categoryLabel, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, onUnpublish, onRemoveImage, aiCategory, adminMode, tab }: Props) {
+  const title = displayTitle || story.title
+  const summary = displaySummary || story.summary
+  const catDisplay = categoryLabel || story.category || story.source
   const [uploading, setUploading] = useState(false)
   const [uploadDone, setUploadDone] = useState(false)
 
@@ -55,28 +62,26 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
             </span>
           )}
           <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-            {story.category || story.source}
+            {catDisplay}
           </span>
-          <span>Source: {story.source}</span>
+          <span>{sourcePrefix}{story.source}</span>
         </div>
 
         {onOpen ? (
-          <p className="text-gray-900 font-semibold text-sm leading-snug">
-            {story.title}
-          </p>
+          <p className="text-gray-900 font-semibold text-sm leading-snug line-clamp-2">{title}</p>
         ) : (
           <a
             href={story.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-900 font-semibold text-sm leading-snug hover:text-emerald-700 transition-colors"
+            className="text-gray-900 font-semibold text-sm leading-snug line-clamp-2 hover:text-emerald-700 transition-colors"
           >
-            {story.title}
+            {title}
           </a>
         )}
 
-        {story.summary && (
-          <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">{story.summary}</p>
+        {summary && (
+          <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">{summary}</p>
         )}
 
         {adminMode && story.ai_reason && (

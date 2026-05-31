@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import StoryCard from '@/components/StoryCard'
 import SectionNav from '@/components/SectionNav'
 import ArticleSheet from '@/components/ArticleSheet'
 import FooterModal from '@/components/FooterModal'
+import LanguagePicker from '@/components/LanguagePicker'
 import { type Story } from '@/lib/supabase'
+import { UI, type Language } from '@/lib/translations'
 
 type Section = { category: string; stories: Story[] }
+type TranslatedStory = { title: string; summary: string }
 
 type Props = {
   featured: Story | null
@@ -19,13 +22,27 @@ function slugify(cat: string) {
   return cat.toLowerCase().replace(/\s+/g, '-')
 }
 
-function matches(story: Story, query: string): boolean {
+function matches(story: Story, translated: TranslatedStory | undefined, query: string): boolean {
   const q = query.toLowerCase()
-  return (
-    story.title.toLowerCase().includes(q) ||
-    (story.summary?.toLowerCase().includes(q) ?? false) ||
-    story.source.toLowerCase().includes(q)
-  )
+  const title = (translated?.title || story.title).toLowerCase()
+  const summary = (translated?.summary || story.summary || '').toLowerCase()
+  return title.includes(q) || summary.includes(q) || story.source.toLowerCase().includes(q)
+}
+
+async function translateText(text: string, target: string): Promise<string> {
+  if (!text.trim()) return text
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=en|${target}`
+    )
+    const data = await res.json()
+    const result = data.responseData?.translatedText
+    // MyMemory sometimes returns error strings — fall back to original
+    if (!result || result.toLowerCase().includes('mymemory')) return text
+    return result
+  } catch {
+    return text
+  }
 }
 
 export default function PublicFeed({ featured, sections, publishDate }: Props) {
@@ -33,19 +50,76 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
+  const [lang, setLang] = useState<Language>('en')
+  const [translating, setTranslating] = useState(false)
+  // Cache: lang → Map<storyId, TranslatedStory>
+  const cache = useRef<Partial<Record<Language, Map<string, TranslatedStory>>>>({})
+  const [currentTranslations, setCurrentTranslations] = useState<Map<string, TranslatedStory>>(new Map())
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const desktopInputRef = useRef<HTMLInputElement>(null)
+
+  const t = UI[lang]
+
+  const allStories = [
+    ...(featured ? [featured] : []),
+    ...sections.flatMap((s) => s.stories),
+  ]
+
+  const handleLanguageChange = useCallback(async (newLang: Language) => {
+    setLang(newLang)
+    if (newLang === 'en') {
+      setCurrentTranslations(new Map())
+      return
+    }
+    // Use cache if available
+    if (cache.current[newLang]) {
+      setCurrentTranslations(cache.current[newLang]!)
+      return
+    }
+    setTranslating(true)
+    const map = new Map<string, TranslatedStory>()
+    // Translate in parallel batches of 6
+    const batchSize = 6
+    for (let i = 0; i < allStories.length; i += batchSize) {
+      const batch = allStories.slice(i, i + batchSize)
+      await Promise.all(batch.map(async (story) => {
+        const [title, summary] = await Promise.all([
+          translateText(story.title, newLang),
+          story.summary ? translateText(story.summary, newLang) : Promise.resolve(''),
+        ])
+        map.set(story.id, { title, summary })
+      }))
+    }
+    cache.current[newLang] = map
+    setCurrentTranslations(map)
+    setTranslating(false)
+  }, [allStories])
 
   const query = searchQuery.trim()
   const isSearching = query.length > 0
 
-  const filteredFeatured = featured && (!isSearching || matches(featured, query)) ? featured : null
+  const filteredFeatured = featured && (!isSearching || matches(featured, currentTranslations.get(featured.id), query)) ? featured : null
   const filteredSections = sections
-    .map((s) => ({ ...s, stories: isSearching ? s.stories.filter((st) => matches(st, query)) : s.stories }))
+    .map((s) => ({
+      ...s,
+      stories: isSearching
+        ? s.stories.filter((st) => matches(st, currentTranslations.get(st.id), query))
+        : s.stories,
+    }))
     .filter((s) => s.stories.length > 0)
 
   const totalResults = (filteredFeatured ? 1 : 0) + filteredSections.reduce((n, s) => n + s.stories.length, 0)
   const sortedCategories = filteredSections.map((s) => s.category)
+
+  function getDisplayTitle(story: Story) {
+    return currentTranslations.get(story.id)?.title || story.title
+  }
+  function getDisplaySummary(story: Story) {
+    return currentTranslations.get(story.id)?.summary || story.summary || ''
+  }
+  function getCategoryLabel(cat: string) {
+    return t.categories[cat] || cat
+  }
 
   function handleOpen(story: Story) {
     if (window.innerWidth >= 768) {
@@ -65,11 +139,6 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
     setSearchQuery('')
   }
 
-  function clearDesktopSearch() {
-    setSearchQuery('')
-    desktopInputRef.current?.focus()
-  }
-
   return (
     <>
       <ArticleSheet story={sheetStory} onClose={() => setSheetStory(null)} />
@@ -77,7 +146,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
       <div className="sticky top-0 z-40 bg-emerald-50/95 backdrop-blur-sm shadow-sm">
         <header className="max-w-7xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">
 
-          {/* Mobile search bar — replaces header content when open */}
+          {/* Mobile: search bar open */}
           {mobileSearchOpen ? (
             <div className="flex items-center gap-2 py-1 md:hidden">
               <div className="flex-1 flex items-center gap-2 bg-white border border-emerald-300 rounded-full px-4 py-2 shadow-sm">
@@ -89,7 +158,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search stories…"
+                  placeholder={t.searchPlaceholder}
                   className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none"
                 />
                 {searchQuery && (
@@ -106,19 +175,26 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
             </div>
           ) : (
             <>
-              <h1 className="text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>The Good I Found</h1>
-              <p className="mt-2 text-gray-500 text-lg">
-                Stories of Kindness, Progress, and Hope from Around the World
-              </p>
+              <h1 className="text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>
+                {t.siteTitle}
+              </h1>
+              <p className="mt-2 text-gray-500 text-lg">{t.tagline}</p>
               {publishDate && (
                 <p className="mt-1 text-emerald-600 font-medium text-sm">{publishDate}</p>
               )}
               {(featured || sections.length > 0) && (
                 <div className="mt-4 flex justify-center items-center gap-3 flex-wrap">
-                  <SectionNav categories={sortedCategories} hasFeatured={!!filteredFeatured} />
+                  <SectionNav
+                    categories={sortedCategories}
+                    categoryLabels={t.categories}
+                    hasFeatured={!!filteredFeatured}
+                    topOfPageLabel={t.topOfPage}
+                    sectionsLabel={t.sections}
+                    featuredLabel={t.brightSpot}
+                  />
 
-                  {/* Desktop search bar — inline with Sections */}
-                  <div className="hidden md:flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm w-64 hover:border-emerald-300 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
+                  {/* Desktop search */}
+                  <div className="hidden md:flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm w-56 hover:border-emerald-300 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
                     <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                     </svg>
@@ -127,17 +203,20 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search stories…"
+                      placeholder={t.searchPlaceholder}
                       className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none min-w-0"
                     />
                     {searchQuery && (
-                      <button onClick={clearDesktopSearch} className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <button onClick={() => { setSearchQuery(''); desktopInputRef.current?.focus() }} className="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
                     )}
                   </div>
+
+                  {/* Language picker — desktop and mobile */}
+                  <LanguagePicker current={lang} translating={translating} onChange={handleLanguageChange} />
 
                   {/* Mobile search icon */}
                   <button
@@ -152,28 +231,26 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
               )}
             </>
           )}
-
         </header>
       </div>
 
       <section className="max-w-7xl mx-auto px-4 pb-16 flex flex-col gap-12">
-        {/* Search results summary */}
         {isSearching && (
           <p className="text-sm text-gray-400 -mb-6 pt-4">
-            {totalResults === 0 ? `No stories found for "${query}"` : `${totalResults} ${totalResults === 1 ? 'story' : 'stories'} matching "${query}"`}
+            {totalResults === 0
+              ? t.noResults(query)
+              : t.resultCount(totalResults, query)}
           </p>
         )}
 
         {!isSearching && featured === null && sections.length === 0 ? (
-          <div className="text-center text-gray-400 py-20 text-lg">
-            No stories yet — check back soon!
-          </div>
+          <div className="text-center text-gray-400 py-20 text-lg">{t.noStories}</div>
         ) : (
           <>
             {filteredFeatured && (
               <div id="featured" className="scroll-mt-56 md:scroll-mt-6">
                 <h2 className="text-base font-semibold text-yellow-600 uppercase tracking-widest mb-3">
-                  Today's Bright Spot
+                  {t.brightSpot}
                 </h2>
                 <div
                   className="bg-white rounded-3xl shadow-md border border-yellow-200 overflow-hidden flex flex-col md:grid md:grid-cols-3 cursor-pointer md:cursor-default"
@@ -190,15 +267,17 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                   <div className={`p-6 flex flex-col gap-3 justify-center ${filteredFeatured.image_url ? 'md:col-span-2' : 'md:col-span-3'}`}>
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                        {filteredFeatured.category || filteredFeatured.source}
+                        {getCategoryLabel(filteredFeatured.category || filteredFeatured.source)}
                       </span>
-                      <span>Source: {filteredFeatured.source}</span>
+                      <span>{t.sourcePrefix}{filteredFeatured.source}</span>
                     </div>
-                    <p className="text-gray-900 font-bold text-xl leading-snug hover:text-emerald-700 transition-colors">
-                      {filteredFeatured.title}
+                    <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
+                      {getDisplayTitle(filteredFeatured)}
                     </p>
                     {filteredFeatured.summary && (
-                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-4">{filteredFeatured.summary}</p>
+                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-4">
+                        {getDisplaySummary(filteredFeatured)}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -208,20 +287,26 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
             {filteredSections.map(({ category, stories }) => (
               <div key={category} id={slugify(category)} className="scroll-mt-56 md:scroll-mt-6">
                 <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-                  {category}
+                  {getCategoryLabel(category)}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {stories.map((story) => (
-                    <StoryCard key={story.id} story={story} onOpen={handleOpen} />
+                    <StoryCard
+                      key={story.id}
+                      story={story}
+                      onOpen={handleOpen}
+                      displayTitle={getDisplayTitle(story)}
+                      displaySummary={getDisplaySummary(story)}
+                      sourcePrefix={t.sourcePrefix}
+                      categoryLabel={getCategoryLabel(story.category || story.source)}
+                    />
                   ))}
                 </div>
               </div>
             ))}
 
             {isSearching && totalResults === 0 && (
-              <div className="text-center text-gray-400 py-20 text-lg">
-                No stories found for "{query}"
-              </div>
+              <div className="text-center text-gray-400 py-20 text-lg">{t.noResults(query)}</div>
             )}
           </>
         )}
@@ -229,25 +314,25 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
 
       <footer className="border-t border-gray-200 mt-4 py-6 text-center text-xs text-gray-400 px-4 flex flex-col gap-3">
         <div className="flex justify-center gap-6">
-          <button onClick={() => setModal('about')} className="hover:text-emerald-600 transition-colors font-medium">About</button>
-          <button onClick={() => setModal('ai-policy')} className="hover:text-emerald-600 transition-colors font-medium">AI Policy</button>
-          <button onClick={() => setModal('advertising')} className="hover:text-emerald-600 transition-colors font-medium">Advertising Policy</button>
+          <button onClick={() => setModal('about')} className="hover:text-emerald-600 transition-colors font-medium">{t.about}</button>
+          <button onClick={() => setModal('ai-policy')} className="hover:text-emerald-600 transition-colors font-medium">{t.aiPolicy}</button>
+          <button onClick={() => setModal('advertising')} className="hover:text-emerald-600 transition-colors font-medium">{t.advertisingPolicy}</button>
         </div>
-        <p>All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.</p>
+        <p>{t.footerCopyright}</p>
       </footer>
 
       {modal === 'about' && (
-        <FooterModal title="About" onClose={() => setModal(null)}>
+        <FooterModal title={t.about} onClose={() => setModal(null)}>
           <p>Content coming soon.</p>
         </FooterModal>
       )}
       {modal === 'ai-policy' && (
-        <FooterModal title="AI Policy" onClose={() => setModal(null)}>
+        <FooterModal title={t.aiPolicy} onClose={() => setModal(null)}>
           <p>Content coming soon.</p>
         </FooterModal>
       )}
       {modal === 'advertising' && (
-        <FooterModal title="Advertising Policy" onClose={() => setModal(null)}>
+        <FooterModal title={t.advertisingPolicy} onClose={() => setModal(null)}>
           <p>Content coming soon.</p>
         </FooterModal>
       )}

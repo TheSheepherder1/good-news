@@ -4,7 +4,11 @@ import { useState, useRef, useEffect } from 'react'
 
 type Props = {
   categories: string[]
+  categoryLabels?: Record<string, string>
   hasFeatured: boolean
+  topOfPageLabel?: string
+  sectionsLabel?: string
+  featuredLabel?: string
 }
 
 function slugify(cat: string) {
@@ -20,7 +24,14 @@ function scrollTo(id: string) {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-export default function SectionNav({ categories, hasFeatured }: Props) {
+export default function SectionNav({
+  categories,
+  categoryLabels = {},
+  hasFeatured,
+  topOfPageLabel = 'Top of Page',
+  sectionsLabel = 'Sections',
+  featuredLabel = "Today's Bright Spot",
+}: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -33,9 +44,9 @@ export default function SectionNav({ categories, hasFeatured }: Props) {
   }, [])
 
   const sections = [
-    { label: 'Top of Page', id: '__top' },
-    ...(hasFeatured ? [{ label: "Today's Bright Spot", id: 'featured' }] : []),
-    ...categories.map((c) => ({ label: c, id: slugify(c) })),
+    { label: topOfPageLabel, id: '__top' },
+    ...(hasFeatured ? [{ label: featuredLabel, id: 'featured' }] : []),
+    ...categories.map((c) => ({ label: categoryLabels[c] || c, id: slugify(c) })),
   ]
 
   return (
@@ -44,7 +55,7 @@ export default function SectionNav({ categories, hasFeatured }: Props) {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-full shadow-sm hover:border-emerald-400 hover:text-emerald-700 transition-colors"
       >
-        Sections
+        {sectionsLabel}
         <svg
           className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
@@ -54,7 +65,7 @@ export default function SectionNav({ categories, hasFeatured }: Props) {
       </button>
 
       {open && (
-        <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+        <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
           {sections.map(({ label, id }) => (
             <button
               key={id}
