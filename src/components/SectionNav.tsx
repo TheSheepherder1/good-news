@@ -12,6 +12,10 @@ function slugify(cat: string) {
 }
 
 function scrollTo(id: string) {
+  if (id === '__top') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    return
+  }
   const el = document.getElementById(id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -29,11 +33,10 @@ export default function SectionNav({ categories, hasFeatured }: Props) {
   }, [])
 
   const sections = [
+    { label: 'Top of Page', id: '__top' },
     ...(hasFeatured ? [{ label: 'Featured Story', id: 'featured' }] : []),
     ...categories.map((c) => ({ label: c, id: slugify(c) })),
   ]
-
-  if (sections.length === 0) return null
 
   return (
     <div ref={ref} className="relative inline-block">
