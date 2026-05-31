@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
-  const auth = req.headers.get('authorization')
+  const formData = await req.formData()
+
+  const auth = formData.get('auth') as string
   const secret = process.env.ADMIN_PASSWORD
-  if (!secret || auth !== `Bearer ${secret}`) {
+  if (!secret || auth !== secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const formData = await req.formData()
   const file = formData.get('file') as File
   const storyId = formData.get('storyId') as string
 

@@ -133,21 +133,20 @@ export default function AdminPage() {
     setStories((prev) => prev.map((s) => s.id === id ? { ...s, category } : s))
   }
 
-  async function uploadFeaturedImage(storyId: string, file: File): Promise<void> {
+  async function uploadFeaturedImage(storyId: string, file: File): Promise<boolean> {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('storyId', storyId)
-    const res = await fetch('/api/upload-image', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${password}` },
-      body: formData,
-    })
+    formData.append('auth', password)
+    const res = await fetch('/api/upload-image', { method: 'POST', body: formData })
     const data = await res.json()
     if (data.ok) {
       setStories((prev) => prev.map((s) => s.id === storyId ? { ...s, image_url: data.url } : s))
       setMsg('Image uploaded successfully.')
+      return true
     } else {
       setMsg(`Upload error: ${data.error}`)
+      return false
     }
   }
 

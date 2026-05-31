@@ -11,7 +11,7 @@ type Props = {
   onSkip?: (id: string) => void
   onFeature?: (story: Story) => void
   onRescue?: (id: string) => void
-  onUploadImage?: (id: string, file: File) => Promise<void>
+  onUploadImage?: (id: string, file: File) => Promise<boolean>
   onCategoryChange?: (id: string, category: string) => void
   onUnpublish?: (id: string) => void
   onRemoveImage?: (id: string) => void
@@ -26,10 +26,12 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
   async function handleUpload(file: File) {
     if (!onUploadImage) return
     setUploading(true)
-    await onUploadImage(story.id, file)
+    const success = await onUploadImage(story.id, file)
     setUploading(false)
-    setUploadDone(true)
-    setTimeout(() => setUploadDone(false), 2500)
+    if (success) {
+      setUploadDone(true)
+      setTimeout(() => setUploadDone(false), 2500)
+    }
   }
   return (
     <div
