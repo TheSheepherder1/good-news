@@ -137,3 +137,11 @@ RLS enabled. One policy: public can SELECT where status = 'approved'. All writes
 2. **Custom story creator** — admin form to write your own story card: section/category, source name, article title, optional photo, article text
 3. **Daily automation** — schedule the fetch to run each morning automatically via Vercel cron
 4. **Section override on pending** — in the pending review queue, allow admin to change the AI-assigned category before approving; dropdown of static section list, defaults to AI-recommended value
+5. **Additional RSS feeds to evaluate** — verify RSS URLs and add the ones that work:
+   - *Good News / Uplifting:* Sunny Skyz, Some Good News, The Happy Broadcast, Good News Movement
+   - *Science & Discovery:* EurekAlert, Phys.org, Live Science, Popular Science
+   - *Nature & Animals:* The Dodo, National Geographic (animals feed), Wildlife Conservation Society
+   - *Human Interest:* Yes! Magazine, Next City
+   - *Health:* NIH News in Health
+   - *Education:* Edutopia
+   - Priority picks: The Dodo, EurekAlert, Yes! Magazine
