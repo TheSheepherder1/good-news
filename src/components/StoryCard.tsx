@@ -1,6 +1,7 @@
 'use client'
 
 import { type Story } from '@/lib/supabase'
+import { SECTIONS } from '@/lib/sections'
 
 type Props = {
   story: Story
@@ -10,11 +11,12 @@ type Props = {
   onFeature?: (story: Story) => void
   onRescue?: (id: string) => void
   onUploadImage?: (id: string, file: File) => void
+  onCategoryChange?: (id: string, category: string) => void
   adminMode?: boolean
   tab?: 'pending' | 'approved' | 'skipped'
 }
 
-export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, adminMode, tab }: Props) {
+export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, adminMode, tab }: Props) {
   return (
     <div
       className={`bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col ${story.is_featured ? 'border-yellow-300 ring-2 ring-yellow-200' : 'border-gray-100'} ${onOpen ? 'cursor-pointer' : ''}`}
@@ -62,6 +64,25 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
 
         {adminMode && story.ai_reason && (
           <p className="text-xs text-indigo-500 italic">AI: {story.ai_reason} (score: {story.ai_score}/10)</p>
+        )}
+
+        {adminMode && tab === 'pending' && onCategoryChange && (
+          <div className="pt-1">
+            <label className="text-xs text-gray-400 mb-1 block">Section</label>
+            <select
+              value={story.category || ''}
+              onChange={(e) => onCategoryChange(story.id, e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            >
+              {!SECTIONS.includes(story.category as typeof SECTIONS[number]) && story.category && (
+                <option value={story.category}>{story.category} (AI suggested)</option>
+              )}
+              {SECTIONS.map((s) => (
+                <option key={s} value={s}>{s}{s === story.category ? ' (AI suggested)' : ''}</option>
+              ))}
+            </select>
+          </div>
         )}
 
         {adminMode && tab === 'pending' && onApprove && onSkip && (

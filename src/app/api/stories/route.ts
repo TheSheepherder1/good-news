@@ -24,7 +24,14 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { id, status, is_featured } = body
+  const { id, status, is_featured, category } = body
+
+  // Handle category update
+  if (category !== undefined) {
+    const { error } = await supabaseAdmin.from('stories').update({ category }).eq('id', id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true })
+  }
 
   // Handle featured toggle
   if (is_featured === true) {

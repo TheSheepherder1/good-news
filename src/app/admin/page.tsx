@@ -99,6 +99,11 @@ export default function AdminPage() {
     setMsg(`"${story.title.slice(0, 60)}…" set as featured.`)
   }
 
+  async function changeCategory(id: string, category: string) {
+    await patchStory(id, { category })
+    setStories((prev) => prev.map((s) => s.id === id ? { ...s, category } : s))
+  }
+
   async function uploadFeaturedImage(storyId: string, file: File) {
     const formData = new FormData()
     formData.append('file', file)
@@ -296,6 +301,7 @@ export default function AdminPage() {
                   onFeature={handleFeature}
                   onRescue={rescueStory}
                   onUploadImage={uploadFeaturedImage}
+                  onCategoryChange={changeCategory}
                 />
               ))}
             </div>
