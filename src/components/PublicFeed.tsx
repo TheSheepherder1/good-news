@@ -29,19 +29,18 @@ function matches(story: Story, translated: TranslatedStory | undefined, query: s
   return title.includes(q) || summary.includes(q) || story.source.toLowerCase().includes(q)
 }
 
-async function translateText(text: string, target: string): Promise<string> {
-  if (!text.trim()) return text
+async function translateBatch(texts: string[], target: string): Promise<string[]> {
+  if (!texts.length || target === 'en') return texts
   try {
-    const res = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=en|${target}`
-    )
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, target }),
+    })
     const data = await res.json()
-    const result = data.responseData?.translatedText
-    // MyMemory sometimes returns error strings — fall back to original
-    if (!result || result.toLowerCase().includes('mymemory')) return text
-    return result
+    return data.translations ?? texts
   } catch {
-    return text
+    return texts
   }
 }
 
@@ -77,19 +76,20 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
       return
     }
     setTranslating(true)
+    // Send all titles and summaries in one server call
+    const titles = allStories.map((s) => s.title)
+    const summaries = allStories.map((s) => s.summary || '')
+    const [translatedTitles, translatedSummaries] = await Promise.all([
+      translateBatch(titles, newLang),
+      translateBatch(summaries, newLang),
+    ])
     const map = new Map<string, TranslatedStory>()
-    // Translate in parallel batches of 6
-    const batchSize = 6
-    for (let i = 0; i < allStories.length; i += batchSize) {
-      const batch = allStories.slice(i, i + batchSize)
-      await Promise.all(batch.map(async (story) => {
-        const [title, summary] = await Promise.all([
-          translateText(story.title, newLang),
-          story.summary ? translateText(story.summary, newLang) : Promise.resolve(''),
-        ])
-        map.set(story.id, { title, summary })
-      }))
-    }
+    allStories.forEach((story, i) => {
+      map.set(story.id, {
+        title: translatedTitles[i] || story.title,
+        summary: translatedSummaries[i] || story.summary || '',
+      })
+    })
     cache.current[newLang] = map
     setCurrentTranslations(map)
     setTranslating(false)
