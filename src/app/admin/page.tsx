@@ -32,6 +32,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
   const [stories, setStories] = useState<Story[]>([])
+  const [originalCategories, setOriginalCategories] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [ingesting, setIngesting] = useState(false)
   const [publishing, setPublishing] = useState(false)
@@ -46,6 +47,10 @@ export default function AdminPage() {
     const data = await res.json()
     const stories = Array.isArray(data) ? data : []
     setStories(status === 'published' ? sortPublished(stories) : stories)
+    // Capture original AI-assigned categories on first load
+    const cats: Record<string, string> = {}
+    stories.forEach((s: Story) => { if (s.category) cats[s.id] = s.category })
+    setOriginalCategories(cats)
     setLoading(false)
   }, [])
 
@@ -332,6 +337,7 @@ export default function AdminPage() {
                   onCategoryChange={changeCategory}
                   onUnpublish={unpublishStory}
                   onRemoveImage={removeImage}
+                  aiCategory={originalCategories[story.id]}
                 />
               ))}
             </div>

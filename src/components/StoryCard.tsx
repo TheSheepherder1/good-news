@@ -15,11 +15,12 @@ type Props = {
   onCategoryChange?: (id: string, category: string) => void
   onUnpublish?: (id: string) => void
   onRemoveImage?: (id: string) => void
+  aiCategory?: string
   adminMode?: boolean
   tab?: 'pending' | 'approved' | 'skipped' | 'published'
 }
 
-export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, onUnpublish, onRemoveImage, adminMode, tab }: Props) {
+export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, onUnpublish, onRemoveImage, aiCategory, adminMode, tab }: Props) {
   const [uploading, setUploading] = useState(false)
   const [uploadDone, setUploadDone] = useState(false)
 
@@ -91,11 +92,11 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
               onClick={(e) => e.stopPropagation()}
               className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
             >
-              {!SECTIONS.includes(story.category as typeof SECTIONS[number]) && story.category && (
-                <option value={story.category}>{story.category} (AI suggested)</option>
+              {aiCategory && !SECTIONS.includes(aiCategory as typeof SECTIONS[number]) && (
+                <option value={aiCategory}>{aiCategory} (AI suggested)</option>
               )}
               {SECTIONS.map((s) => (
-                <option key={s} value={s}>{s}{s === story.category ? ' (AI suggested)' : ''}</option>
+                <option key={s} value={s}>{s}{s === aiCategory ? ' (AI suggested)' : ''}</option>
               ))}
             </select>
           </div>
