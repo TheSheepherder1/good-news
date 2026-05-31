@@ -128,6 +128,40 @@ export const RSS_FEEDS: Feed[] = [
     category: 'Good News',
     curated: false,
   },
+  {
+    name: 'Next City',
+    url: 'https://news.google.com/rss/search?q=site:nextcity.org&hl=en&gl=US&ceid=US:en',
+    category: 'Good News',
+    curated: false,
+  },
+  // === Animals & wildlife ===
+  {
+    name: 'The Dodo',
+    url: 'https://news.google.com/rss/search?q=site:thedodo.com&hl=en&gl=US&ceid=US:en',
+    category: 'Animals',
+    curated: false,
+  },
+  // === Health (additional) ===
+  {
+    name: 'NIH News in Health',
+    url: 'https://news.google.com/rss/search?q=site:newsinhealth.nih.gov&hl=en&gl=US&ceid=US:en',
+    category: 'Health',
+    curated: false,
+  },
+  // === Education ===
+  {
+    name: 'Edutopia',
+    url: 'https://news.google.com/rss/search?q=site:edutopia.org&hl=en&gl=US&ceid=US:en',
+    category: 'Good News',
+    curated: false,
+  },
+  // === Science (additional) ===
+  {
+    name: 'Phys.org',
+    url: 'https://news.google.com/rss/search?q=site:phys.org&hl=en&gl=US&ceid=US:en',
+    category: 'Science',
+    curated: false,
+  },
   // === Technology (breakthroughs, not drama) ===
   {
     name: 'MIT Technology Review',
