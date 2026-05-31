@@ -63,12 +63,6 @@ export const RSS_FEEDS: Feed[] = [
     category: 'Science',
     curated: false,
   },
-  {
-    name: 'New Scientist',
-    url: 'https://www.newscientist.com/feed/home/',
-    category: 'Science',
-    curated: false,
-  },
   // === Health & wellness ===
   {
     name: 'Harvard Health',
