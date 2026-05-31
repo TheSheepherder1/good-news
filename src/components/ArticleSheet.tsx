@@ -95,7 +95,7 @@ export default function ArticleSheet({ story, onClose }: Props) {
               <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">
                 {story.category || story.source}
               </span>
-              <span className="text-xs text-gray-400">{story.source}</span>
+              <span className="text-xs text-gray-400">Source: {story.source}</span>
             </div>
 
             <h2 className="text-gray-900 font-bold text-lg leading-snug">{story.title}</h2>

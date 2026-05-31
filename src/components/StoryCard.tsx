@@ -38,7 +38,7 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
           <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
             {story.category || story.source}
           </span>
-          <span>{story.source}</span>
+          <span>Source: {story.source}</span>
         </div>
 
         {onOpen ? (

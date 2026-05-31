@@ -82,7 +82,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                       <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
                         {featured.category || featured.source}
                       </span>
-                      <span>{featured.source}</span>
+                      <span>Source: {featured.source}</span>
                     </div>
                     <p className="text-gray-900 font-bold text-xl leading-snug hover:text-emerald-700 transition-colors">
                       {featured.title}
