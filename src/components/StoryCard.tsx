@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { type Story } from '@/lib/supabase'
 import { SECTIONS } from '@/lib/sections'
 
@@ -10,7 +11,7 @@ type Props = {
   onSkip?: (id: string) => void
   onFeature?: (story: Story) => void
   onRescue?: (id: string) => void
-  onUploadImage?: (id: string, file: File) => void
+  onUploadImage?: (id: string, file: File) => Promise<void>
   onCategoryChange?: (id: string, category: string) => void
   onUnpublish?: (id: string) => void
   onRemoveImage?: (id: string) => void
@@ -19,6 +20,14 @@ type Props = {
 }
 
 export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature, onRescue, onUploadImage, onCategoryChange, onUnpublish, onRemoveImage, adminMode, tab }: Props) {
+  const [uploading, setUploading] = useState(false)
+
+  async function handleUpload(file: File) {
+    if (!onUploadImage) return
+    setUploading(true)
+    await onUploadImage(story.id, file)
+    setUploading(false)
+  }
   return (
     <div
       className={`bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col ${story.is_featured ? 'border-yellow-300 ring-2 ring-yellow-200' : 'border-gray-100'} ${onOpen ? 'cursor-pointer' : ''}`}
@@ -121,19 +130,20 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
 
         {adminMode && onUploadImage && (
           <div className="border-t border-gray-100 pt-2 mt-1 flex flex-col gap-1">
-            <label className="flex items-center justify-center gap-2 w-full bg-gray-50 hover:bg-gray-100 border border-dashed border-gray-300 text-gray-500 text-xs font-medium py-1.5 rounded-lg cursor-pointer transition-colors">
-              {story.image_url ? 'Replace Image' : 'Add Image'}
+            <label className={`flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 text-xs font-medium py-1.5 rounded-lg transition-colors ${uploading ? 'bg-emerald-50 text-emerald-600 cursor-wait' : 'bg-gray-50 hover:bg-gray-100 text-gray-500 cursor-pointer'}`}>
+              {uploading ? 'Uploading…' : story.image_url ? 'Replace Image' : 'Add Image'}
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
+                disabled={uploading}
                 onChange={(e) => {
                   const file = e.target.files?.[0]
-                  if (file) onUploadImage(story.id, file)
+                  if (file) handleUpload(file)
                 }}
               />
             </label>
-            {story.image_url && onRemoveImage && (
+            {story.image_url && onRemoveImage && !uploading && (
               <button
                 onClick={() => onRemoveImage(story.id)}
                 className="w-full bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-400 text-xs font-medium py-1.5 rounded-lg transition-colors"

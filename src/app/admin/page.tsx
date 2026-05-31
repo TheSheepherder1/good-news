@@ -133,7 +133,7 @@ export default function AdminPage() {
     setStories((prev) => prev.map((s) => s.id === id ? { ...s, category } : s))
   }
 
-  async function uploadFeaturedImage(storyId: string, file: File) {
+  async function uploadFeaturedImage(storyId: string, file: File): Promise<void> {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('storyId', storyId)
@@ -145,7 +145,7 @@ export default function AdminPage() {
     const data = await res.json()
     if (data.ok) {
       setStories((prev) => prev.map((s) => s.id === storyId ? { ...s, image_url: data.url } : s))
-      setMsg('Featured image uploaded.')
+      setMsg('Image uploaded successfully.')
     } else {
       setMsg(`Upload error: ${data.error}`)
     }
