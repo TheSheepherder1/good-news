@@ -6,7 +6,7 @@ import { RSS_FEEDS, type Feed } from './feeds'
 // ── Tuning knobs ──────────────────────────────────────────────
 const ITEMS_PER_CURATED_FEED = 15   // curated good-news outlets
 const ITEMS_PER_GENERAL_FEED = 8    // general / international feeds
-const MIN_AI_SCORE = 6              // stories below this score are rejected
+const MIN_AI_SCORE = 5              // stories below this score are rejected
 // ─────────────────────────────────────────────────────────────
 
 const parser = new Parser({
