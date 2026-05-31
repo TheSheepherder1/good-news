@@ -34,6 +34,10 @@ export default async function Home() {
     if (!grouped.has(cat)) grouped.set(cat, [])
     grouped.get(cat)!.push(story)
   }
+  // Sort each category by AI score descending (highest first, left-to-right across rows)
+  for (const [cat, catStories] of grouped) {
+    grouped.set(cat, catStories.sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0)))
+  }
 
   const sortedCategories = [
     ...CATEGORY_ORDER.filter((c) => grouped.has(c)),

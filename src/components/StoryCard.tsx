@@ -1,7 +1,6 @@
 'use client'
 
 import { type Story } from '@/lib/supabase'
-import { formatDistanceToNow } from 'date-fns'
 
 type Props = {
   story: Story
@@ -14,10 +13,6 @@ type Props = {
 }
 
 export default function StoryCard({ story, onApprove, onSkip, onFeature, onRescue, adminMode, tab }: Props) {
-  const timeAgo = story.published_at
-    ? formatDistanceToNow(new Date(story.published_at), { addSuffix: true })
-    : 'recently'
-
   return (
     <div className={`bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col ${story.is_featured ? 'border-yellow-300 ring-2 ring-yellow-200' : 'border-gray-100'}`}>
       {story.image_url && (
@@ -39,8 +34,6 @@ export default function StoryCard({ story, onApprove, onSkip, onFeature, onRescu
             {story.category || story.source}
           </span>
           <span>{story.source}</span>
-          <span>·</span>
-          <span>{timeAgo}</span>
         </div>
 
         <a
