@@ -144,7 +144,7 @@ export default function AdminPage() {
       setMsg('Image uploaded successfully.')
       return true
     } else {
-      setMsg(`Upload error: ${data.error}`)
+      setMsg(`Upload error: ${data.error} | debug: ${JSON.stringify(data.debug)}`)
       return false
     }
   }

@@ -5,7 +5,15 @@ export async function POST(req: NextRequest) {
   const auth = req.nextUrl.searchParams.get('auth')
   const secret = process.env.ADMIN_PASSWORD
   if (!secret || auth !== secret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({
+      error: 'Unauthorized',
+      debug: {
+        hasSecret: !!secret,
+        secretLength: secret?.length ?? 0,
+        authLength: auth?.length ?? 0,
+        authValue: auth,
+      }
+    }, { status: 401 })
   }
 
   const formData = await req.formData()
