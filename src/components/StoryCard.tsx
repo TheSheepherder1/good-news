@@ -104,7 +104,7 @@ export default function StoryCard({ story, onOpen, onApprove, onSkip, onFeature,
           </div>
         )}
 
-        {adminMode && tab === 'approved' && onFeature && (
+        {adminMode && (tab === 'approved' || tab === 'published') && onFeature && (
           <div className="flex gap-2 mt-auto pt-2">
             <button
               onClick={() => onFeature(story)}
