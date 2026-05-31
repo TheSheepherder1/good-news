@@ -1,11 +1,16 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import StoryCard from '@/components/StoryCard'
+import SectionNav from '@/components/SectionNav'
 import { type Story } from '@/lib/supabase'
 import { format } from 'date-fns'
 
 export const revalidate = 120
 
 const CATEGORY_ORDER = ['Good News', 'Science', 'Animals', 'Health', 'Environment', 'Technology', 'Culture']
+
+function slugify(cat: string) {
+  return cat.toLowerCase().replace(/\s+/g, '-')
+}
 
 async function getPublishedStories(): Promise<Story[]> {
   const { data } = await supabaseAdmin
@@ -23,7 +28,6 @@ export default async function Home() {
   const featured = stories.find((s) => s.is_featured)
   const rest = stories.filter((s) => !s.is_featured)
 
-  // Group non-featured stories by category
   const grouped = new Map<string, Story[]>()
   for (const story of rest) {
     const cat = story.category || 'Good News'
@@ -31,7 +35,6 @@ export default async function Home() {
     grouped.get(cat)!.push(story)
   }
 
-  // Sort categories by preferred order, then alphabetically for any extras
   const sortedCategories = [
     ...CATEGORY_ORDER.filter((c) => grouped.has(c)),
     ...[...grouped.keys()].filter((c) => !CATEGORY_ORDER.includes(c)).sort(),
@@ -43,13 +46,21 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-emerald-50 to-white">
-      <header className="max-w-6xl mx-auto px-4 py-10 text-center">
+      <header className="max-w-6xl mx-auto px-4 pt-10 pb-6 text-center">
         <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Good News</h1>
         <p className="mt-2 text-gray-500 text-lg">
           Uplifting stories from the People around our World
         </p>
         {publishDate && (
           <p className="mt-1 text-emerald-600 font-medium text-sm">{publishDate}</p>
+        )}
+        {stories.length > 0 && (
+          <div className="mt-4 flex justify-center">
+            <SectionNav
+              categories={sortedCategories}
+              hasFeatured={!!featured}
+            />
+          </div>
         )}
       </header>
 
@@ -62,7 +73,7 @@ export default async function Home() {
           <>
             {/* Featured hero */}
             {featured && (
-              <div>
+              <div id="featured" className="scroll-mt-6">
                 <h2 className="text-xs font-semibold text-yellow-600 uppercase tracking-widest mb-3">
                   Featured Story
                 </h2>
@@ -102,7 +113,7 @@ export default async function Home() {
             {sortedCategories.map((category) => {
               const categoryStories = grouped.get(category) || []
               return (
-                <div key={category}>
+                <div key={category} id={slugify(category)} className="scroll-mt-6">
                   <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
                     {category}
                   </h2>
