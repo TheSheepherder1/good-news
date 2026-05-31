@@ -108,6 +108,19 @@ export const RSS_FEEDS: Feed[] = [
     category: 'Culture',
     curated: false,
   },
+  // === Science & discovery (additional) ===
+  {
+    name: 'Live Science',
+    url: 'https://www.livescience.com/feeds/all',
+    category: 'Science',
+    curated: false,
+  },
+  {
+    name: 'Popular Science',
+    url: 'https://www.popsci.com/feed/',
+    category: 'Science',
+    curated: false,
+  },
   // === Human interest / solutions ===
   {
     name: 'Yes! Magazine',
