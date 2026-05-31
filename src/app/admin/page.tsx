@@ -6,6 +6,22 @@ import { type Story } from '@/lib/supabase'
 
 type Tab = 'pending' | 'approved' | 'skipped' | 'published'
 
+const CATEGORY_ORDER = ['Good News', 'Science', 'Animals', 'Health', 'Environment', 'Technology', 'Culture', 'Sports']
+
+function sortPublished(stories: Story[]): Story[] {
+  const featured = stories.filter((s) => s.is_featured)
+  const rest = stories.filter((s) => !s.is_featured)
+  rest.sort((a, b) => {
+    const ai = CATEGORY_ORDER.indexOf(a.category || '')
+    const bi = CATEGORY_ORDER.indexOf(b.category || '')
+    const catA = ai === -1 ? 999 : ai
+    const catB = bi === -1 ? 999 : bi
+    if (catA !== catB) return catA - catB
+    return (b.ai_score ?? 0) - (a.ai_score ?? 0)
+  })
+  return [...featured, ...rest]
+}
+
 type FeatureConflict = {
   newStory: Story
   existingId: string
@@ -28,7 +44,8 @@ export default function AdminPage() {
     setLoading(true)
     const res = await fetch(`/api/stories?status=${status}&limit=100`)
     const data = await res.json()
-    setStories(Array.isArray(data) ? data : [])
+    const stories = Array.isArray(data) ? data : []
+    setStories(status === 'published' ? sortPublished(stories) : stories)
     setLoading(false)
   }, [])
 
