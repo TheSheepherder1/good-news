@@ -228,7 +228,7 @@ RLS enabled. One policy: public can SELECT where status = `published`. All write
 ---
 
 ## To Do
-1. **Custom story creator** — admin form to manually add any article as a card: choose section, name the source, give it a linked title (URL), write a text description, optionally add a photo. Card matches the exact style of all other cards. Goes directly to Approved queue, bypassing fetch/AI filter.
-2. **Daily automation** — schedule the fetch to run each morning automatically via Vercel cron
-3. **Footer modal content** — add real text for About, AI Policy, and Advertising Policy when ready
-4. **OG image redesign** — make the social share preview image look great (currently functional but basic)
+1. **Daily automation** — schedule the fetch to run each morning automatically via Vercel cron
+2. **Footer modal content** — add real text for About, AI Policy, and Advertising Policy when ready
+3. **OG image redesign** — make the social share preview image look great (currently functional but basic)
+4. **Desktop article panel** — instead of opening a new tab on desktop, show a slide-up panel (same as mobile sheet) with image, summary, and "Read Full Article" button that opens new tab. Keeps users on the site longer while still giving access to the full piece.
