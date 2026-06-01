@@ -123,7 +123,11 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
 
   function handleOpen(story: Story) {
     if (window.innerWidth >= 768) {
-      window.open(story.url, '_blank', 'noopener,noreferrer')
+      if (story.is_custom) {
+        window.location.href = story.url
+      } else {
+        window.open(story.url, '_blank', 'noopener,noreferrer')
+      }
     } else {
       setSheetStory(story)
     }

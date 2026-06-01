@@ -61,6 +61,11 @@ export default function StoryCard({ story, displayTitle, displaySummary, sourceP
               Featured
             </span>
           )}
+          {story.is_custom && (
+            <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-semibold">
+              Custom
+            </span>
+          )}
           <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
             {catDisplay}
           </span>

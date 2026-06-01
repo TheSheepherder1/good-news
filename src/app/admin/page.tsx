@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import StoryCard from '@/components/StoryCard'
 import { type Story } from '@/lib/supabase'
+import { SECTIONS } from '@/lib/sections'
 
 type Tab = 'pending' | 'approved' | 'skipped' | 'published'
 
@@ -40,6 +41,10 @@ export default function AdminPage() {
   const [msg, setMsg] = useState('')
   const [featureConflict, setFeatureConflict] = useState<FeatureConflict | null>(null)
   const [showPublishModal, setShowPublishModal] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [createForm, setCreateForm] = useState<{ title: string; summary: string; source: string; category: string }>({ title: '', summary: '', source: '', category: SECTIONS[0] })
+  const [createImageFile, setCreateImageFile] = useState<File | null>(null)
+  const [creating, setCreating] = useState(false)
 
   const fetchStories = useCallback(async (status: Tab) => {
     setLoading(true)
@@ -154,6 +159,39 @@ export default function AdminPage() {
     }
   }
 
+  async function createCustomStory() {
+    if (!createForm.title.trim() || !createForm.source.trim()) {
+      setMsg('Title and source are required.')
+      return
+    }
+    setCreating(true)
+    const res = await fetch('/api/custom-story', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify(createForm),
+    })
+    const data = await res.json()
+    if (!data.ok) {
+      setMsg(`Error: ${data.error}`)
+      setCreating(false)
+      return
+    }
+    // Upload image if provided
+    if (createImageFile) {
+      const formData = new FormData()
+      formData.append('file', createImageFile)
+      formData.append('storyId', data.id)
+      await fetch(`/api/upload-image?auth=${encodeURIComponent(password)}`, { method: 'POST', body: formData })
+    }
+    setCreating(false)
+    setShowCreateModal(false)
+    setCreateForm({ title: '', summary: '', source: '', category: SECTIONS[0] as string })
+    setCreateImageFile(null)
+    setMsg('Custom story created and added to Approved.')
+    setTab('approved')
+    fetchStories('approved')
+  }
+
   async function runIngest() {
     setIngesting(true)
     setMsg('')
@@ -213,6 +251,83 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
+      {/* Create Story modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="font-bold text-gray-900 text-lg">Create Custom Story</h2>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Section</label>
+              <select
+                value={createForm.category}
+                onChange={(e) => setCreateForm((f) => ({ ...f, category: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              >
+                {SECTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Source Name</label>
+              <input
+                type="text"
+                placeholder="e.g. The Good I Found"
+                value={createForm.source}
+                onChange={(e) => setCreateForm((f) => ({ ...f, source: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Title</label>
+              <input
+                type="text"
+                placeholder="Story headline"
+                value={createForm.title}
+                onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Story Text</label>
+              <textarea
+                rows={6}
+                placeholder="Write your story here…"
+                value={createForm.summary}
+                onChange={(e) => setCreateForm((f) => ({ ...f, summary: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Photo (optional)</label>
+              <label className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 border border-dashed border-gray-300 text-gray-500 text-sm py-2 px-3 rounded-lg cursor-pointer transition-colors">
+                {createImageFile ? createImageFile.name : 'Choose image…'}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => setCreateImageFile(e.target.files?.[0] ?? null)} />
+              </label>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={createCustomStory}
+                disabled={creating}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-medium py-2 rounded-lg transition-colors"
+              >
+                {creating ? 'Creating…' : 'Approve'}
+              </button>
+              <button
+                onClick={() => { setShowCreateModal(false); setCreateForm({ title: '', summary: '', source: '', category: SECTIONS[0] as string }); setCreateImageFile(null) }}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Publish mode modal */}
       {showPublishModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -292,6 +407,12 @@ export default function AdminPage() {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {msg && <span className="text-xs text-gray-500 max-w-sm">{msg}</span>}
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Create Story
+          </button>
           <button
             onClick={() => setShowPublishModal(true)}
             disabled={publishing}
