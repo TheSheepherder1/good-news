@@ -7,6 +7,19 @@ export const revalidate = 120
 
 const CATEGORY_ORDER = ['Good News', 'Science', 'Animals', 'Health', 'Environment', 'Technology', 'Culture']
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'The Good I Found',
+  url: 'https://thegoodifound.com',
+  description: 'Your daily dose of good news — uplifting, heartwarming, and inspiring stories from around the world.',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: 'https://thegoodifound.com/?q={search_term_string}',
+    'query-input': 'required name=search_term_string',
+  },
+}
+
 async function getPublishedStories(): Promise<Story[]> {
   const { data } = await supabaseAdmin
     .from('stories')
@@ -48,8 +61,14 @@ export default async function Home() {
     : null
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-emerald-50 to-white">
-      <PublicFeed featured={featured} sections={sections} publishDate={publishDate} />
-    </main>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <main className="min-h-screen bg-gradient-to-br from-emerald-50 to-white">
+        <PublicFeed featured={featured} sections={sections} publishDate={publishDate} />
+      </main>
+    </>
   )
 }
