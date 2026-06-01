@@ -7,7 +7,7 @@ import { SECTIONS } from '@/lib/sections'
 
 type Tab = 'pending' | 'approved' | 'skipped' | 'published'
 
-const CATEGORY_ORDER = ['Good News', 'Science', 'Animals', 'Health', 'Environment', 'Technology', 'Culture', 'Sports']
+const CATEGORY_ORDER = ['Humanity', 'Culture', 'Art', 'Good News', 'Science', 'Animals', 'Health', 'Environment', 'Technology', 'Space', 'Sports']
 
 function sortPublished(stories: Story[]): Story[] {
   const featured = stories.filter((s) => s.is_featured)
