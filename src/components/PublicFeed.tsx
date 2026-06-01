@@ -235,7 +235,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
         </header>
       </div>
 
-      <section className="max-w-7xl mx-auto px-4 pb-16 flex flex-col gap-12">
+      <section className="max-w-7xl mx-auto px-4 pb-16 pt-4 flex flex-col gap-12">
         {isSearching && (
           <p className="text-sm text-gray-400 -mb-6 pt-4">
             {totalResults === 0
