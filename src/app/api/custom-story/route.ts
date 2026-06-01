@@ -8,19 +8,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { title, summary, source, category } = await req.json()
+  const { title, summary, source, category, externalUrl } = await req.json()
 
   if (!title?.trim() || !source?.trim() || !category?.trim()) {
     return NextResponse.json({ error: 'Title, source and category are required' }, { status: 400 })
   }
 
-  // Insert with a placeholder URL — we'll update it once we have the ID
+  // If an external URL is provided, use it directly.
+  // Otherwise, insert with a placeholder and update to the hosted story URL after we have the ID.
+  const useExternalUrl = !!externalUrl?.trim()
+
   const { data, error } = await supabaseAdmin
     .from('stories')
     .insert({
       title: title.trim(),
       summary: summary?.trim() || null,
-      url: 'pending',
+      url: useExternalUrl ? externalUrl.trim() : 'pending',
       source: source.trim(),
       category: category.trim(),
       status: 'approved',
@@ -35,8 +38,11 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const storyUrl = `https://thegoodifound.com/story/${data.id}`
-  await supabaseAdmin.from('stories').update({ url: storyUrl }).eq('id', data.id)
+  let storyUrl = externalUrl?.trim() || ''
+  if (!useExternalUrl) {
+    storyUrl = `https://thegoodifound.com/story/${data.id}`
+    await supabaseAdmin.from('stories').update({ url: storyUrl }).eq('id', data.id)
+  }
 
   return NextResponse.json({ ok: true, id: data.id, url: storyUrl })
 }

@@ -106,11 +106,11 @@ export default function ArticleSheet({ story, onClose }: Props) {
 
             <a
               href={story.url}
-              target={story.is_custom ? '_self' : '_blank'}
+              target={story.is_custom && story.url.includes('/story/') ? '_self' : '_blank'}
               rel="noopener noreferrer"
               className="mt-2 w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2"
             >
-              {story.is_custom ? 'Read Full Story' : 'Read Full Article'}
+              {story.is_custom && story.url.includes('/story/') ? 'Read Full Story' : 'Read Full Article'}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
