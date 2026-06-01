@@ -7,6 +7,7 @@ export const SECTIONS = [
   'Health',
   'Humanity',
   'Science',
+  'Space',
   'Sports',
 ] as const
 

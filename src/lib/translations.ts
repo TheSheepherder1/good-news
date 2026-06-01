@@ -45,7 +45,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Animals': 'Animals', 'Good News': 'Good News', 'Science': 'Science', 'Health': 'Health',
       'Environment': 'Environment', 'Culture': 'Culture', 'Art': 'Art',
-      'Humanity': 'Humanity', 'Sports': 'Sports', 'Technology': 'Technology',
+      'Humanity': 'Humanity', 'Space': 'Space', 'Sports': 'Sports', 'Technology': 'Technology',
     },
   },
   es: {
@@ -66,7 +66,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Good News': 'Buenas Noticias', 'Science': 'Ciencia', 'Health': 'Salud',
       'Environment': 'Medio Ambiente', 'Culture': 'Cultura', 'Art': 'Arte',
-      'Humanity': 'Humanidad', 'Sports': 'Deportes', 'Animals': 'Animales', 'Technology': 'Tecnología',
+      'Humanity': 'Humanidad', 'Space': 'Espacio', 'Sports': 'Deportes', 'Animals': 'Animales', 'Technology': 'Tecnología',
     },
   },
   fr: {
@@ -87,7 +87,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Good News': 'Bonnes Nouvelles', 'Science': 'Science', 'Health': 'Santé',
       'Environment': 'Environnement', 'Culture': 'Culture', 'Art': 'Art',
-      'Humanity': 'Humanité', 'Sports': 'Sports', 'Animals': 'Animaux', 'Technology': 'Technologie',
+      'Humanity': 'Humanité', 'Space': 'Espace', 'Sports': 'Sports', 'Animals': 'Animaux', 'Technology': 'Technologie',
     },
   },
   de: {
@@ -108,7 +108,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Good News': 'Gute Nachrichten', 'Science': 'Wissenschaft', 'Health': 'Gesundheit',
       'Environment': 'Umwelt', 'Culture': 'Kultur', 'Art': 'Kunst',
-      'Humanity': 'Menschheit', 'Sports': 'Sport', 'Animals': 'Tiere', 'Technology': 'Technologie',
+      'Humanity': 'Menschheit', 'Space': 'Weltraum', 'Sports': 'Sport', 'Animals': 'Tiere', 'Technology': 'Technologie',
     },
   },
   sr: {
@@ -129,7 +129,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Good News': 'Dobre vesti', 'Science': 'Nauka', 'Health': 'Zdravlje',
       'Environment': 'Životna sredina', 'Culture': 'Kultura', 'Art': 'Umetnost',
-      'Humanity': 'Čovečanstvo', 'Sports': 'Sport', 'Animals': 'Životinje', 'Technology': 'Tehnologija',
+      'Humanity': 'Čovečanstvo', 'Space': 'Svemir', 'Sports': 'Sport', 'Animals': 'Životinje', 'Technology': 'Tehnologija',
     },
   },
 }
