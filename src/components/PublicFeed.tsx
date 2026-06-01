@@ -287,7 +287,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
 
             {filteredSections.map(({ category, stories }) => (
               <div key={category} id={slugify(category)} className="scroll-mt-56 md:scroll-mt-60">
-                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#B8860B' }}>
                   {getCategoryLabel(category)}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
