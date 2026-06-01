@@ -5,6 +5,7 @@ export const SECTIONS = [
   'Environment',
   'Good News',
   'Health',
+  'Humanity',
   'Science',
   'Sports',
 ] as const
