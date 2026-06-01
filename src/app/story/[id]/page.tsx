@@ -51,9 +51,9 @@ export default async function StoryPage({ params }: { params: Promise<{ id: stri
               {story.title}
             </h1>
 
-            {story.summary && (
+            {(story.content || story.summary) && (
               <div className="text-gray-600 text-base leading-relaxed whitespace-pre-wrap">
-                {story.summary}
+                {story.content || story.summary}
               </div>
             )}
           </div>

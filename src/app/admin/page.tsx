@@ -42,7 +42,7 @@ export default function AdminPage() {
   const [featureConflict, setFeatureConflict] = useState<FeatureConflict | null>(null)
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [createForm, setCreateForm] = useState<{ title: string; summary: string; source: string; category: string; externalUrl: string }>({ title: '', summary: '', source: '', category: SECTIONS[0], externalUrl: '' })
+  const [createForm, setCreateForm] = useState<{ title: string; summary: string; content: string; source: string; category: string; externalUrl: string }>({ title: '', summary: '', content: '', source: '', category: SECTIONS[0], externalUrl: '' })
   const [createImageFile, setCreateImageFile] = useState<File | null>(null)
   const [creating, setCreating] = useState(false)
 
@@ -185,7 +185,7 @@ export default function AdminPage() {
     }
     setCreating(false)
     setShowCreateModal(false)
-    setCreateForm({ title: '', summary: '', source: '', category: SECTIONS[0], externalUrl: '' })
+    setCreateForm({ title: '', summary: '', content: '', source: '', category: SECTIONS[0], externalUrl: '' })
     setCreateImageFile(null)
     setMsg('Custom story created and added to Approved.')
     setTab('approved')
@@ -305,19 +305,31 @@ export default function AdminPage() {
 
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">
-                {createForm.externalUrl ? 'Description' : 'Story Text'}
+                Story Description <span className="text-gray-400 font-normal">(shown on the card)</span>
               </label>
               <textarea
-                rows={6}
-                placeholder="Write your story here…"
+                rows={3}
+                placeholder="Short description that appears on the story card…"
                 value={createForm.summary}
                 onChange={(e) => setCreateForm((f) => ({ ...f, summary: e.target.value }))}
                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
               />
-              {!createForm.externalUrl && (
-                <p className="text-xs text-gray-400">This text will be the full story shown on your story page.</p>
-              )}
             </div>
+
+            {!createForm.externalUrl && (
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500">
+                  Full Story <span className="text-gray-400 font-normal">(shown on your story page)</span>
+                </label>
+                <textarea
+                  rows={6}
+                  placeholder="Write your full story here…"
+                  value={createForm.content}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, content: e.target.value }))}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+                />
+              </div>
+            )}
 
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">Photo (optional)</label>
@@ -336,7 +348,7 @@ export default function AdminPage() {
                 {creating ? 'Creating…' : 'Approve'}
               </button>
               <button
-                onClick={() => { setShowCreateModal(false); setCreateForm({ title: '', summary: '', source: '', category: SECTIONS[0], externalUrl: '' }); setCreateImageFile(null) }}
+                onClick={() => { setShowCreateModal(false); setCreateForm({ title: '', summary: '', content: '', source: '', category: SECTIONS[0], externalUrl: '' }); setCreateImageFile(null) }}
                 className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2 rounded-lg transition-colors"
               >
                 Cancel

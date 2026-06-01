@@ -8,21 +8,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { title, summary, source, category, externalUrl } = await req.json()
+  const { title, summary, content, source, category, externalUrl } = await req.json()
 
   if (!title?.trim() || !source?.trim() || !category?.trim()) {
     return NextResponse.json({ error: 'Title, source and category are required' }, { status: 400 })
   }
 
-  // If an external URL is provided, use it directly.
-  // Otherwise, insert with a placeholder and update to the hosted story URL after we have the ID.
   const useExternalUrl = !!externalUrl?.trim()
 
   const { data, error } = await supabaseAdmin
     .from('stories')
     .insert({
       title: title.trim(),
-      summary: summary?.trim() || null,
+      summary: summary?.trim() || null,       // shown on card
+      content: content?.trim() || null,       // shown on hosted story page
       url: useExternalUrl ? externalUrl.trim() : 'pending',
       source: source.trim(),
       category: category.trim(),

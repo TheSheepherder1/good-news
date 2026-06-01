@@ -106,7 +106,7 @@ export default function ArticleSheet({ story, onClose }: Props) {
 
             <a
               href={story.url}
-              target={story.is_custom && story.url.includes('/story/') ? '_self' : '_blank'}
+              target="_blank"
               rel="noopener noreferrer"
               className="mt-2 w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2"
             >

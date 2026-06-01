@@ -24,4 +24,5 @@ export type Story = {
   approved_at: string | null
   is_featured: boolean
   is_custom: boolean
+  content: string | null
 }
