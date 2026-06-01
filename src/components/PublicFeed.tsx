@@ -250,7 +250,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
           <>
             {filteredFeatured && (
               <div id="featured" className="scroll-mt-56 md:scroll-mt-60">
-                <h2 className="text-base font-semibold text-yellow-600 uppercase tracking-widest mb-3">
+                <h2 className="text-base font-semibold text-yellow-400 uppercase tracking-widest mb-3">
                   {t.brightSpot}
                 </h2>
                 <div
@@ -287,7 +287,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
 
             {filteredSections.map(({ category, stories }) => (
               <div key={category} id={slugify(category)} className="scroll-mt-56 md:scroll-mt-60">
-                <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#B8860B' }}>
+                <h2 className="text-xs font-semibold text-emerald-800 uppercase tracking-widest mb-3">
                   {getCategoryLabel(category)}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
