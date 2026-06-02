@@ -42,6 +42,7 @@ export default function AdminPage() {
   const [featureConflict, setFeatureConflict] = useState<FeatureConflict | null>(null)
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [revalidating, setRevalidating] = useState(false)
   const [createForm, setCreateForm] = useState<{ title: string; summary: string; content: string; source: string; category: string; externalUrl: string }>({ title: '', summary: '', content: '', source: '', category: SECTIONS[0], externalUrl: '' })
   const [createImageFile, setCreateImageFile] = useState<File | null>(null)
   const [creating, setCreating] = useState(false)
@@ -157,6 +158,16 @@ export default function AdminPage() {
       setMsg(`Upload error: ${data.error}`)
       return false
     }
+  }
+
+  async function revalidateSite() {
+    setRevalidating(true)
+    await fetch('/api/revalidate', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${password}` },
+    })
+    setMsg('Public page refreshed.')
+    setRevalidating(false)
   }
 
   async function createCustomStory() {
@@ -437,6 +448,13 @@ export default function AdminPage() {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {msg && <span className="text-xs text-gray-500 max-w-sm">{msg}</span>}
+          <button
+            onClick={revalidateSite}
+            disabled={revalidating}
+            className="bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            {revalidating ? 'Refreshing…' : 'Refresh Site'}
+          </button>
           <button
             onClick={() => setShowCreateModal(true)}
             className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
