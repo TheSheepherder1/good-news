@@ -143,7 +143,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
     <>
       <ArticleSheet story={sheetStory} onClose={() => setSheetStory(null)} />
 
-      <div className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(238, 248, 244, 0.95)' }}>
+      <div className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(200, 230, 221, 0.95)' }}>
         <header className="max-w-7xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">
 
           {/* Mobile: search bar open */}

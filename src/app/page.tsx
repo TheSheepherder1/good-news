@@ -66,7 +66,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <main className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #eef8f4 0%, #f8fbfa 100%)' }}>
+      <main className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #c8e6dd 0%, #f8fbfa 100%)' }}>
         <PublicFeed featured={featured} sections={sections} publishDate={publishDate} />
       </main>
     </>
