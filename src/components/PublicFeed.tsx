@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import StoryCard from '@/components/StoryCard'
 import SectionNav from '@/components/SectionNav'
 import ArticleSheet from '@/components/ArticleSheet'
@@ -21,6 +21,15 @@ type Props = {
 
 function slugify(cat: string) {
   return cat.toLowerCase().replace(/\s+/g, '-')
+}
+
+function parseInline(text: string): React.ReactNode[] {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>
+    if (part.startsWith('*') && part.endsWith('*')) return <em key={i}>{part.slice(1, -1)}</em>
+    return part
+  })
 }
 
 function matches(story: Story, translated: TranslatedStory | undefined, query: string): boolean {
@@ -367,7 +376,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
           ) : (
             <div className="flex flex-col gap-4">
               {currentAboutParagraphs.map((para, i) => (
-                <p key={i} className={i === currentAboutParagraphs.length - 1 ? 'font-semibold text-gray-800' : ''}>{para}</p>
+                <p key={i} className={i === currentAboutParagraphs.length - 1 ? 'font-semibold text-gray-800' : ''}>{parseInline(para)}</p>
               ))}
             </div>
           )}
@@ -377,7 +386,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
         <FooterModal title={siteContent.ai_policy_title || t.aiPolicy} onClose={() => setModal(null)}>
           <div className="flex flex-col gap-4">
             {(siteContent.ai_policy_text || 'Content coming soon.').split('\n\n').filter(Boolean).map((p, i) => (
-              <p key={i}>{p}</p>
+              <p key={i}>{parseInline(p)}</p>
             ))}
           </div>
         </FooterModal>
@@ -386,7 +395,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
         <FooterModal title={siteContent.advertising_title || t.advertisingPolicy} onClose={() => setModal(null)}>
           <div className="flex flex-col gap-4">
             {(siteContent.advertising_text || 'Content coming soon.').split('\n\n').filter(Boolean).map((p, i) => (
-              <p key={i}>{p}</p>
+              <p key={i}>{parseInline(p)}</p>
             ))}
           </div>
         </FooterModal>

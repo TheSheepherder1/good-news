@@ -170,6 +170,20 @@ export default function AdminPage() {
     }
   }
 
+  function insertWrapper(textKey: string, wrapper: string) {
+    const el = document.querySelector(`textarea[data-key="${textKey}"]`) as HTMLTextAreaElement
+    if (!el) return
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    const val = contentForm[textKey as keyof typeof contentForm]
+    const newVal = val.substring(0, start) + wrapper + val.substring(start, end) + wrapper + val.substring(end)
+    setContentForm((f) => ({ ...f, [textKey]: newVal }))
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(start + wrapper.length, end + wrapper.length)
+    })
+  }
+
   async function openContentModal() {
     const res = await fetch('/api/site-content')
     const data = await res.json()
@@ -321,8 +335,15 @@ export default function AdminPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-gray-400">Content (separate paragraphs with a blank line)</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-gray-400">Content (separate paragraphs with a blank line)</label>
+                    <div className="flex gap-1">
+                      <button type="button" onClick={() => insertWrapper(textKey, '**')} className="w-7 h-7 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded transition-colors">B</button>
+                      <button type="button" onClick={() => insertWrapper(textKey, '*')} className="w-7 h-7 bg-gray-100 hover:bg-gray-200 text-gray-700 italic text-sm rounded transition-colors">I</button>
+                    </div>
+                  </div>
                   <textarea
+                    data-key={textKey}
                     rows={6}
                     value={contentForm[textKey as keyof typeof contentForm]}
                     onChange={(e) => setContentForm((f) => ({ ...f, [textKey]: e.target.value }))}
