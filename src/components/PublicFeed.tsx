@@ -264,7 +264,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
           <>
             {filteredFeatured && (
               <div id="featured" className="scroll-mt-56 md:scroll-mt-60">
-                <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest mb-1" style={{ color: '#D4A017' }}>
+                <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest mb-1" style={{ color: '#F0B429' }}>
                   {t.brightSpot}
                 </h2>
                 <p className="text-lg font-semibold text-emerald-800 uppercase tracking-widest mb-4">
