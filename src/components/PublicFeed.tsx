@@ -192,7 +192,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
               <h1 className="text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>
                 {t.siteTitle}
               </h1>
-              <p className="mt-2 text-gray-500 text-lg">{t.tagline}</p>
+              <p className="mt-2 text-gray-600 text-lg">{t.tagline}</p>
               {publishDate && (
                 <p className="mt-1 text-emerald-600 font-medium text-sm">{publishDate}</p>
               )}
