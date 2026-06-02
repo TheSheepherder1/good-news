@@ -9,19 +9,11 @@ type Props = {
   topOfPageLabel?: string
   sectionsLabel?: string
   featuredLabel?: string
+  onNavigate?: (id: string) => void
 }
 
 function slugify(cat: string) {
   return cat.toLowerCase().replace(/\s+/g, '-')
-}
-
-function scrollTo(id: string) {
-  if (id === '__top') {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    return
-  }
-  const el = document.getElementById(id)
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 export default function SectionNav({
@@ -31,6 +23,7 @@ export default function SectionNav({
   topOfPageLabel = 'Top of Page',
   sectionsLabel = 'Sections',
   featuredLabel = "Today's Bright Spot",
+  onNavigate,
 }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -42,6 +35,18 @@ export default function SectionNav({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  function handleSelect(id: string) {
+    setOpen(false)
+    if (onNavigate) {
+      onNavigate(id)
+    } else {
+      // fallback
+      if (id === '__top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return }
+      const el = document.getElementById(id)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   const sections = [
     { label: topOfPageLabel, id: '__top' },
@@ -69,7 +74,7 @@ export default function SectionNav({
           {sections.map(({ label, id }) => (
             <button
               key={id}
-              onClick={() => { scrollTo(id); setOpen(false) }}
+              onClick={() => handleSelect(id)}
               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
             >
               {label}

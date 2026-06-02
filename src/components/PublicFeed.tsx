@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import StoryCard from '@/components/StoryCard'
 import SectionNav from '@/components/SectionNav'
 import ArticleSheet from '@/components/ArticleSheet'
@@ -56,6 +56,19 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
   const [currentTranslations, setCurrentTranslations] = useState<Map<string, TranslatedStory>>(new Map())
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const desktopInputRef = useRef<HTMLInputElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
+
+  function scrollToSection(id: string) {
+    if (id === '__top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    const el = document.getElementById(id)
+    if (!el) return
+    const headerHeight = headerRef.current?.offsetHeight ?? 220
+    const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 12
+    window.scrollTo({ top, behavior: 'smooth' })
+  }
 
   const t = UI[lang]
 
@@ -143,7 +156,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
     <>
       <ArticleSheet story={sheetStory} onClose={() => setSheetStory(null)} />
 
-      <div className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(200, 230, 221, 0.95)' }}>
+      <div ref={headerRef} className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(200, 230, 221, 0.95)' }}>
         <header className="max-w-7xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">
 
           {/* Mobile: search bar open */}
@@ -192,6 +205,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                     topOfPageLabel={t.topOfPage}
                     sectionsLabel={t.sections}
                     featuredLabel={t.brightSpot}
+                    onNavigate={scrollToSection}
                   />
 
                   {/* Desktop search */}
