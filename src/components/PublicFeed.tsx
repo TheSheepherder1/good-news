@@ -264,12 +264,9 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
           <>
             {filteredFeatured && (
               <div id="featured" className="scroll-mt-56 md:scroll-mt-60">
-                <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest mb-1" style={{ color: '#F0B429' }}>
+                <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest mb-3" style={{ color: '#F0B429' }}>
                   {t.brightSpot}
                 </h2>
-                <p className="text-xs tracking-wider md:text-lg md:tracking-widest font-semibold text-emerald-800 uppercase mb-4">
-                  Good things are happening every day.
-                </p>
                 <div
                   className="bg-white rounded-3xl shadow-md border border-yellow-200 overflow-hidden flex flex-col md:grid md:grid-cols-3 cursor-pointer md:cursor-default"
                   onClick={() => handleOpen(filteredFeatured)}
