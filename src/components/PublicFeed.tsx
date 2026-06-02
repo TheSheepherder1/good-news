@@ -263,12 +263,13 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
         ) : (
           <>
             {filteredFeatured && (
-              <div id="featured" className="scroll-mt-56 md:scroll-mt-60">
+              <div id="featured" className="scroll-mt-56 md:scroll-mt-60 bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/70">
                 <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest mb-3" style={{ color: '#F0B429' }}>
                   {t.brightSpot}
                 </h2>
                 <div
-                  className="bg-white rounded-3xl shadow-md border border-yellow-200 overflow-hidden flex flex-col md:grid md:grid-cols-3 cursor-pointer md:cursor-default"
+                  className="bg-white rounded-3xl shadow-md overflow-hidden flex flex-col md:grid md:grid-cols-3 cursor-pointer md:cursor-default border-4"
+                  style={{ borderColor: '#F0B429' }}
                   onClick={() => handleOpen(filteredFeatured)}
                 >
                   {filteredFeatured.image_url && (
