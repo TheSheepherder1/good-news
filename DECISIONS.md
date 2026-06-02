@@ -267,4 +267,4 @@ RLS enabled on both tables. `stories`: public SELECT where status = `published`.
 3. **Desktop article panel** — show a slide-up panel on desktop (like mobile sheet) with image, summary, and "Read Full Article" button. Keeps users on site longer.
 4. **AI Policy content** — write and add via Edit Content in admin
 5. **Advertising Policy content** — write and add via Edit Content in admin
-6. **Submit sitemap to Google Search Console** — go to Search Console → Sitemaps → submit `https://thegoodifound.com/sitemap.xml` (initial attempt failed, retry needed)
+6. **Submit sitemap to Google Search Console** — both www and non-www properties added; try submitting `https://www.thegoodifound.com/sitemap.xml` on each property (Google keeps returning "couldn't fetch" — retry needed)
