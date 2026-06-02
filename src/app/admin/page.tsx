@@ -184,6 +184,27 @@ export default function AdminPage() {
     })
   }
 
+  function insertBullet(textKey: string) {
+    const el = document.querySelector(`textarea[data-key="${textKey}"]`) as HTMLTextAreaElement
+    if (!el) return
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    const val = contentForm[textKey as keyof typeof contentForm]
+    const lineStart = val.lastIndexOf('\n', start - 1) + 1
+    if (start === end) {
+      // No selection — prefix current line
+      const newVal = val.substring(0, lineStart) + '- ' + val.substring(lineStart)
+      setContentForm((f) => ({ ...f, [textKey]: newVal }))
+      requestAnimationFrame(() => { el.focus(); el.setSelectionRange(start + 2, start + 2) })
+    } else {
+      // Selection — prefix each selected line
+      const before = val.substring(0, lineStart)
+      const selected = val.substring(lineStart, end).split('\n').map((l) => '- ' + l).join('\n')
+      const after = val.substring(end)
+      setContentForm((f) => ({ ...f, [textKey]: before + selected + after }))
+    }
+  }
+
   async function openContentModal() {
     const res = await fetch('/api/site-content')
     const data = await res.json()
@@ -340,6 +361,7 @@ export default function AdminPage() {
                     <div className="flex gap-1">
                       <button type="button" onClick={() => insertWrapper(textKey, '**')} className="w-7 h-7 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded transition-colors">B</button>
                       <button type="button" onClick={() => insertWrapper(textKey, '*')} className="w-7 h-7 bg-gray-100 hover:bg-gray-200 text-gray-700 italic text-sm rounded transition-colors">I</button>
+                      <button type="button" onClick={() => insertBullet(textKey)} className="w-7 h-7 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors">•</button>
                     </div>
                   </div>
                   <textarea

@@ -32,6 +32,23 @@ function parseInline(text: string): React.ReactNode[] {
   })
 }
 
+function renderBlock(text: string, i: number, isLast: boolean): React.ReactNode {
+  const lines = text.split('\n')
+  const bulletLines = lines.filter((l) => l.startsWith('- '))
+  if (bulletLines.length > 0 && bulletLines.length === lines.filter((l) => l.trim()).length) {
+    return (
+      <ul key={i} className="list-disc pl-6 flex flex-col gap-1">
+        {bulletLines.map((l, j) => <li key={j}>{parseInline(l.slice(2))}</li>)}
+      </ul>
+    )
+  }
+  return (
+    <p key={i} className={isLast ? 'font-semibold text-gray-800' : ''}>
+      {parseInline(text)}
+    </p>
+  )
+}
+
 function matches(story: Story, translated: TranslatedStory | undefined, query: string): boolean {
   const q = query.toLowerCase()
   const title = (translated?.title || story.title).toLowerCase()
@@ -375,9 +392,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
             <p className="text-gray-400 italic">Translating…</p>
           ) : (
             <div className="flex flex-col gap-4">
-              {currentAboutParagraphs.map((para, i) => (
-                <p key={i} className={i === currentAboutParagraphs.length - 1 ? 'font-semibold text-gray-800' : ''}>{parseInline(para)}</p>
-              ))}
+              {currentAboutParagraphs.map((para, i) => renderBlock(para, i, i === currentAboutParagraphs.length - 1))}
             </div>
           )}
         </FooterModal>
@@ -385,18 +400,14 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
       {modal === 'ai-policy' && (
         <FooterModal title={siteContent.ai_policy_title || t.aiPolicy} onClose={() => setModal(null)}>
           <div className="flex flex-col gap-4">
-            {(siteContent.ai_policy_text || 'Content coming soon.').split('\n\n').filter(Boolean).map((p, i) => (
-              <p key={i}>{parseInline(p)}</p>
-            ))}
+            {(siteContent.ai_policy_text || 'Content coming soon.').split('\n\n').filter(Boolean).map((p, i, arr) => renderBlock(p, i, i === arr.length - 1))}
           </div>
         </FooterModal>
       )}
       {modal === 'advertising' && (
         <FooterModal title={siteContent.advertising_title || t.advertisingPolicy} onClose={() => setModal(null)}>
           <div className="flex flex-col gap-4">
-            {(siteContent.advertising_text || 'Content coming soon.').split('\n\n').filter(Boolean).map((p, i) => (
-              <p key={i}>{parseInline(p)}</p>
-            ))}
+            {(siteContent.advertising_text || 'Content coming soon.').split('\n\n').filter(Boolean).map((p, i, arr) => renderBlock(p, i, i === arr.length - 1))}
           </div>
         </FooterModal>
       )}
