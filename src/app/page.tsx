@@ -30,8 +30,17 @@ async function getPublishedStories(): Promise<Story[]> {
   return data || []
 }
 
+async function getSiteContent(): Promise<Record<string, string>> {
+  const { data } = await supabaseAdmin
+    .from('site_settings')
+    .select('key, value')
+  const settings: Record<string, string> = {}
+  for (const row of data || []) settings[row.key] = row.value
+  return settings
+}
+
 export default async function Home() {
-  const stories = await getPublishedStories()
+  const [stories, siteContent] = await Promise.all([getPublishedStories(), getSiteContent()])
 
   const featured = stories.find((s) => s.is_featured) ?? null
   const rest = stories.filter((s) => !s.is_featured)
@@ -67,7 +76,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <main className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #c8e6dd 0%, #f8fbfa 100%)' }}>
-        <PublicFeed featured={featured} sections={sections} publishDate={publishDate} />
+        <PublicFeed featured={featured} sections={sections} publishDate={publishDate} siteContent={siteContent} />
       </main>
     </>
   )

@@ -16,6 +16,7 @@ type Props = {
   featured: Story | null
   sections: Section[]
   publishDate: string | null
+  siteContent?: Record<string, string>
 }
 
 function slugify(cat: string) {
@@ -44,7 +45,7 @@ async function translateBatch(texts: string[], target: string): Promise<string[]
   }
 }
 
-export default function PublicFeed({ featured, sections, publishDate }: Props) {
+export default function PublicFeed({ featured, sections, publishDate, siteContent = {} }: Props) {
   const [sheetStory, setSheetStory] = useState<Story | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
@@ -60,15 +61,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
   const desktopInputRef = useRef<HTMLInputElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
 
-  const aboutParagraphs = [
-    'The news can make it easy to forget that good things are happening every day.',
-    'Around the world, people are helping one another, communities are solving problems, scientists are making breakthroughs, animals are being protected, and acts of kindness are changing lives. These stories don\'t always make the headlines, but they matter.',
-    'The Good I Found is a daily collection of stories about kindness, progress, resilience, and hope. I gather positive news from trusted sources and organize it into one place, making it easier to discover the good that\'s happening around us.',
-    'This site isn\'t about ignoring real challenges or pretending the world is perfect. It\'s about creating a more balanced picture of reality—one that includes the people, ideas, and moments making a positive difference.',
-    'Whether you\'re looking for a brighter start to your day, a reminder that progress is possible, or simply a reason to smile, I hope you\'ll find something here worth sharing.',
-    'Because good things are happening every day.',
-    'This is some of the good I found.',
-  ]
+  const aboutParagraphs = (siteContent.about_text || '').split('\n\n').filter(Boolean)
 
   async function openAboutModal() {
     setModal('about')
@@ -368,7 +361,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
       </footer>
 
       {modal === 'about' && (
-        <FooterModal title="About The Good I Found" onClose={() => setModal(null)}>
+        <FooterModal title={siteContent.about_title || 'About The Good I Found'} onClose={() => setModal(null)}>
           {translatingAbout ? (
             <p className="text-gray-400 italic">Translating…</p>
           ) : (
@@ -381,13 +374,21 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
         </FooterModal>
       )}
       {modal === 'ai-policy' && (
-        <FooterModal title={t.aiPolicy} onClose={() => setModal(null)}>
-          <p>Content coming soon.</p>
+        <FooterModal title={siteContent.ai_policy_title || t.aiPolicy} onClose={() => setModal(null)}>
+          <div className="flex flex-col gap-4">
+            {(siteContent.ai_policy_text || 'Content coming soon.').split('\n\n').filter(Boolean).map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          </div>
         </FooterModal>
       )}
       {modal === 'advertising' && (
-        <FooterModal title={t.advertisingPolicy} onClose={() => setModal(null)}>
-          <p>Content coming soon.</p>
+        <FooterModal title={siteContent.advertising_title || t.advertisingPolicy} onClose={() => setModal(null)}>
+          <div className="flex flex-col gap-4">
+            {(siteContent.advertising_text || 'Content coming soon.').split('\n\n').filter(Boolean).map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          </div>
         </FooterModal>
       )}
     </>

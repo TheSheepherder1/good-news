@@ -42,6 +42,16 @@ export default function AdminPage() {
   const [featureConflict, setFeatureConflict] = useState<FeatureConflict | null>(null)
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showContentModal, setShowContentModal] = useState(false)
+  const [contentForm, setContentForm] = useState({
+    about_title: 'About The Good I Found',
+    about_text: '',
+    ai_policy_title: 'AI Policy',
+    ai_policy_text: '',
+    advertising_title: 'Advertising Policy',
+    advertising_text: '',
+  })
+  const [savingContent, setSavingContent] = useState(false)
   const [revalidating, setRevalidating] = useState(false)
   const [createForm, setCreateForm] = useState<{ title: string; summary: string; content: string; source: string; category: string; externalUrl: string }>({ title: '', summary: '', content: '', source: '', category: SECTIONS[0], externalUrl: '' })
   const [createImageFile, setCreateImageFile] = useState<File | null>(null)
@@ -160,6 +170,32 @@ export default function AdminPage() {
     }
   }
 
+  async function openContentModal() {
+    const res = await fetch('/api/site-content')
+    const data = await res.json()
+    setContentForm({
+      about_title: data.about_title || 'About The Good I Found',
+      about_text: data.about_text || '',
+      ai_policy_title: data.ai_policy_title || 'AI Policy',
+      ai_policy_text: data.ai_policy_text || '',
+      advertising_title: data.advertising_title || 'Advertising Policy',
+      advertising_text: data.advertising_text || '',
+    })
+    setShowContentModal(true)
+  }
+
+  async function saveContent() {
+    setSavingContent(true)
+    await fetch('/api/site-content', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify(contentForm),
+    })
+    setSavingContent(false)
+    setShowContentModal(false)
+    setMsg('Site content saved.')
+  }
+
   async function revalidateSite() {
     setRevalidating(true)
     await fetch('/api/revalidate', {
@@ -262,6 +298,59 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
+      {/* Edit Content modal */}
+      {showContentModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-xl flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+            <h2 className="font-bold text-gray-900 text-lg">Edit Site Content</h2>
+
+            {[
+              { titleKey: 'about_title', textKey: 'about_text', label: 'About' },
+              { titleKey: 'ai_policy_title', textKey: 'ai_policy_text', label: 'AI Policy' },
+              { titleKey: 'advertising_title', textKey: 'advertising_text', label: 'Advertising Policy' },
+            ].map(({ titleKey, textKey, label }) => (
+              <div key={titleKey} className="flex flex-col gap-2 border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-400">Modal Title</label>
+                  <input
+                    type="text"
+                    value={contentForm[titleKey as keyof typeof contentForm]}
+                    onChange={(e) => setContentForm((f) => ({ ...f, [titleKey]: e.target.value }))}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-400">Content (separate paragraphs with a blank line)</label>
+                  <textarea
+                    rows={6}
+                    value={contentForm[textKey as keyof typeof contentForm]}
+                    onChange={(e) => setContentForm((f) => ({ ...f, [textKey]: e.target.value }))}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none font-mono"
+                  />
+                </div>
+              </div>
+            ))}
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={saveContent}
+                disabled={savingContent}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-medium py-2 rounded-lg transition-colors"
+              >
+                {savingContent ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                onClick={() => setShowContentModal(false)}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create Story modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -448,6 +537,12 @@ export default function AdminPage() {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {msg && <span className="text-xs text-gray-500 max-w-sm">{msg}</span>}
+          <button
+            onClick={openContentModal}
+            className="bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Edit Content
+          </button>
           <button
             onClick={revalidateSite}
             disabled={revalidating}
