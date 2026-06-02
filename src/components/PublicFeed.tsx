@@ -267,7 +267,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
                 <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest mb-1" style={{ color: '#F0B429' }}>
                   {t.brightSpot}
                 </h2>
-                <p className="text-lg font-semibold text-emerald-800 uppercase tracking-widest mb-4">
+                <p className="text-xs tracking-wider md:text-lg md:tracking-widest font-semibold text-emerald-800 uppercase mb-4">
                   Good things are happening every day.
                 </p>
                 <div
