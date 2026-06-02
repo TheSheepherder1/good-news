@@ -49,6 +49,8 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
+  const [aboutTranslations, setAboutTranslations] = useState<Record<string, string[]>>({})
+  const [translatingAbout, setTranslatingAbout] = useState(false)
   const [lang, setLang] = useState<Language>('en')
   const [translating, setTranslating] = useState(false)
   // Cache: lang → Map<storyId, TranslatedStory>
@@ -57,6 +59,34 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const desktopInputRef = useRef<HTMLInputElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
+
+  const aboutParagraphs = [
+    'The news can make it easy to forget that good things are happening every day.',
+    'Around the world, people are helping one another, communities are solving problems, scientists are making breakthroughs, animals are being protected, and acts of kindness are changing lives. These stories don\'t always make the headlines, but they matter.',
+    'The Good I Found is a daily collection of stories about kindness, progress, resilience, and hope. I gather positive news from trusted sources and organize it into one place, making it easier to discover the good that\'s happening around us.',
+    'This site isn\'t about ignoring real challenges or pretending the world is perfect. It\'s about creating a more balanced picture of reality—one that includes the people, ideas, and moments making a positive difference.',
+    'Whether you\'re looking for a brighter start to your day, a reminder that progress is possible, or simply a reason to smile, I hope you\'ll find something here worth sharing.',
+    'Because good things are happening every day.',
+    'This is some of the good I found.',
+  ]
+
+  async function openAboutModal() {
+    setModal('about')
+    if (lang === 'en' || aboutTranslations[lang]) return
+    setTranslatingAbout(true)
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: aboutParagraphs, target: lang }),
+    })
+    const data = await res.json()
+    if (data.translations) {
+      setAboutTranslations((prev) => ({ ...prev, [lang]: data.translations }))
+    }
+    setTranslatingAbout(false)
+  }
+
+  const currentAboutParagraphs = (lang !== 'en' && aboutTranslations[lang]) ? aboutTranslations[lang] : aboutParagraphs
 
   function scrollToSection(id: string) {
     if (id === '__top') {
@@ -330,7 +360,7 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
 
       <footer className="border-t border-gray-200 mt-4 py-6 text-center text-xs text-gray-400 px-4 flex flex-col gap-3">
         <div className="flex justify-center gap-6">
-          <button onClick={() => setModal('about')} className="hover:text-emerald-600 transition-colors font-medium">{t.about}</button>
+          <button onClick={openAboutModal} className="hover:text-emerald-600 transition-colors font-medium">{t.about}</button>
           <button onClick={() => setModal('ai-policy')} className="hover:text-emerald-600 transition-colors font-medium">{t.aiPolicy}</button>
           <button onClick={() => setModal('advertising')} className="hover:text-emerald-600 transition-colors font-medium">{t.advertisingPolicy}</button>
         </div>
@@ -339,15 +369,15 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
 
       {modal === 'about' && (
         <FooterModal title="About The Good I Found" onClose={() => setModal(null)}>
-          <div className="flex flex-col gap-4">
-            <p>The news can make it easy to forget that good things are happening every day.</p>
-            <p>Around the world, people are helping one another, communities are solving problems, scientists are making breakthroughs, animals are being protected, and acts of kindness are changing lives. These stories don't always make the headlines, but they matter.</p>
-            <p>The Good I Found is a daily collection of stories about kindness, progress, resilience, and hope. I gather positive news from trusted sources and organize it into one place, making it easier to discover the good that's happening around us.</p>
-            <p>This site isn't about ignoring real challenges or pretending the world is perfect. It's about creating a more balanced picture of reality—one that includes the people, ideas, and moments making a positive difference.</p>
-            <p>Whether you're looking for a brighter start to your day, a reminder that progress is possible, or simply a reason to smile, I hope you'll find something here worth sharing.</p>
-            <p>Because good things are happening every day.</p>
-            <p className="font-semibold text-gray-800">This is some of the good I found.</p>
-          </div>
+          {translatingAbout ? (
+            <p className="text-gray-400 italic">Translating…</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {currentAboutParagraphs.map((para, i) => (
+                <p key={i} className={i === currentAboutParagraphs.length - 1 ? 'font-semibold text-gray-800' : ''}>{para}</p>
+              ))}
+            </div>
+          )}
         </FooterModal>
       )}
       {modal === 'ai-policy' && (
