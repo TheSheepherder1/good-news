@@ -338,8 +338,16 @@ export default function PublicFeed({ featured, sections, publishDate }: Props) {
       </footer>
 
       {modal === 'about' && (
-        <FooterModal title={t.about} onClose={() => setModal(null)}>
-          <p>Content coming soon.</p>
+        <FooterModal title="About The Good I Found" onClose={() => setModal(null)}>
+          <div className="flex flex-col gap-4">
+            <p>The news can make it easy to forget that good things are happening every day.</p>
+            <p>Around the world, people are helping one another, communities are solving problems, scientists are making breakthroughs, animals are being protected, and acts of kindness are changing lives. These stories don't always make the headlines, but they matter.</p>
+            <p>The Good I Found is a daily collection of stories about kindness, progress, resilience, and hope. I gather positive news from trusted sources and organize it into one place, making it easier to discover the good that's happening around us.</p>
+            <p>This site isn't about ignoring real challenges or pretending the world is perfect. It's about creating a more balanced picture of reality—one that includes the people, ideas, and moments making a positive difference.</p>
+            <p>Whether you're looking for a brighter start to your day, a reminder that progress is possible, or simply a reason to smile, I hope you'll find something here worth sharing.</p>
+            <p>Because good things are happening every day.</p>
+            <p className="font-semibold text-gray-800">This is some of the good I found.</p>
+          </div>
         </FooterModal>
       )}
       {modal === 'ai-policy' && (
