@@ -11,7 +11,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'The Good I Found',
-  url: 'https://thegoodifound.com',
+  url: 'https://www.thegoodifound.com',
   description: 'Your daily dose of good news — uplifting, heartwarming, and inspiring stories from around the world.',
   potentialAction: {
     '@type': 'SearchAction',

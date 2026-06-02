@@ -19,7 +19,7 @@ const merriweather = Merriweather({
   weight: "700",
 });
 
-const siteUrl = "https://thegoodifound.com";
+const siteUrl = "https://www.thegoodifound.com";
 const siteTitle = "The Good I Found";
 const siteDescription = "Your daily dose of good news — uplifting, heartwarming, and inspiring stories from around the world. No politics, no negativity, just the good stuff.";
 
