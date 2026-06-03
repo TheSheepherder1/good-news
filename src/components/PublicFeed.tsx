@@ -74,6 +74,8 @@ async function translateBatch(texts: string[], target: string): Promise<string[]
 export default function PublicFeed({ featured, sections, publishDate, siteContent = {} }: Props) {
   const [sheetStory, setSheetStory] = useState<Story | null>(null)
   const [sheetDisplay, setSheetDisplay] = useState<{ title: string; summary: string } | null>(null)
+  const [headerCollapsed, setHeaderCollapsed] = useState(false)
+  const lastScrollY = useRef(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
@@ -107,6 +109,21 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   }
 
   const currentAboutParagraphs = (lang !== 'en' && aboutTranslations[lang]) ? aboutTranslations[lang] : aboutParagraphs
+
+  useEffect(() => {
+    function handleScroll() {
+      if (window.innerWidth >= 768) return // desktop only stays full
+      const current = window.scrollY
+      if (current > lastScrollY.current && current > 60) {
+        setHeaderCollapsed(true)
+      } else if (current < lastScrollY.current) {
+        setHeaderCollapsed(false)
+      }
+      lastScrollY.current = current
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   function scrollToSection(id: string) {
     if (id === '__top') {
@@ -208,7 +225,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
       <ArticleSheet story={sheetStory} onClose={() => { setSheetStory(null); setSheetDisplay(null) }} displayTitle={sheetDisplay?.title} displaySummary={sheetDisplay?.summary} />
 
       <div ref={headerRef} className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(200, 221, 230, 0.95)' }}>
-        <header className="max-w-7xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">
+        <header className={`max-w-7xl mx-auto px-4 pb-4 md:pt-10 md:pb-6 text-center transition-all duration-300 ${headerCollapsed ? 'pt-2' : 'pt-5'}`}>
 
           {/* Mobile: search bar open */}
           {mobileSearchOpen ? (
@@ -240,13 +257,15 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
             </div>
           ) : (
             <>
-              <h1 className="text-[2.43rem] md:text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>
-                {t.siteTitle}
-              </h1>
-              <p className="mt-2 text-gray-600 text-lg">{t.tagline}</p>
-              {publishDate && (
-                <p className="mt-1 text-emerald-600 font-medium text-sm">{publishDate}</p>
-              )}
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${headerCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-48 opacity-100'} md:max-h-48 md:opacity-100`}>
+                <h1 className="text-[2.43rem] md:text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>
+                  {t.siteTitle}
+                </h1>
+                <p className="mt-2 text-gray-600 text-lg">{t.tagline}</p>
+                {publishDate && (
+                  <p className="mt-1 text-emerald-600 font-medium text-sm">{publishDate}</p>
+                )}
+              </div>
               {(featured || sections.length > 0) && (
                 <div className="mt-4 flex justify-center items-center gap-3 flex-wrap">
                   <SectionNav
