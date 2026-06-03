@@ -77,6 +77,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const [headerCollapsed, setHeaderCollapsed] = useState(false)
   const lastScrollY = useRef(0)
   const scrollDelta = useRef(0)
+  const isTransitioning = useRef(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
@@ -112,9 +113,10 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const currentAboutParagraphs = (lang !== 'en' && aboutTranslations[lang]) ? aboutTranslations[lang] : aboutParagraphs
 
   useEffect(() => {
-    const THRESHOLD = 12 // must scroll 12px consistently before toggling
+    const THRESHOLD = 12
     function handleScroll() {
       if (window.innerWidth >= 768) return
+      if (isTransitioning.current) return // ignore scroll during animation
       const current = window.scrollY
       const diff = current - lastScrollY.current
       lastScrollY.current = current
@@ -128,14 +130,18 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
       if (diff > 0) {
         scrollDelta.current = Math.max(0, scrollDelta.current) + diff
         if (scrollDelta.current > THRESHOLD) {
+          isTransitioning.current = true
           setHeaderCollapsed(true)
           scrollDelta.current = 0
+          setTimeout(() => { isTransitioning.current = false }, 350)
         }
       } else if (diff < 0) {
         scrollDelta.current = Math.min(0, scrollDelta.current) + diff
         if (scrollDelta.current < -THRESHOLD) {
+          isTransitioning.current = true
           setHeaderCollapsed(false)
           scrollDelta.current = 0
+          setTimeout(() => { isTransitioning.current = false }, 350)
         }
       }
     }
