@@ -73,6 +73,7 @@ async function translateBatch(texts: string[], target: string): Promise<string[]
 
 export default function PublicFeed({ featured, sections, publishDate, siteContent = {} }: Props) {
   const [sheetStory, setSheetStory] = useState<Story | null>(null)
+  const [sheetDisplay, setSheetDisplay] = useState<{ title: string; summary: string } | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
@@ -188,6 +189,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
       window.open(story.url, '_blank', 'noopener,noreferrer')
     } else {
       setSheetStory(story)
+      setSheetDisplay({ title: getDisplayTitle(story), summary: getDisplaySummary(story) })
     }
   }
 
@@ -203,7 +205,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
 
   return (
     <>
-      <ArticleSheet story={sheetStory} onClose={() => setSheetStory(null)} />
+      <ArticleSheet story={sheetStory} onClose={() => { setSheetStory(null); setSheetDisplay(null) }} displayTitle={sheetDisplay?.title} displaySummary={sheetDisplay?.summary} />
 
       <div ref={headerRef} className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(200, 221, 230, 0.95)' }}>
         <header className="max-w-7xl mx-auto px-4 pt-5 pb-4 md:pt-10 md:pb-6 text-center">

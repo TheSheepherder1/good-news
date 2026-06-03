@@ -6,9 +6,11 @@ import { type Story } from '@/lib/supabase'
 type Props = {
   story: Story | null
   onClose: () => void
+  displayTitle?: string
+  displaySummary?: string
 }
 
-export default function ArticleSheet({ story, onClose }: Props) {
+export default function ArticleSheet({ story, onClose, displayTitle, displaySummary }: Props) {
   const [dragY, setDragY] = useState(0)
   const touchStartY = useRef(0)
   const sheetRef = useRef<HTMLDivElement>(null)
@@ -98,10 +100,10 @@ export default function ArticleSheet({ story, onClose }: Props) {
               <span className="text-xs text-gray-400">Source: {story.source}</span>
             </div>
 
-            <h2 className="text-gray-900 font-bold text-lg leading-snug">{story.title}</h2>
+            <h2 className="text-gray-900 font-bold text-lg leading-snug">{displayTitle || story.title}</h2>
 
-            {story.summary && (
-              <p className="text-gray-600 text-sm leading-relaxed">{story.summary}</p>
+            {(displaySummary || story.summary) && (
+              <p className="text-gray-600 text-sm leading-relaxed">{displaySummary || story.summary}</p>
             )}
 
             <a
