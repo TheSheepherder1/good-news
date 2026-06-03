@@ -76,6 +76,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const [sheetDisplay, setSheetDisplay] = useState<{ title: string; summary: string } | null>(null)
   const [headerCollapsed, setHeaderCollapsed] = useState(false)
   const lastScrollY = useRef(0)
+  const scrollDelta = useRef(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
@@ -111,15 +112,32 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const currentAboutParagraphs = (lang !== 'en' && aboutTranslations[lang]) ? aboutTranslations[lang] : aboutParagraphs
 
   useEffect(() => {
+    const THRESHOLD = 12 // must scroll 12px consistently before toggling
     function handleScroll() {
-      if (window.innerWidth >= 768) return // desktop only stays full
+      if (window.innerWidth >= 768) return
       const current = window.scrollY
-      if (current > lastScrollY.current && current > 60) {
-        setHeaderCollapsed(true)
-      } else if (current < lastScrollY.current) {
-        setHeaderCollapsed(false)
-      }
+      const diff = current - lastScrollY.current
       lastScrollY.current = current
+
+      if (current < 60) {
+        setHeaderCollapsed(false)
+        scrollDelta.current = 0
+        return
+      }
+
+      if (diff > 0) {
+        scrollDelta.current = Math.max(0, scrollDelta.current) + diff
+        if (scrollDelta.current > THRESHOLD) {
+          setHeaderCollapsed(true)
+          scrollDelta.current = 0
+        }
+      } else if (diff < 0) {
+        scrollDelta.current = Math.min(0, scrollDelta.current) + diff
+        if (scrollDelta.current < -THRESHOLD) {
+          setHeaderCollapsed(false)
+          scrollDelta.current = 0
+        }
+      }
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
