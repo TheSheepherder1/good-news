@@ -35,10 +35,11 @@ export default async function Image() {
         </div>
         <div
           style={{
-            fontSize: 28,
+            fontSize: 24,
             color: '#6b7280',
             textAlign: 'center',
-            maxWidth: 800,
+            maxWidth: 1000,
+            whiteSpace: 'nowrap',
           }}
         >
           Stories of Kindness, Progress, and Hope from Around the World
