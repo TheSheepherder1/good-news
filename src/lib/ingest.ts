@@ -189,7 +189,10 @@ export async function runIngestion(): Promise<{ fetched: number; inserted: numbe
     category: s.category,
   }))
 
-  const { error } = await supabaseAdmin.from('stories').insert(rows)
+  const { error } = await supabaseAdmin.from('stories').upsert(rows, {
+    onConflict: 'url',
+    ignoreDuplicates: true,
+  })
   if (error) throw new Error(error.message)
 
   const inserted = rows.filter((r) => r.status === 'pending').length
