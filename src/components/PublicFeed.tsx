@@ -75,6 +75,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const [sheetStory, setSheetStory] = useState<Story | null>(null)
   const [sheetDisplay, setSheetDisplay] = useState<{ title: string; summary: string } | null>(null)
   const [headerCollapsed, setHeaderCollapsed] = useState(false)
+  const [localDate, setLocalDate] = useState<string | null>(null)
   const lastScrollY = useRef(0)
   const scrollDelta = useRef(0)
   const isTransitioning = useRef(false)
@@ -111,6 +112,10 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   }
 
   const currentAboutParagraphs = (lang !== 'en' && aboutTranslations[lang]) ? aboutTranslations[lang] : aboutParagraphs
+
+  useEffect(() => {
+    setLocalDate(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))
+  }, [])
 
   useEffect(() => {
     const THRESHOLD = 12
@@ -286,8 +291,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                   {t.siteTitle}
                 </h1>
                 <p className="mt-2 text-gray-600 text-lg">{t.tagline}</p>
-                {publishDate && (
-                  <p className="mt-1 text-emerald-600 font-medium text-sm">{publishDate}</p>
+                {localDate && (
+                  <p className="mt-1 text-emerald-600 font-medium text-sm">{localDate}</p>
                 )}
               </div>
               {(featured || sections.length > 0) && (
