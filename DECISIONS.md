@@ -268,3 +268,4 @@ RLS enabled on both tables. `stories`: public SELECT where status = `published`.
 4. **AI Policy content** — write and add via Edit Content in admin
 5. **Advertising Policy content** — write and add via Edit Content in admin
 6. **Submit sitemap to Google Search Console** — both www and non-www properties added; try submitting `https://www.thegoodifound.com/sitemap.xml` on each property (Google keeps returning "couldn't fetch" — retry needed)
+7. **Donations via Ko-fi** — set up free Ko-fi account (takes 0% of donations), then add a "Support The Good I Found ❤️" link in the footer alongside About/AI Policy links. No popups or interruptions — subtle and honest. Consider a small floating heart button as well. No ads ever.
