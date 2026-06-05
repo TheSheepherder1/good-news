@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, ...result })
   } catch (err) {
     console.error('Ingestion error:', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    const msg = err instanceof Error ? err.message : JSON.stringify(err)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
