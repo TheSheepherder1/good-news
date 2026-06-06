@@ -79,6 +79,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const lastScrollY = useRef(0)
   const scrollDelta = useRef(0)
   const isTransitioning = useRef(false)
+  const [hasScrolled, setHasScrolled] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
@@ -125,6 +126,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
       const current = window.scrollY
       const diff = current - lastScrollY.current
       lastScrollY.current = current
+
+      if (current > 80) setHasScrolled(true)
 
       if (current < 60) {
         setHeaderCollapsed(false)
@@ -500,12 +503,12 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
         </FooterModal>
       )}
 
-      {/* Mobile floating support button */}
+      {/* Mobile floating support button — appears after first scroll */}
       <a
         href="https://ko-fi.com/thegoodifound"
         target="_blank"
         rel="noopener noreferrer"
-        className="md:hidden fixed bottom-6 right-4 z-30 flex items-center gap-2 bg-white border border-rose-200 shadow-lg rounded-full px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 transition-colors"
+        className={`md:hidden fixed bottom-6 right-4 z-30 flex items-center gap-2 bg-white border border-rose-200 shadow-lg rounded-full px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 transition-all duration-300 ${hasScrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
       >
         <span>❤️</span>
         <span>Support the Good</span>
