@@ -278,7 +278,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
             </div>
           ) : (
             <>
-              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${headerCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-48 opacity-100'}`}>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${headerCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-72 opacity-100'}`}>
                 <h1 className="text-[2.43rem] md:text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>
                   {t.siteTitle}
                 </h1>
