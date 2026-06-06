@@ -53,6 +53,8 @@ export default function AdminPage() {
   })
   const [savingContent, setSavingContent] = useState(false)
   const [revalidating, setRevalidating] = useState(false)
+  const [publishedSort, setPublishedSort] = useState<'section' | 'date'>('section')
+  const [publishedSearch, setPublishedSearch] = useState('')
   const [createForm, setCreateForm] = useState<{ title: string; summary: string; content: string; source: string; category: string; externalUrl: string }>({ title: '', summary: '', content: '', source: '', category: SECTIONS[0], externalUrl: '' })
   const [createImageFile, setCreateImageFile] = useState<File | null>(null)
   const [creating, setCreating] = useState(false)
@@ -72,6 +74,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (authed) fetchStories(tab)
+    setPublishedSearch('')
+    setPublishedSort('section')
   }, [authed, tab, fetchStories])
 
   async function callAPI(path: string, body?: object) {
@@ -304,6 +308,27 @@ export default function AdminPage() {
     }
     setPublishing(false)
   }
+
+  const displayedStories = (() => {
+    if (tab !== 'published') return stories
+    const q = publishedSearch.trim().toLowerCase()
+    let list = q
+      ? stories.filter((s) =>
+          s.title.toLowerCase().includes(q) ||
+          (s.summary || '').toLowerCase().includes(q) ||
+          s.source.toLowerCase().includes(q)
+        )
+      : stories
+    if (publishedSort === 'date') {
+      list = [...list].sort((a, b) => {
+        if (!a.site_published_at && !b.site_published_at) return 0
+        if (!a.site_published_at) return 1
+        if (!b.site_published_at) return -1
+        return b.site_published_at.localeCompare(a.site_published_at)
+      })
+    }
+    return list
+  })()
 
   const approvedCount = tab === 'approved' ? stories.length : null
 
@@ -628,9 +653,53 @@ export default function AdminPage() {
           </div>
         ) : (
           <>
-            <p className="text-sm text-gray-400 mb-4">{stories.length} stories</p>
+            {tab === 'published' && (
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm w-64 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
+                  <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    value={publishedSearch}
+                    onChange={(e) => setPublishedSearch(e.target.value)}
+                    placeholder="Search published stories…"
+                    className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none min-w-0"
+                  />
+                  {publishedSearch && (
+                    <button onClick={() => setPublishedSearch('')} className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+                  <button
+                    onClick={() => setPublishedSort('section')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${publishedSort === 'section' ? 'bg-emerald-500 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Section
+                  </button>
+                  <button
+                    onClick={() => setPublishedSort('date')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${publishedSort === 'date' ? 'bg-emerald-500 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Date Published
+                  </button>
+                </div>
+                <p className="text-sm text-gray-400">{displayedStories.length} {displayedStories.length === 1 ? 'story' : 'stories'}</p>
+              </div>
+            )}
+
+            {tab !== 'published' && <p className="text-sm text-gray-400 mb-4">{stories.length} stories</p>}
+
+            {displayedStories.length === 0 && tab === 'published' && publishedSearch && (
+              <div className="text-center text-gray-400 py-16">No stories match &ldquo;{publishedSearch}&rdquo;</div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {stories.map((story) => (
+              {displayedStories.map((story) => (
                 <StoryCard
                   key={story.id}
                   story={story}
