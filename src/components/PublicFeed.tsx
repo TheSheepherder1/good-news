@@ -284,7 +284,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                 </h1>
                 <p className="mt-2 text-gray-600 text-lg">{t.tagline}</p>
                 {localDate && (
-                  <p className="mt-1 text-emerald-600 font-medium text-sm">{localDate}</p>
+                  <p className="mt-1 text-blue-700 font-medium text-sm">{localDate}</p>
                 )}
               </div>
               {(featured || sections.length > 0) && (
