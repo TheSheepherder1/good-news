@@ -227,12 +227,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   }
 
   function handleOpen(story: Story) {
-    if (window.innerWidth >= 768) {
-      window.open(story.url, '_blank', 'noopener,noreferrer')
-    } else {
-      setSheetStory(story)
-      setSheetDisplay({ title: getDisplayTitle(story), summary: getDisplaySummary(story) })
-    }
+    setSheetStory(story)
+    setSheetDisplay({ title: getDisplayTitle(story), summary: getDisplaySummary(story) })
   }
 
   function openMobileSearch() {
