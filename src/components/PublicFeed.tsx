@@ -122,8 +122,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   useEffect(() => {
     const THRESHOLD = 12
     function handleScroll() {
-      if (window.innerWidth >= 768) return
-      if (isTransitioning.current) return // ignore scroll during animation
+      if (isTransitioning.current) return
       const current = window.scrollY
       const diff = current - lastScrollY.current
       lastScrollY.current = current
@@ -142,16 +141,6 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
         if (scrollDelta.current > THRESHOLD) {
           isTransitioning.current = true
           setHeaderCollapsed(true)
-          scrollDelta.current = 0
-          setTimeout(() => { isTransitioning.current = false }, 350)
-        }
-      } else if (diff < 0) {
-        const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 60
-        if (nearBottom) return
-        scrollDelta.current = Math.min(0, scrollDelta.current) + diff
-        if (scrollDelta.current < -THRESHOLD) {
-          isTransitioning.current = true
-          setHeaderCollapsed(false)
           scrollDelta.current = 0
           setTimeout(() => { isTransitioning.current = false }, 350)
         }
@@ -261,7 +250,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
       <ArticleSheet story={sheetStory} onClose={() => { setSheetStory(null); setSheetDisplay(null) }} displayTitle={sheetDisplay?.title} displaySummary={sheetDisplay?.summary} />
 
       <div ref={headerRef} className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(200, 221, 230, 0.95)' }}>
-        <header className={`max-w-7xl mx-auto px-4 pb-4 md:pt-10 md:pb-6 text-center transition-all duration-300 ${headerCollapsed ? 'pt-2' : 'pt-5'}`}>
+        <header className={`max-w-7xl mx-auto px-4 text-center transition-all duration-300 ${headerCollapsed ? 'pt-2 pb-4' : 'pt-5 pb-4 md:pt-10 md:pb-6'}`}>
 
           {/* Mobile: search bar open */}
           {mobileSearchOpen ? (
@@ -293,7 +282,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
             </div>
           ) : (
             <>
-              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${headerCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-48 opacity-100'} md:max-h-48 md:opacity-100`}>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${headerCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-48 opacity-100'}`}>
                 <h1 className="text-[2.43rem] md:text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>
                   {t.siteTitle}
                 </h1>
