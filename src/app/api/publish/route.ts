@@ -10,13 +10,13 @@ export async function POST(req: NextRequest) {
 
   const { mode } = await req.json() as { mode: 'replace' | 'add' }
 
-  // Replace mode: delete all currently published stories first
+  // Replace mode: archive currently published stories (kept for dedup, not deleted)
   if (mode === 'replace') {
-    const { error: deleteError } = await supabaseAdmin
+    const { error: archiveError } = await supabaseAdmin
       .from('stories')
-      .delete()
+      .update({ status: 'archived', is_featured: false })
       .eq('status', 'published')
-    if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
+    if (archiveError) return NextResponse.json({ error: archiveError.message }, { status: 500 })
   }
 
   // Move all approved → published

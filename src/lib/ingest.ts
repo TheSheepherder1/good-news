@@ -141,9 +141,9 @@ Be strict about politics — even indirect political stories should be rejected.
 }
 
 export async function runIngestion(): Promise<{ fetched: number; inserted: number; skipped: number }> {
-  // Keep pending stories — new fetch adds to the queue rather than replacing it
-  // Clear skipped and non-custom approved from previous session
-  await supabaseAdmin.from('stories').delete().in('status', ['skipped'])
+  // Keep pending, skipped, published, rejected, and archived stories — they all
+  // participate in URL deduplication so previously-seen articles never reappear.
+  // Only clear non-custom approved from the previous session (custom approved persist).
   await supabaseAdmin.from('stories').delete().in('status', ['approved']).eq('is_custom', false)
 
   const feedResults = await Promise.allSettled(RSS_FEEDS.map(fetchFeed))
