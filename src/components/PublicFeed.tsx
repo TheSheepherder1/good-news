@@ -409,11 +409,11 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                 href="https://ko-fi.com/thegoodifound"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden md:flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-rose-100 py-4 px-6 shadow-sm hover:bg-white/60 hover:border-rose-200 transition-all group"
+                className="hidden md:flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-blue-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-blue-200 transition-all group -my-8"
               >
                 <span className="text-rose-500 text-lg">❤️</span>
-                <span className="text-gray-500 text-sm">Enjoying the good news?</span>
-                <span className="text-rose-500 font-semibold text-sm group-hover:text-rose-600 transition-colors">Support the Good →</span>
+                <span className="text-blue-700 text-sm">Enjoying the good news?</span>
+                <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">Support the Good →</span>
               </a>
             )}
 
@@ -443,11 +443,11 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                     href="https://ko-fi.com/thegoodifound"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hidden md:flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-rose-100 py-4 px-6 shadow-sm hover:bg-white/60 hover:border-rose-200 transition-all group"
+                    className="hidden md:flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-blue-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-blue-200 transition-all group -my-8"
                   >
                     <span className="text-rose-500 text-lg">❤️</span>
-                    <span className="text-gray-500 text-sm">Enjoying the good news?</span>
-                    <span className="text-rose-500 font-semibold text-sm group-hover:text-rose-600 transition-colors">Support the Good →</span>
+                    <span className="text-blue-700 text-sm">Enjoying the good news?</span>
+                    <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">Support the Good →</span>
                   </a>
                 )}
               </React.Fragment>
