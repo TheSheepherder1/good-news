@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import StoryCard from '@/components/StoryCard'
 import { type Story } from '@/lib/supabase'
 import { SECTIONS } from '@/lib/sections'
@@ -53,8 +53,13 @@ export default function AdminPage() {
   })
   const [savingContent, setSavingContent] = useState(false)
   const [revalidating, setRevalidating] = useState(false)
-  const [publishedSort, setPublishedSort] = useState<'section' | 'date'>('section')
   const [publishedSearch, setPublishedSearch] = useState('')
+  const [selectedSections, setSelectedSections] = useState<string[]>([])
+  const [selectedDates, setSelectedDates] = useState<string[]>([])
+  const [sectionDropdownOpen, setSectionDropdownOpen] = useState(false)
+  const [dateDropdownOpen, setDateDropdownOpen] = useState(false)
+  const sectionDropdownRef = useRef<HTMLDivElement>(null)
+  const dateDropdownRef = useRef<HTMLDivElement>(null)
   const [createForm, setCreateForm] = useState<{ title: string; summary: string; content: string; source: string; category: string; externalUrl: string }>({ title: '', summary: '', content: '', source: '', category: SECTIONS[0], externalUrl: '' })
   const [createImageFile, setCreateImageFile] = useState<File | null>(null)
   const [creating, setCreating] = useState(false)
@@ -75,8 +80,30 @@ export default function AdminPage() {
   useEffect(() => {
     if (authed) fetchStories(tab)
     setPublishedSearch('')
-    setPublishedSort('section')
+    setSelectedSections([])
+    setSelectedDates([])
+    setSectionDropdownOpen(false)
+    setDateDropdownOpen(false)
   }, [authed, tab, fetchStories])
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (sectionDropdownRef.current && !sectionDropdownRef.current.contains(e.target as Node)) {
+        setSectionDropdownOpen(false)
+      }
+      if (dateDropdownRef.current && !dateDropdownRef.current.contains(e.target as Node)) {
+        setDateDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const availableSections = CATEGORY_ORDER.filter((cat) => stories.some((s) => s.category === cat))
+
+  const availableDates = [...new Set(
+    stories.filter((s) => s.site_published_at).map((s) => s.site_published_at!.split('T')[0])
+  )].sort().reverse()
 
   async function callAPI(path: string, body?: object) {
     return fetch(path, {
@@ -311,21 +338,23 @@ export default function AdminPage() {
 
   const displayedStories = (() => {
     if (tab !== 'published') return stories
-    const q = publishedSearch.trim().toLowerCase()
-    let list = q
-      ? stories.filter((s) =>
-          s.title.toLowerCase().includes(q) ||
-          (s.summary || '').toLowerCase().includes(q) ||
-          s.source.toLowerCase().includes(q)
-        )
-      : stories
-    if (publishedSort === 'date') {
-      list = [...list].sort((a, b) => {
-        if (!a.site_published_at && !b.site_published_at) return 0
-        if (!a.site_published_at) return 1
-        if (!b.site_published_at) return -1
-        return b.site_published_at.localeCompare(a.site_published_at)
+    let list = stories
+    if (selectedSections.length > 0) {
+      list = list.filter((s) => s.category && selectedSections.includes(s.category))
+    }
+    if (selectedDates.length > 0) {
+      list = list.filter((s) => {
+        if (!s.site_published_at) return false
+        return selectedDates.includes(s.site_published_at.split('T')[0])
       })
+    }
+    const q = publishedSearch.trim().toLowerCase()
+    if (q) {
+      list = list.filter((s) =>
+        s.title.toLowerCase().includes(q) ||
+        (s.summary || '').toLowerCase().includes(q) ||
+        s.source.toLowerCase().includes(q)
+      )
     }
     return list
   })()
@@ -655,6 +684,7 @@ export default function AdminPage() {
           <>
             {tab === 'published' && (
               <div className="flex flex-wrap items-center gap-3 mb-4">
+                {/* Search */}
                 <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm w-64 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
                   <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
@@ -674,28 +704,103 @@ export default function AdminPage() {
                     </button>
                   )}
                 </div>
-                <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+
+                {/* Section filter */}
+                <div ref={sectionDropdownRef} className="relative">
                   <button
-                    onClick={() => setPublishedSort('section')}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${publishedSort === 'section' ? 'bg-emerald-500 text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => { setSectionDropdownOpen((v) => !v); setDateDropdownOpen(false) }}
+                    className={`flex items-center gap-2 border rounded-lg px-3 py-2 text-sm font-medium shadow-sm transition-colors ${
+                      selectedSections.length > 0
+                        ? 'bg-emerald-500 text-white border-emerald-500'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300'
+                    }`}
                   >
-                    Section
+                    Section{selectedSections.length > 0 ? ` (${selectedSections.length})` : ''}
+                    <svg className="w-4 h-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
                   </button>
-                  <button
-                    onClick={() => setPublishedSort('date')}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${publishedSort === 'date' ? 'bg-emerald-500 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    Date Published
-                  </button>
+                  {sectionDropdownOpen && availableSections.length > 0 && (
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 min-w-[180px] py-1">
+                      {availableSections.map((section) => (
+                        <label key={section} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={selectedSections.includes(section)}
+                            onChange={() =>
+                              setSelectedSections((prev) =>
+                                prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]
+                              )
+                            }
+                            className="rounded text-emerald-500 focus:ring-emerald-400"
+                          />
+                          {section}
+                        </label>
+                      ))}
+                      {selectedSections.length > 0 && (
+                        <button
+                          onClick={() => setSelectedSections([])}
+                          className="w-full text-left px-3 py-2 text-xs text-gray-400 hover:text-red-500 border-t border-gray-100 mt-1 transition-colors"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
+
+                {/* Date Published filter */}
+                <div ref={dateDropdownRef} className="relative">
+                  <button
+                    onClick={() => { setDateDropdownOpen((v) => !v); setSectionDropdownOpen(false) }}
+                    className={`flex items-center gap-2 border rounded-lg px-3 py-2 text-sm font-medium shadow-sm transition-colors ${
+                      selectedDates.length > 0
+                        ? 'bg-emerald-500 text-white border-emerald-500'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300'
+                    }`}
+                  >
+                    Date Published{selectedDates.length > 0 ? ` (${selectedDates.length})` : ''}
+                    <svg className="w-4 h-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {dateDropdownOpen && availableDates.length > 0 && (
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 min-w-[180px] py-1">
+                      {availableDates.map((dateKey) => (
+                        <label key={dateKey} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={selectedDates.includes(dateKey)}
+                            onChange={() =>
+                              setSelectedDates((prev) =>
+                                prev.includes(dateKey) ? prev.filter((d) => d !== dateKey) : [...prev, dateKey]
+                              )
+                            }
+                            className="rounded text-emerald-500 focus:ring-emerald-400"
+                          />
+                          {new Date(dateKey + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </label>
+                      ))}
+                      {selectedDates.length > 0 && (
+                        <button
+                          onClick={() => setSelectedDates([])}
+                          className="w-full text-left px-3 py-2 text-xs text-gray-400 hover:text-red-500 border-t border-gray-100 mt-1 transition-colors"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <p className="text-sm text-gray-400">{displayedStories.length} {displayedStories.length === 1 ? 'story' : 'stories'}</p>
               </div>
             )}
 
             {tab !== 'published' && <p className="text-sm text-gray-400 mb-4">{stories.length} stories</p>}
 
-            {displayedStories.length === 0 && tab === 'published' && publishedSearch && (
-              <div className="text-center text-gray-400 py-16">No stories match &ldquo;{publishedSearch}&rdquo;</div>
+            {displayedStories.length === 0 && tab === 'published' && (publishedSearch || selectedSections.length > 0 || selectedDates.length > 0) && (
+              <div className="text-center text-gray-400 py-16">No stories match the current filters.</div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
