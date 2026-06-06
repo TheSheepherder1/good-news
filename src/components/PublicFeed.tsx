@@ -428,10 +428,18 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
       </section>
 
       <footer className="border-t border-gray-200 mt-4 py-6 text-center text-xs text-gray-400 px-4 flex flex-col gap-3">
-        <div className="flex justify-center gap-6">
+        <div className="flex justify-center gap-6 flex-wrap">
           <button onClick={openAboutModal} className="hover:text-emerald-600 transition-colors font-medium">{t.about}</button>
           <button onClick={() => setModal('ai-policy')} className="hover:text-emerald-600 transition-colors font-medium">{t.aiPolicy}</button>
           <button onClick={() => setModal('advertising')} className="hover:text-emerald-600 transition-colors font-medium">{t.advertisingPolicy}</button>
+          <a
+            href="https://ko-fi.com/thegoodifound"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-rose-500 transition-colors font-medium"
+          >
+            Support Us ❤️
+          </a>
         </div>
         <p>{t.footerCopyright}</p>
       </footer>
