@@ -1,4 +1,4 @@
-export type Language = 'en' | 'zh' | 'de' | 'nl' | 'es' | 'fr' | 'pl' | 'pt' | 'sr'
+export type Language = 'en' | 'zh' | 'de' | 'nl' | 'es' | 'fr' | 'ja' | 'pl' | 'pt' | 'sr'
 
 export const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'en', label: 'English' },
@@ -7,6 +7,7 @@ export const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'nl', label: 'Nederlands' },
   { code: 'es', label: 'Español' },
   { code: 'fr', label: 'Français' },
+  { code: 'ja', label: '日本語' },
   { code: 'pl', label: 'Polski' },
   { code: 'pt', label: 'Português' },
   { code: 'sr', label: 'Srpski' },
@@ -197,6 +198,27 @@ export const UI: Record<Language, UIStrings> = {
       'Animals': 'Animais', 'Good News': 'Boas Notícias', 'Science': 'Ciência', 'Health': 'Saúde',
       'Environment': 'Meio Ambiente', 'Culture': 'Cultura', 'Art': 'Arte',
       'Humanity': 'Humanidade', 'Space': 'Espaço', 'Sports': 'Esportes', 'Technology': 'Tecnologia',
+    },
+  },
+  ja: {
+    siteTitle: '私が見つけた良いこと',
+    tagline: '世界中の優しさ、進歩、希望の物語',
+    brightSpot: '今日のハイライト',
+    searchPlaceholder: '記事を検索…',
+    topOfPage: 'ページトップ',
+    sections: 'セクション',
+    sourcePrefix: '出典：',
+    noStories: 'まだ記事がありません — またご覧ください！',
+    noResults: (q) => `「${q}」に一致する記事が見つかりませんでした`,
+    resultCount: (n, q) => `「${q}」に一致する記事が ${n} 件あります`,
+    about: 'このサイトについて',
+    aiPolicy: 'AIポリシー',
+    advertisingPolicy: '広告ポリシー',
+    footerCopyright: 'すべての記事はそれぞれの発行者に帰属します。私が見つけた良いことは元の情報源へのリンクを提供するのみで、コンテンツの所有権を主張しません。',
+    categories: {
+      'Animals': '動物', 'Good News': '良いニュース', 'Science': '科学', 'Health': '健康',
+      'Environment': '環境', 'Culture': '文化', 'Art': '芸術',
+      'Humanity': '人間性', 'Space': '宇宙', 'Sports': 'スポーツ', 'Technology': 'テクノロジー',
     },
   },
   sr: {
