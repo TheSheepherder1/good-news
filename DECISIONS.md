@@ -1,7 +1,9 @@
 # The Good I Found — Project Decisions
 
 ## Project Overview
-A daily curated good-news website. Stories are fetched from 35 RSS feeds across the globe, filtered by AI for positivity and politics, reviewed by the admin, and published to the public site.
+A daily curated good-news website, live at **www.thegoodifound.com**. Stories are fetched from 35 RSS feeds across the globe, filtered by AI for positivity and politics, reviewed by the admin, and published to the public site. Human-in-the-loop: nothing publishes automatically. Supports 5 languages, search, mobile slide-up reader, custom hand-written stories, and admin-editable footer content.
+
+**To resume work in a fresh conversation:** read this whole file, then continue. It is the source of truth for the project's state and decisions.
 
 ---
 
@@ -28,17 +30,18 @@ Stories are never published automatically. The flow is:
 3. Admin clicks Publish → choose replace or add to public page → `published`
 
 ### Story statuses
-- `pending` — fetched, awaiting admin review
+- `pending` — fetched, awaiting admin review; persists across fetches (new stories added to queue)
 - `approved` — admin approved, not yet published; custom stories survive fetch clears
-- `skipped` — admin passed on (can be rescued)
+- `skipped` — admin passed on (can be rescued); **never deleted** — kept permanently for dedup
 - `published` — live on public site
+- `archived` — formerly published, rotated out via Replace-publish; **never deleted** — kept for dedup
 - `rejected` — AI filtered out (kept for deduplication, never shown)
 
 ### Session clearing on fetch
-Each new fetch clears `pending`, `skipped`, and non-custom `approved` stories. Custom stories in `approved` survive fetches. `published` and `rejected` are never deleted by fetch.
+Each new fetch clears ONLY non-custom `approved` stories from the previous session. Everything else persists: `pending` (new stories added to existing queue), `skipped`, `published`, `archived`, `rejected`, and custom `approved`. This keeps the dedup memory permanent.
 
 ### Deduplication — two layers
-1. **URL exact match** — same URL never inserted twice
+1. **URL exact match** — checks the ENTIRE stories table (all statuses) so any previously-seen article URL is permanently blocked. Insert uses `upsert` with `ignoreDuplicates: true` (onConflict: url) so dup URLs are silently skipped, never error.
 2. **Title similarity** — normalized title word overlap ≥60% treated as duplicate; curated sources win ties; checked against last 14 days of DB stories
 
 ### AI filtering (Claude Haiku)
@@ -63,14 +66,14 @@ Humanity → Culture → Art → Health → Animals → Science → Good News �
 
 ### Publish modes
 When clicking "Publish Stories" the admin chooses:
-- **Replace** — deletes all current `published` stories, replaces with today's `approved`
+- **Replace** — moves all current `published` stories to `archived` (kept for dedup, not deleted), then publishes today's `approved`
 - **Add** — keeps existing `published` stories, adds today's `approved` alongside
 
 ### Refresh Site button
 Admin header has a **Refresh Site** button that calls `/api/revalidate` to immediately clear the Next.js page cache, making published changes visible without waiting for the 2-minute revalidation window.
 
 ### Featured story (Today's Bright Spot)
-One story can be marked as Featured. It appears inside a frosted panel with a thick gold border (`#F0B429`) above all category sections. Image in left 1/3 column, content in right 2/3 on desktop; image at top on mobile. Can be changed from Approved and Published tabs. Subtitle: "Today's Bright Spot" in bright gold, with "Good things are happening every day." below in emerald green (removed — was crowding).
+One story can be marked as Featured. It appears inside a frosted panel with a thick gold border (`#F0B429`) above all category sections. Image in left 1/3 column, content in right 2/3 on desktop; image at top on mobile. Can be changed from Approved and Published tabs. Header label "Today's Bright Spot" in bright gold (`#F0B429`), 1.35rem, uppercase.
 
 ### Custom story creator
 Admin can create their own stories via the **Create Story** button in the admin header. Two types:
@@ -98,10 +101,16 @@ Animals, Art, Culture, Environment, Good News, Health, Humanity, Science, Space,
 Admin can edit the title and body text of the **About**, **AI Policy**, and **Advertising Policy** modals via **Edit Content** in the admin header. Content stored in `site_settings` Supabase table. Toolbar supports **Bold** (`**text**`), *Italic* (`*text*`), and bullet points (`- item`). Paragraphs separated by blank lines. Changes go live after clicking **Refresh Site**.
 
 ### Mobile article sheet
-On mobile, tapping a story card opens a slide-up bottom sheet showing the image, full summary, and a "Read Full Article" button (new tab). Swipe down or tap X to close. Desktop also opens in new tab.
+On mobile, tapping a story card opens a slide-up bottom sheet showing the image, full summary (translated to selected language), and a "Read Full Article" button (new tab). Swipe down or tap X to close. Desktop also opens in new tab.
 
 ### Sticky header (all screen sizes)
 Header sticks to top on both mobile and desktop. Section nav uses dynamic scroll offset — measures actual header height at click time to handle varying heights across languages.
+
+### Collapsing mobile header
+On mobile only, scrolling DOWN collapses the title/tagline/date away (smooth transition), leaving just the controls strip (Sections, Language, Search). Scrolling UP expands it back. Requires 12px consistent scroll before toggling and locks during the 350ms transition to prevent Android scroll-shake. Desktop header never collapses.
+
+### Header date
+Shows the VIEWER's local date (their timezone), computed client-side via `toLocaleDateString` in a `useEffect`. Not the server/UTC date.
 
 ### Sections dropdown
 Dynamically populated from whichever categories have published stories that day. Includes "Top of Page" as the first option always. Labels translate with selected language.
@@ -113,10 +122,12 @@ Client-side filtering by title, summary, and source. Desktop: always-visible sea
 5 languages: English, Español, Français, Deutsch, Srpski. Static UI strings pre-translated in `src/lib/translations.ts`. Story content translated via Google Translate through `/api/translate` server route. About modal content also translates dynamically. Cached per session. Card sizes consistent with `line-clamp-2` titles and `line-clamp-3` summaries.
 
 ### Visual design
-- **Background:** linear gradient top-to-bottom `#c8e6dd` → `#f8fbfa`
-- **Section panels:** `bg-white/50 backdrop-blur-sm rounded-3xl` frosted glass containers
-- **Section headers:** `text-emerald-800`, 18px, uppercase, tracking-widest
-- **Today's Bright Spot:** bright gold `#F0B429`, 1.35rem, uppercase; featured card has 4px gold border
+- **Background:** linear gradient top-to-bottom soft blue `#c8dde6` → near-white `#f8fbfa` (set in `page.tsx`; sticky header bg matches at `rgba(200,221,230,0.95)`)
+- **Section panels:** `bg-white/50 backdrop-blur-sm rounded-3xl` frosted glass containers, `gap-16` between sections
+- **Section headers:** `text-emerald-800`, 18px (`text-lg`), uppercase, tracking-widest
+- **Today's Bright Spot:** bright gold `#F0B429`, 1.35rem, uppercase; featured card has 4px gold border, sits in its own frosted panel
+- **Site title:** Merriweather Bold, 2.43rem mobile / 2.7rem desktop
+- **Tagline:** `text-gray-600`
 - **Layout:** max-width 1280px (`max-w-7xl`), 3-column card grid on desktop
 
 ### Layout width
@@ -126,12 +137,14 @@ Max width `max-w-7xl` (1280px) on both public site and admin. 3-column card grid
 Three modal links: **About**, **AI Policy**, **Advertising Policy**. Content editable from admin. About modal content translates to selected language.
 
 ### SEO
+- Canonical domain is `https://www.thegoodifound.com` (www) — non-www 307-redirects to www on Vercel. All metadata, sitemap, robots, JSON-LD use www.
 - Rich metadata with 15 keywords in `layout.tsx`
 - Open Graph + Twitter Card tags
 - JSON-LD structured data (WebSite schema)
-- Sitemap at `/sitemap.xml`
-- robots.txt (blocks `/admin`)
-- OG image generated via `opengraph-image.tsx` (basic — redesign is a to-do)
+- **Sitemap is a STATIC file** at `public/sitemap.xml` (the dynamic `src/app/sitemap.ts` was removed — static is more reliable for Google). Update it manually only if permanent pages are added.
+- robots.txt via `src/app/robots.ts` (blocks `/admin`, points to www sitemap)
+- OG image generated via `opengraph-image.tsx` (tagline forced to one line; basic — redesign is a to-do)
+- Google Search Console verified via `public/google2deb88195915a625.html`. Both www and non-www properties added.
 
 ---
 
@@ -223,7 +236,7 @@ stories (
   published_at timestamptz,  -- RSS article date
   fetched_at timestamptz,    -- when we pulled it
   approved_at timestamptz,   -- when admin approved
-  status text,               -- pending/approved/skipped/published/rejected
+  status text,               -- pending/approved/skipped/published/rejected/archived
   ai_score integer,          -- 1-10
   ai_reason text,
   image_url text,
@@ -231,6 +244,8 @@ stories (
   is_featured boolean default false,
   is_custom boolean default false
 )
+-- status check constraint allows: pending, approved, skipped, published, rejected, archived
+-- unique partial index enforces only one is_featured = true at a time
 
 site_settings (
   key text primary key,      -- about_title, about_text, ai_policy_title, etc.
@@ -253,11 +268,13 @@ RLS enabled on both tables. `stories`: public SELECT where status = `published`.
 
 ## Deployment
 - **Repo:** https://github.com/TheSheepherder1/good-news
-- **Live site:** https://thegoodifound.com
-- **Admin:** https://thegoodifound.com/admin
+- **Live site:** https://www.thegoodifound.com (canonical, www)
+- **Admin:** https://www.thegoodifound.com/admin
 - **Vercel URL:** https://good-news-ten-teal.vercel.app
-- **Domain registrar:** GoDaddy — DNS pointed to Vercel (A record + CNAME)
+- **Domain registrar:** GoDaddy — DNS pointed to Vercel; www is primary, non-www 307-redirects to www
 - Auto-deploys on push to `main`
+- **Env vars (Vercel):** NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY, ADMIN_PASSWORD (= `Zilazeos1!`)
+- **Supabase Storage:** public bucket `featured-images` for all uploaded images
 
 ---
 
