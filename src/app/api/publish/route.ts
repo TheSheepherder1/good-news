@@ -19,10 +19,10 @@ export async function POST(req: NextRequest) {
     if (archiveError) return NextResponse.json({ error: archiveError.message }, { status: 500 })
   }
 
-  // Move all approved → published
+  // Move all approved → published, stamping the publish time
   const { data, error } = await supabaseAdmin
     .from('stories')
-    .update({ status: 'published' })
+    .update({ status: 'published', site_published_at: new Date().toISOString() })
     .eq('status', 'approved')
     .select('id')
 

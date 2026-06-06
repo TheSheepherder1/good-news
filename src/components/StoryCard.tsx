@@ -89,6 +89,12 @@ export default function StoryCard({ story, displayTitle, displaySummary, sourceP
           <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">{summary}</p>
         )}
 
+        {adminMode && tab === 'published' && story.site_published_at && (
+          <p className="text-xs text-gray-400">
+            Published {new Date(story.site_published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+          </p>
+        )}
+
         {adminMode && story.ai_reason && (
           <p className="text-xs text-indigo-500 italic">AI: {story.ai_reason} (score: {story.ai_score}/10)</p>
         )}

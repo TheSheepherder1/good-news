@@ -242,7 +242,8 @@ stories (
   image_url text,
   category text,
   is_featured boolean default false,
-  is_custom boolean default false
+  is_custom boolean default false,
+  site_published_at timestamptz  -- when admin clicked Publish (not the RSS article date)
 )
 -- status check constraint allows: pending, approved, skipped, published, rejected, archived
 -- unique partial index enforces only one is_featured = true at a time
@@ -284,6 +285,8 @@ RLS enabled on both tables. `stories`: public SELECT where status = `published`.
 3. **Desktop article panel** — show a slide-up panel on desktop (like mobile sheet) with image, summary, and "Read Full Article" button. Keeps users on site longer.
 4. **AI Policy content** — write and add via Edit Content in admin
 5. **Advertising Policy content** — write and add via Edit Content in admin
-6. **Submit sitemap to Google Search Console** — both www and non-www properties added; try submitting `https://www.thegoodifound.com/sitemap.xml` on each property (Google keeps returning "couldn't fetch" — retry needed)
-7. **Donations via Ko-fi** — set up free Ko-fi account (takes 0% of donations), then add a "Support The Good I Found ❤️" link in the footer alongside About/AI Policy links. No popups or interruptions — subtle and honest. Consider a small floating heart button as well. No ads ever.
-8. **Daily DB cleanup job** — automatically delete stories older than 30 days (by `fetched_at`), EXCEPT keep `published` and custom stories. Keeps the database reasonably sized. The 30-day window is long enough that aged-out RSS articles won't realistically reappear as duplicates (feeds rarely re-serve articles older than a month). Run via a scheduled job (Vercel cron). Note: this loosens permanent dedup slightly for very old skipped/archived stories, which is an acceptable trade-off.
+6. **Donations via Ko-fi** — set up free Ko-fi account (takes 0% of donations), then add a "Support The Good I Found ❤️" link in the footer alongside About/AI Policy links. No popups or interruptions — subtle and honest. Consider a small floating heart button as well. No ads ever.
+7. ~~**Daily DB cleanup job**~~ — DONE. `/api/cleanup` hard-deletes stories where `fetched_at` > 30 days old, excluding `published` and custom stories. Runs daily at 6am UTC via Vercel cron (`vercel.json`). Secured with `CRON_SECRET` env var.
+8. ~~**Published date per article (admin only)**~~ — DONE. `site_published_at` column added; set at publish time; shown on Published tab cards only.
+9. **Sort-by on Published tab (admin only)** — add a sort control on the Published tab so admin can sort cards by: Section (alphabetical) or Date Published. Default order stays as-is (current public page order by ai_score).
+10. **Mobile app (React Native / Expo)** — build iOS and Android apps that read published stories from the same Supabase database. Admin stays as-is on the web; no separate sync needed — publishing via admin is already the sync. App needs: card feed by section, slide-up story reader, search, language/translation, and section navigation. Supabase React Native SDK handles data. Rewrite UI in React Native components (no Tailwind); logic and data layer port almost directly from the web app.

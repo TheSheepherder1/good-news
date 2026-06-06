@@ -25,4 +25,5 @@ export type Story = {
   is_featured: boolean
   is_custom: boolean
   content: string | null
+  site_published_at: string | null
 }
