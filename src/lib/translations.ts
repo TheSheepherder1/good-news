@@ -27,6 +27,9 @@ export type UIStrings = {
   about: string
   aiPolicy: string
   advertisingPolicy: string
+  enjoyingGoodNews: string
+  supportUs: string
+  supportTheGood: string
   footerCopyright: string
   categories: Record<string, string>
 }
@@ -46,6 +49,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'About',
     aiPolicy: 'AI Policy',
     advertisingPolicy: 'Advertising Policy',
+    enjoyingGoodNews: 'Enjoying the Good News?',
+    supportUs: 'Support Us ❤️',
+    supportTheGood: 'Support the Good',
     footerCopyright: 'All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.',
     categories: {
       'Animals': 'Animals', 'Good News': 'Good News', 'Science': 'Science', 'Health': 'Health',
@@ -67,6 +73,9 @@ export const UI: Record<Language, UIStrings> = {
     about: '关于',
     aiPolicy: 'AI政策',
     advertisingPolicy: '广告政策',
+    enjoyingGoodNews: '喜欢好消息吗？',
+    supportUs: '支持我们 ❤️',
+    supportTheGood: '支持美好',
     footerCopyright: '所有故事版权归各自出版商所有。我发现的美好仅整理原始来源的链接，不主张对任何内容拥有所有权。',
     categories: {
       'Animals': '动物', 'Good News': '好消息', 'Science': '科学', 'Health': '健康',
@@ -88,6 +97,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'Über uns',
     aiPolicy: 'KI-Richtlinie',
     advertisingPolicy: 'Werberichtlinie',
+    enjoyingGoodNews: 'Gefallen Ihnen die guten Nachrichten?',
+    supportUs: 'Unterstützen ❤️',
+    supportTheGood: 'Das Gute unterstützen',
     footerCopyright: 'Alle Geschichten © ihre jeweiligen Verlage. The Good I Found kuratiert Links zu Originalquellen und beansprucht kein Eigentum an Inhalten.',
     categories: {
       'Good News': 'Gute Nachrichten', 'Science': 'Wissenschaft', 'Health': 'Gesundheit',
@@ -109,6 +121,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'Over ons',
     aiPolicy: 'AI-beleid',
     advertisingPolicy: 'Advertentiebeleid',
+    enjoyingGoodNews: 'Geniet u van het goede nieuws?',
+    supportUs: 'Steun ons ❤️',
+    supportTheGood: 'Steun het Goede',
     footerCopyright: 'Alle verhalen © hun respectieve uitgevers. Het Goede dat ik Vond verzamelt links naar originele bronnen en claimt geen eigendom van enige inhoud.',
     categories: {
       'Animals': 'Dieren', 'Good News': 'Goed Nieuws', 'Science': 'Wetenschap', 'Health': 'Gezondheid',
@@ -130,6 +145,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'Acerca de',
     aiPolicy: 'Política de IA',
     advertisingPolicy: 'Política de Publicidad',
+    enjoyingGoodNews: '¿Disfrutas las buenas noticias?',
+    supportUs: 'Apóyanos ❤️',
+    supportTheGood: 'Apoya el Bien',
     footerCopyright: 'Todas las historias © sus respectivos editores. The Good I Found selecciona enlaces a fuentes originales y no reclama la propiedad de ningún contenido.',
     categories: {
       'Good News': 'Buenas Noticias', 'Science': 'Ciencia', 'Health': 'Salud',
@@ -151,6 +169,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'À propos',
     aiPolicy: 'Politique IA',
     advertisingPolicy: 'Politique Publicitaire',
+    enjoyingGoodNews: 'Vous aimez les bonnes nouvelles ?',
+    supportUs: 'Soutenez-nous ❤️',
+    supportTheGood: 'Soutenir le Bien',
     footerCopyright: "Toutes les histoires © leurs éditeurs respectifs. The Good I Found sélectionne des liens vers des sources originales et ne revendique aucun droit sur le contenu.",
     categories: {
       'Good News': 'Bonnes Nouvelles', 'Science': 'Science', 'Health': 'Santé',
@@ -172,6 +193,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'O nas',
     aiPolicy: 'Polityka AI',
     advertisingPolicy: 'Polityka reklamowa',
+    enjoyingGoodNews: 'Podoba Ci się dobre wiadomości?',
+    supportUs: 'Wesprzyj nas ❤️',
+    supportTheGood: 'Wesprzyj Dobro',
     footerCopyright: 'Wszystkie historie © ich odpowiednich wydawców. Dobro, które Znalazłem gromadzi linki do oryginalnych źródeł i nie rości sobie praw do żadnych treści.',
     categories: {
       'Animals': 'Zwierzęta', 'Good News': 'Dobre Wiadomości', 'Science': 'Nauka', 'Health': 'Zdrowie',
@@ -193,6 +217,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'Sobre',
     aiPolicy: 'Política de IA',
     advertisingPolicy: 'Política de Publicidade',
+    enjoyingGoodNews: 'Gostando das boas notícias?',
+    supportUs: 'Apoie-nos ❤️',
+    supportTheGood: 'Apoie o Bem',
     footerCopyright: 'Todas as histórias © seus respectivos editores. O Bem que Encontrei coleciona links para fontes originais e não reivindica a propriedade de nenhum conteúdo.',
     categories: {
       'Animals': 'Animais', 'Good News': 'Boas Notícias', 'Science': 'Ciência', 'Health': 'Saúde',
@@ -214,6 +241,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'このサイトについて',
     aiPolicy: 'AIポリシー',
     advertisingPolicy: '広告ポリシー',
+    enjoyingGoodNews: '良いニュースを楽しんでいますか？',
+    supportUs: 'サポートする ❤️',
+    supportTheGood: '良いことを応援する',
     footerCopyright: 'すべての記事はそれぞれの発行者に帰属します。私が見つけた良いことは元の情報源へのリンクを提供するのみで、コンテンツの所有権を主張しません。',
     categories: {
       'Animals': '動物', 'Good News': '良いニュース', 'Science': '科学', 'Health': '健康',
@@ -235,6 +265,9 @@ export const UI: Record<Language, UIStrings> = {
     about: 'O nama',
     aiPolicy: 'AI politika',
     advertisingPolicy: 'Politika oglašavanja',
+    enjoyingGoodNews: 'Uživate u dobrim vestima?',
+    supportUs: 'Podržite nas ❤️',
+    supportTheGood: 'Podržite Dobro',
     footerCopyright: 'Sve priče © njihovi odgovarajući izdavači. The Good I Found prikuplja veze do originalnih izvora i ne tvrdi vlasništvo nad sadržajem.',
     categories: {
       'Good News': 'Dobre vesti', 'Science': 'Nauka', 'Health': 'Zdravlje',

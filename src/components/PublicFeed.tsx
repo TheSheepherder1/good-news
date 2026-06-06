@@ -399,8 +399,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                 className="hidden md:flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-blue-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-blue-200 transition-all group -my-8"
               >
                 <span className="text-rose-500 text-lg">❤️</span>
-                <span className="text-blue-700 text-sm">Enjoying the good news?</span>
-                <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">Support the Good →</span>
+                <span className="text-blue-700 text-sm">{t.enjoyingGoodNews}</span>
+                <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">{t.supportTheGood} →</span>
               </a>
             )}
 
@@ -433,8 +433,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                     className="hidden md:flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-blue-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-blue-200 transition-all group -my-8"
                   >
                     <span className="text-rose-500 text-lg">❤️</span>
-                    <span className="text-blue-700 text-sm">Enjoying the good news?</span>
-                    <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">Support the Good →</span>
+                    <span className="text-blue-700 text-sm">{t.enjoyingGoodNews}</span>
+                    <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">{t.supportTheGood} →</span>
                   </a>
                 )}
               </React.Fragment>
@@ -458,7 +458,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
             rel="noopener noreferrer"
             className="hover:text-rose-500 transition-colors font-medium"
           >
-            Support Us ❤️
+            {t.supportUs}
           </a>
         </div>
         <p>{t.footerCopyright}</p>
@@ -498,7 +498,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
         className={`md:hidden fixed bottom-6 right-4 z-30 flex items-center gap-2 bg-white border border-blue-200 shadow-lg rounded-full px-4 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-50 transition-all duration-300 ${hasScrolled && !nearBottom ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
       >
         <span>❤️</span>
-        <span>Support the Good</span>
+        <span>{t.supportTheGood}</span>
       </a>
     </>
   )
