@@ -141,6 +141,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
           setTimeout(() => { isTransitioning.current = false }, 350)
         }
       } else if (diff < 0) {
+        const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 60
+        if (nearBottom) return
         scrollDelta.current = Math.min(0, scrollDelta.current) + diff
         if (scrollDelta.current < -THRESHOLD) {
           isTransitioning.current = true
