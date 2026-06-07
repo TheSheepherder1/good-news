@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { runIngestion } from '@/lib/ingest'
 
 export async function POST(req: NextRequest) {
-  // Simple bearer token check — set CRON_SECRET in env for automated calls
   const auth = req.headers.get('authorization')
-  const secret = process.env.CRON_SECRET || process.env.ADMIN_PASSWORD
-  if (!secret || auth !== `Bearer ${secret}`) {
+  const adminSecret = process.env.ADMIN_PASSWORD
+  const cronSecret = process.env.CRON_SECRET
+  if (!adminSecret || (auth !== `Bearer ${adminSecret}` && auth !== `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
