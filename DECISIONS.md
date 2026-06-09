@@ -12,7 +12,7 @@ A daily curated good-news website, live at **www.thegoodifound.com**. Stories ar
 - **Database:** Supabase (PostgreSQL with RLS enabled)
 - **Storage:** Supabase Storage (`featured-images` bucket) — used for all admin-uploaded images
 - **AI Filtering:** Anthropic Claude Haiku (fast, cheap, good enough for classification)
-- **Translation:** Google Translate free endpoint (`translate.googleapis.com`) via server-side proxy route `/api/translate`
+- **Translation:** Google Translate free endpoint (`translate.googleapis.com`) via server-side proxy route `/api/translate`. Note: this is an unofficial endpoint with no SLA. When traffic grows, migrate to the official Google Cloud Translation API ($20/1M characters, first 500K/month free). Migration is a simple endpoint + API key swap in `/api/translate`.
 - **Analytics:** Vercel Analytics
 - **Deployment:** Vercel (auto-deploys on push to GitHub)
 - **RSS Parsing:** rss-parser
@@ -283,10 +283,13 @@ RLS enabled on both tables. `stories`: public SELECT where status = `published`.
 1. **Daily automation** — schedule the fetch to run each morning automatically via Vercel cron
 2. **OG image redesign** — make the social share preview image look great (currently functional but basic)
 3. **Desktop article panel** — show a slide-up panel on desktop (like mobile sheet) with image, summary, and "Read Full Article" button. Keeps users on site longer.
-4. **AI Policy content** — write and add via Edit Content in admin
-5. **Advertising Policy content** — write and add via Edit Content in admin
+4. ~~**AI Policy content**~~ — DONE. Added via Edit Content in admin.
+5. ~~**Advertising Policy content**~~ — DONE. Added via Edit Content in admin.
 6. **Donations via Ko-fi** — set up free Ko-fi account (takes 0% of donations), then add a "Support The Good I Found ❤️" link in the footer alongside About/AI Policy links. No popups or interruptions — subtle and honest. Consider a small floating heart button as well. No ads ever.
 7. ~~**Daily DB cleanup job**~~ — DONE. `/api/cleanup` hard-deletes stories where `fetched_at` > 30 days old, excluding `published` and custom stories. Runs daily at 6am UTC via Vercel cron (`vercel.json`). Secured with `CRON_SECRET` env var.
 8. ~~**Published date per article (admin only)**~~ — DONE. `site_published_at` column added; set at publish time; shown on Published tab cards only.
 9. **Sort-by on Published tab (admin only)** — add a sort control on the Published tab so admin can sort cards by: Section (alphabetical) or Date Published. Default order stays as-is (current public page order by ai_score).
 10. **Mobile app (React Native / Expo)** — build iOS and Android apps that read published stories from the same Supabase database. Admin stays as-is on the web; no separate sync needed — publishing via admin is already the sync. App needs: card feed by section, slide-up story reader, search, language/translation, and section navigation. Supabase React Native SDK handles data. Rewrite UI in React Native components (no Tailwind); logic and data layer port almost directly from the web app.
+11. **Article Likes** — allow public readers to like a story. Needs a `story_likes` table (story_id, fingerprint or session — no login required). Like count displayed on story cards and in the article panel. Admin Published tab could show like counts too. Decide: anonymous (device fingerprint/localStorage) or require account.
+12. **Reader Article Recommendations** — allow readers to submit a URL they think belongs on the site. Needs a submission form (title, URL, why they recommend it), stored in a `reader_submissions` table, visible to admin for review. Admin can approve (moves to Pending queue for AI filtering) or dismiss. No login required to submit.
+13. **Reader-Written Articles** — allow readers to write and submit original articles. Needs a submission form (title, body, author name), a fact-verification step (run submission through Claude to check for accuracy and flag unsupported claims), and admin review before publishing. Verified custom stories follow the existing custom story path. Flagged or unverified submissions held for admin judgement.
