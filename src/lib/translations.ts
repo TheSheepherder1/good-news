@@ -56,7 +56,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Animals': 'Animals', 'Good News': 'Good News', 'Science': 'Science', 'Health': 'Health',
       'Environment': 'Environment', 'Culture': 'Culture', 'Art': 'Art',
-      'Humanity': 'Humanity', 'Space': 'Space', 'Sports': 'Sports', 'Technology': 'Technology',
+      'Humanity': 'Humanity', 'Space': 'Space', 'Sports': 'Sports', 'Technology': 'Technology', 'History': 'History',
     },
   },
   zh: {
@@ -80,7 +80,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Animals': '动物', 'Good News': '好消息', 'Science': '科学', 'Health': '健康',
       'Environment': '环境', 'Culture': '文化', 'Art': '艺术',
-      'Humanity': '人文', 'Space': '太空', 'Sports': '体育', 'Technology': '科技',
+      'Humanity': '人文', 'Space': '太空', 'Sports': '体育', 'Technology': '科技', 'History': '历史',
     },
   },
   de: {
@@ -104,7 +104,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Good News': 'Gute Nachrichten', 'Science': 'Wissenschaft', 'Health': 'Gesundheit',
       'Environment': 'Umwelt', 'Culture': 'Kultur', 'Art': 'Kunst',
-      'Humanity': 'Menschheit', 'Space': 'Weltraum', 'Sports': 'Sport', 'Animals': 'Tiere', 'Technology': 'Technologie',
+      'Humanity': 'Menschheit', 'Space': 'Weltraum', 'Sports': 'Sport', 'Animals': 'Tiere', 'Technology': 'Technologie', 'History': 'Geschichte',
     },
   },
   nl: {
@@ -128,7 +128,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Animals': 'Dieren', 'Good News': 'Goed Nieuws', 'Science': 'Wetenschap', 'Health': 'Gezondheid',
       'Environment': 'Milieu', 'Culture': 'Cultuur', 'Art': 'Kunst',
-      'Humanity': 'Mensheid', 'Space': 'Ruimte', 'Sports': 'Sport', 'Technology': 'Technologie',
+      'Humanity': 'Mensheid', 'Space': 'Ruimte', 'Sports': 'Sport', 'Technology': 'Technologie', 'History': 'Geschiedenis',
     },
   },
   es: {
@@ -152,7 +152,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Good News': 'Buenas Noticias', 'Science': 'Ciencia', 'Health': 'Salud',
       'Environment': 'Medio Ambiente', 'Culture': 'Cultura', 'Art': 'Arte',
-      'Humanity': 'Humanidad', 'Space': 'Espacio', 'Sports': 'Deportes', 'Animals': 'Animales', 'Technology': 'Tecnología',
+      'Humanity': 'Humanidad', 'Space': 'Espacio', 'Sports': 'Deportes', 'Animals': 'Animales', 'Technology': 'Tecnología', 'History': 'Historia',
     },
   },
   fr: {
@@ -176,7 +176,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Good News': 'Bonnes Nouvelles', 'Science': 'Science', 'Health': 'Santé',
       'Environment': 'Environnement', 'Culture': 'Culture', 'Art': 'Art',
-      'Humanity': 'Humanité', 'Space': 'Espace', 'Sports': 'Sports', 'Animals': 'Animaux', 'Technology': 'Technologie',
+      'Humanity': 'Humanité', 'Space': 'Espace', 'Sports': 'Sports', 'Animals': 'Animaux', 'Technology': 'Technologie', 'History': 'Histoire',
     },
   },
   pl: {
@@ -200,7 +200,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Animals': 'Zwierzęta', 'Good News': 'Dobre Wiadomości', 'Science': 'Nauka', 'Health': 'Zdrowie',
       'Environment': 'Środowisko', 'Culture': 'Kultura', 'Art': 'Sztuka',
-      'Humanity': 'Ludzkość', 'Space': 'Kosmos', 'Sports': 'Sport', 'Technology': 'Technologia',
+      'Humanity': 'Ludzkość', 'Space': 'Kosmos', 'Sports': 'Sport', 'Technology': 'Technologia', 'History': 'Historia',
     },
   },
   pt: {
@@ -224,7 +224,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Animals': 'Animais', 'Good News': 'Boas Notícias', 'Science': 'Ciência', 'Health': 'Saúde',
       'Environment': 'Meio Ambiente', 'Culture': 'Cultura', 'Art': 'Arte',
-      'Humanity': 'Humanidade', 'Space': 'Espaço', 'Sports': 'Esportes', 'Technology': 'Tecnologia',
+      'Humanity': 'Humanidade', 'Space': 'Espaço', 'Sports': 'Esportes', 'Technology': 'Tecnologia', 'History': 'História',
     },
   },
   ja: {
@@ -248,7 +248,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Animals': '動物', 'Good News': '良いニュース', 'Science': '科学', 'Health': '健康',
       'Environment': '環境', 'Culture': '文化', 'Art': '芸術',
-      'Humanity': '人間性', 'Space': '宇宙', 'Sports': 'スポーツ', 'Technology': 'テクノロジー',
+      'Humanity': '人間性', 'Space': '宇宙', 'Sports': 'スポーツ', 'Technology': 'テクノロジー', 'History': '歴史',
     },
   },
   sr: {
@@ -272,7 +272,7 @@ export const UI: Record<Language, UIStrings> = {
     categories: {
       'Good News': 'Dobre vesti', 'Science': 'Nauka', 'Health': 'Zdravlje',
       'Environment': 'Životna sredina', 'Culture': 'Kultura', 'Art': 'Umetnost',
-      'Humanity': 'Čovečanstvo', 'Space': 'Svemir', 'Sports': 'Sport', 'Animals': 'Životinje', 'Technology': 'Tehnologija',
+      'Humanity': 'Čovečanstvo', 'Space': 'Svemir', 'Sports': 'Sport', 'Animals': 'Životinje', 'Technology': 'Tehnologija', 'History': 'Istorija',
     },
   },
 }
