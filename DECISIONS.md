@@ -88,7 +88,7 @@ Admin can upload images (including WebP) to any story card from any tab. Images 
 Four tabs: **Pending | Approved | Skipped | Published**
 - **Pending:** approve/skip, section override dropdown (with AI suggested label), image upload
 - **Approved:** set as featured (conflict confirmation), image upload, custom story badge, section override dropdown
-- **Skipped:** rescue back to approved
+- **Skipped:** rescue back to approved, section override dropdown
 - **Published:** mirrors public page order; section change, image add/replace/remove, unpublish (→ Skipped), featured change
 
 ### Admin header buttons

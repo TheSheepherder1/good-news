@@ -99,7 +99,7 @@ export default function StoryCard({ story, displayTitle, displaySummary, sourceP
           <p className="text-xs text-indigo-500 italic">AI: {story.ai_reason} (score: {story.ai_score}/10)</p>
         )}
 
-        {adminMode && (tab === 'pending' || tab === 'approved' || tab === 'published') && onCategoryChange && (
+        {adminMode && (tab === 'pending' || tab === 'approved' || tab === 'skipped' || tab === 'published') && onCategoryChange && (
           <div className="pt-1">
             <label className="text-xs text-gray-400 mb-1 block">Section</label>
             <select
