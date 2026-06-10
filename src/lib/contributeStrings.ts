@@ -52,7 +52,8 @@ export const CONTRIBUTE_EN = {
   fontSizeHeading: 'Heading',
 
   // Result messages
-  successMessage: "Thanks! We'll take a look and may reach out if you left an email.",
+  thankYouMessage: "Thank you for your submission! This will be reviewed within the next 24 hours and if approved, published at this same time. Again, many thanks for being a part of this community! - Mike",
+  thankYouOk: 'OK',
   genericError: 'Something went wrong. Please try again.',
   fillRequired: 'Please fill in the summary and full story.',
 

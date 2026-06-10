@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import RichTextEditor from '@/components/RichTextEditor'
 import LanguagePicker from '@/components/LanguagePicker'
 import { LANGUAGES, LANG_STORAGE_KEY, type Language } from '@/lib/translations'
@@ -15,6 +16,7 @@ function isEmptyRich(value: string): boolean {
 }
 
 export default function ContributePage() {
+  const router = useRouter()
   const [lang, setLang] = useState<Language>('en')
   const { s, translating } = useContributeStrings(lang)
 
@@ -40,7 +42,8 @@ export default function ContributePage() {
   const [reason, setReason] = useState('')
   const [website, setWebsite] = useState('') // honeypot
   const [submitting, setSubmitting] = useState(false)
-  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [showThankYou, setShowThankYou] = useState(false)
 
   function resetForm() {
     setName('')
@@ -56,10 +59,10 @@ export default function ContributePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setResult(null)
+    setError(null)
 
     if (mode === 'article' && (isEmptyRich(summary) || isEmptyRich(content))) {
-      setResult({ ok: false, message: s.fillRequired })
+      setError(s.fillRequired)
       return
     }
 
@@ -86,13 +89,13 @@ export default function ContributePage() {
       const res = await fetch('/api/submit', { method: 'POST', body: formData })
       const data = await res.json()
       if (res.ok && data.ok) {
-        setResult({ ok: true, message: s.successMessage })
         resetForm()
+        setShowThankYou(true)
       } else {
-        setResult({ ok: false, message: data.error ? translateServerMessage(data.error, s) : s.genericError })
+        setError(data.error ? translateServerMessage(data.error, s) : s.genericError)
       }
     } catch {
-      setResult({ ok: false, message: s.genericError })
+      setError(s.genericError)
     } finally {
       setSubmitting(false)
     }
@@ -136,7 +139,7 @@ export default function ContributePage() {
           <div className="flex gap-2 bg-white/70 rounded-xl p-1 w-fit">
             <button
               type="button"
-              onClick={() => { setMode('article'); setResult(null) }}
+              onClick={() => { setMode('article'); setError(null) }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'article' ? 'bg-emerald-500 text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
@@ -145,7 +148,7 @@ export default function ContributePage() {
             </button>
             <button
               type="button"
-              onClick={() => { setMode('url'); setResult(null) }}
+              onClick={() => { setMode('url'); setError(null) }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'url' ? 'bg-emerald-500 text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
@@ -291,9 +294,9 @@ export default function ContributePage() {
               </>
             )}
 
-            {result && (
-              <div className={`text-sm rounded-lg px-3 py-2 ${result.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
-                {result.message}
+            {error && (
+              <div className="text-sm rounded-lg px-3 py-2 bg-red-50 text-red-600">
+                {error}
               </div>
             )}
 
@@ -307,6 +310,20 @@ export default function ContributePage() {
           </form>
         </div>
       </div>
+
+      {showThankYou && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 flex flex-col gap-5 text-center">
+            <p className="text-sm text-gray-700 leading-relaxed">{s.thankYouMessage}</p>
+            <button
+              onClick={() => router.push('/')}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2.5 rounded-lg transition-colors px-8 mx-auto"
+            >
+              {s.thankYouOk}
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

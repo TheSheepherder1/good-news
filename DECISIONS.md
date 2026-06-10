@@ -97,6 +97,8 @@ Both submit (multipart, with a hidden honeypot field) to `/api/submit` (unauthen
 
 **Dismiss** marks the submission `dismissed` with no further action.
 
+On a successful submission (either mode), a thank-you modal appears with a personal note from Mike (24-hour review promise) and an "OK" button. Clicking OK navigates the reader back to the home page (`/`). Text lives in `CONTRIBUTE_EN` (`thankYouMessage`, `thankYouOk`) and translates via `useContributeStrings`.
+
 ### Submission agreement (Write an Article)
 Replaces the old single-line accuracy attestation. Shows a thank-you message, then a bulleted list of terms the submitter agrees to (original work, no plagiarism/copyright issues, no others' personal info without permission, written by a human not AI, true story, no compensation — credited by submitted name, The Good I Found will not edit/spell-check the text, and The Good I Found may decline to publish or remove the story at its sole editorial discretion). A single checkbox ("I have read and agree to all of the above") confirms agreement. All text lives in `CONTRIBUTE_EN` (`src/lib/contributeStrings.ts`, keys prefixed `attestation*`) and translates via `useContributeStrings`.
 
