@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { sanitizeStoryHtml } from '@/lib/sanitizeHtml'
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5MB
 
@@ -52,7 +53,14 @@ export async function POST(req: NextRequest) {
     }
     if (tooLong(title, 200)) return NextResponse.json({ error: 'Title is too long (200 max)' }, { status: 400 })
     if (tooLong(summary, 500)) return NextResponse.json({ error: 'Summary is too long (500 max)' }, { status: 400 })
-    if (tooLong(content, 20000)) return NextResponse.json({ error: 'Story is too long (20,000 max)' }, { status: 400 })
+
+    const sanitizedContent = sanitizeStoryHtml(content)
+    const contentText = sanitizedContent.replace(/<[^>]*>/g, '')
+    if (!contentText.trim()) {
+      return NextResponse.json({ error: 'Title, summary, and full story are required' }, { status: 400 })
+    }
+    if (tooLong(contentText, 20000)) return NextResponse.json({ error: 'Story is too long (20,000 max)' }, { status: 400 })
+    if (tooLong(sanitizedContent, 100000)) return NextResponse.json({ error: 'Story is too long' }, { status: 400 })
 
     if (image && image.size > 0) {
       if (!image.type.startsWith('image/')) {
@@ -71,7 +79,7 @@ export async function POST(req: NextRequest) {
         submitter_email: submitterEmail,
         title,
         summary,
-        content,
+        content: sanitizedContent,
         attested: true,
       })
       .select('id')

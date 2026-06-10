@@ -26,6 +26,7 @@ export type Story = {
   is_custom: boolean
   content: string | null
   site_published_at: string | null
+  content_format: 'text' | 'rich'
 }
 
 export type ReaderSubmission = {

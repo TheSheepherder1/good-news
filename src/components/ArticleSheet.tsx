@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { type Story } from '@/lib/supabase'
+import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 
 type Props = {
   story: Story | null
@@ -52,6 +53,7 @@ export default function ArticleSheet({ story, onClose, displayTitle, displaySumm
   if (!story) return null
 
   const readLabel = story.is_custom && story.url.includes('/story/') ? 'Read Full Story' : 'Read Full Article'
+  const summaryText = displaySummary || story.summary
 
   return (
     <>
@@ -96,8 +98,12 @@ export default function ArticleSheet({ story, onClose, displayTitle, displaySumm
               <span className="text-xs text-gray-400">Source: {story.source}</span>
             </div>
             <h2 className="text-gray-900 font-bold text-lg leading-snug">{displayTitle || story.title}</h2>
-            {(displaySummary || story.summary) && (
-              <p className="text-gray-600 text-sm leading-relaxed">{displaySummary || story.summary}</p>
+            {summaryText && (
+              story.content_format === 'rich' ? (
+                <div className="text-gray-600 text-sm leading-relaxed">{renderSummaryMarkdown(summaryText)}</div>
+              ) : (
+                <p className="text-gray-600 text-sm leading-relaxed">{summaryText}</p>
+              )
             )}
             <a href={story.url} target="_blank" rel="noopener noreferrer"
               className="mt-2 w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2">
@@ -144,8 +150,12 @@ export default function ArticleSheet({ story, onClose, displayTitle, displaySumm
               <span className="text-xs text-gray-400">Source: {story.source}</span>
             </div>
             <h2 className="text-gray-900 font-bold text-xl leading-snug">{displayTitle || story.title}</h2>
-            {(displaySummary || story.summary) && (
-              <p className="text-gray-600 text-sm leading-relaxed">{displaySummary || story.summary}</p>
+            {summaryText && (
+              story.content_format === 'rich' ? (
+                <div className="text-gray-600 text-sm leading-relaxed">{renderSummaryMarkdown(summaryText)}</div>
+              ) : (
+                <p className="text-gray-600 text-sm leading-relaxed">{summaryText}</p>
+              )
             )}
             <a href={story.url} target="_blank" rel="noopener noreferrer"
               className="mt-2 w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2">

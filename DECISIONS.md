@@ -97,6 +97,14 @@ Both submit (multipart, with a hidden honeypot field) to `/api/submit` (unauthen
 
 **Dismiss** marks the submission `dismissed` with no further action.
 
+### Rich text formatting (Write an Article)
+The Short Summary and Full Story fields on `/contribute` use a Tiptap-based `RichTextEditor` (`src/components/RichTextEditor.tsx`) with a Bold/Italic/Underline/Bullet-list toolbar; Full Story also gets a Font Size selector (Small 14px / Normal 16px / Large 20px / Heading 28px).
+
+- **Short Summary** is serialized to an extended markdown subset (`**bold**`, `*italic*`, `__underline__`, `- bullet`) — kept as plain-ish text so it still works with the Google Translate text endpoint and client-side search. Rendered via `renderSummaryMarkdown` (`src/lib/summaryMarkdown.tsx`) in `StoryCard`, `ArticleSheet`, and the `PublicFeed` featured-story block.
+- **Full Story** is sanitized to HTML (`sanitizeStoryHtml`, `src/lib/sanitizeHtml.ts` — allows `p`/`br`/`strong`/`em`/`u`/`ul`/`li`/`span` and a `style="font-size: …"` allowlist) and rendered via `dangerouslySetInnerHTML` only on `/story/[id]`.
+- Articles approved through this flow are inserted into `stories` with `content_format: 'rich'`. All other stories (`'text'`, the default) keep the original plain-text rendering — no behavior change for RSS/admin-created/older stories.
+- `SubmissionCard` (admin Public Created review) always renders article submissions with `renderSummaryMarkdown`/`sanitizeStoryHtml`, since all new article submissions use these formats regardless of the `content_format` flag (which only exists on `stories`).
+
 ### Admin tabs
 Five tabs: **Pending | Approved | Skipped | Published | Public Created**
 - **Pending:** approve/skip, section override dropdown (with AI suggested label), image upload
@@ -257,9 +265,11 @@ stories (
   category text,
   is_featured boolean default false,
   is_custom boolean default false,
-  site_published_at timestamptz  -- when admin clicked Publish (not the RSS article date)
+  site_published_at timestamptz, -- when admin clicked Publish (not the RSS article date)
+  content_format text not null default 'text'  -- 'text' | 'rich' — see "Rich text formatting" below
 )
 -- status check constraint allows: pending, approved, skipped, published, rejected, archived
+-- content_format check constraint allows: text, rich
 -- unique partial index enforces only one is_featured = true at a time
 
 site_settings (

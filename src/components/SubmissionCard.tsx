@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { type ReaderSubmission } from '@/lib/supabase'
 import { SECTIONS } from '@/lib/sections'
+import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
+import { sanitizeStoryHtml } from '@/lib/sanitizeHtml'
 
 type Props = {
   submission: ReaderSubmission
@@ -61,13 +63,14 @@ export default function SubmissionCard({ submission, onApprove, onDismiss }: Pro
           )}
           <p className="text-gray-900 font-semibold text-sm leading-snug">{submission.title}</p>
           {submission.summary && (
-            <p className="text-gray-500 text-xs leading-relaxed">{submission.summary}</p>
+            <div className="text-gray-500 text-xs leading-relaxed">{renderSummaryMarkdown(submission.summary)}</div>
           )}
           {submission.content && (
             <div>
-              <p className={`text-gray-600 text-xs leading-relaxed whitespace-pre-wrap ${expanded ? '' : 'line-clamp-4'}`}>
-                {submission.content}
-              </p>
+              <div
+                className={`text-gray-600 text-xs leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_p]:my-1 ${expanded ? '' : 'line-clamp-4'}`}
+                dangerouslySetInnerHTML={{ __html: sanitizeStoryHtml(submission.content) }}
+              />
               <button
                 onClick={() => setExpanded((e) => !e)}
                 className="text-xs text-emerald-600 hover:text-emerald-800 font-medium mt-1"

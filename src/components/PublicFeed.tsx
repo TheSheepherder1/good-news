@@ -9,6 +9,7 @@ import FooterModal from '@/components/FooterModal'
 import LanguagePicker from '@/components/LanguagePicker'
 import { type Story } from '@/lib/supabase'
 import { UI, type Language } from '@/lib/translations'
+import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 
 type Section = { category: string; stories: Story[] }
 type TranslatedStory = { title: string; summary: string }
@@ -383,9 +384,15 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                       {getDisplayTitle(filteredFeatured)}
                     </p>
                     {filteredFeatured.summary && (
-                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-4">
-                        {getDisplaySummary(filteredFeatured)}
-                      </p>
+                      filteredFeatured.content_format === 'rich' ? (
+                        <div className="text-gray-500 text-sm leading-relaxed line-clamp-4">
+                          {renderSummaryMarkdown(getDisplaySummary(filteredFeatured))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-4">
+                          {getDisplaySummary(filteredFeatured)}
+                        </p>
+                      )
                     )}
                   </div>
                 </div>

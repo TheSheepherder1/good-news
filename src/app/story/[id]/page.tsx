@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { sanitizeStoryHtml } from '@/lib/sanitizeHtml'
 
 export default async function StoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -52,9 +53,16 @@ export default async function StoryPage({ params }: { params: Promise<{ id: stri
             </h1>
 
             {(story.content || story.summary) && (
-              <div className="text-gray-600 text-base leading-relaxed whitespace-pre-wrap">
-                {story.content || story.summary}
-              </div>
+              story.content_format === 'rich' ? (
+                <div
+                  className="text-gray-600 text-base leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_p]:my-2"
+                  dangerouslySetInnerHTML={{ __html: sanitizeStoryHtml(story.content || '') }}
+                />
+              ) : (
+                <div className="text-gray-600 text-base leading-relaxed whitespace-pre-wrap">
+                  {story.content || story.summary}
+                </div>
+              )
             )}
           </div>
         </article>

@@ -2,8 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import RichTextEditor from '@/components/RichTextEditor'
 
 type Mode = 'article' | 'url'
+
+function isEmptyRich(value: string): boolean {
+  return value.replace(/<[^>]*>/g, '').trim() === ''
+}
 
 export default function ContributePage() {
   const [mode, setMode] = useState<Mode>('article')
@@ -34,8 +39,14 @@ export default function ContributePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setSubmitting(true)
     setResult(null)
+
+    if (mode === 'article' && (isEmptyRich(summary) || isEmptyRich(content))) {
+      setResult({ ok: false, message: 'Please fill in the summary and full story.' })
+      return
+    }
+
+    setSubmitting(true)
 
     const formData = new FormData()
     formData.append('type', mode)
@@ -169,24 +180,22 @@ export default function ContributePage() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-sm font-medium text-gray-700">Short Summary <span className="text-gray-400 font-normal">(shows on the story card, 500 chars max)</span></label>
-                  <textarea
-                    required
+                  <RichTextEditor
+                    mode="markdown"
                     value={summary}
-                    onChange={(e) => setSummary(e.target.value)}
+                    onChange={setSummary}
                     maxLength={500}
-                    rows={2}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    minHeightClass="min-h-[70px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-sm font-medium text-gray-700">Full Story</label>
-                  <textarea
-                    required
+                  <RichTextEditor
+                    mode="html"
                     value={content}
-                    onChange={(e) => setContent(e.target.value)}
+                    onChange={setContent}
                     maxLength={20000}
-                    rows={10}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    minHeightClass="min-h-[260px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1">

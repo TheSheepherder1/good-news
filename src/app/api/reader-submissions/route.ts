@@ -76,6 +76,7 @@ export async function PATCH(req: NextRequest) {
         ai_score: 10,
         ai_reason: 'Reader-submitted article',
         approved_at: new Date().toISOString(),
+        content_format: 'rich',
       })
       .select('id')
       .single()

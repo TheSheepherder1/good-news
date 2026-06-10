@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { type Story } from '@/lib/supabase'
 import { SECTIONS } from '@/lib/sections'
+import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 
 type Props = {
   story: Story
@@ -86,7 +87,11 @@ export default function StoryCard({ story, displayTitle, displaySummary, sourceP
         )}
 
         {summary && (
-          <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">{summary}</p>
+          story.content_format === 'rich' ? (
+            <div className="text-gray-500 text-xs leading-relaxed line-clamp-3">{renderSummaryMarkdown(summary)}</div>
+          ) : (
+            <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">{summary}</p>
+          )
         )}
 
         {adminMode && tab === 'published' && story.site_published_at && (
