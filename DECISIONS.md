@@ -351,7 +351,7 @@ RLS enabled on all four tables. `stories`: public SELECT where status = `publish
 3. **Desktop article panel** — show a slide-up panel on desktop (like mobile sheet) with image, summary, and "Read Full Article" button. Keeps users on site longer.
 4. ~~**AI Policy content**~~ — DONE. Added via Edit Content in admin.
 5. ~~**Advertising Policy content**~~ — DONE. Added via Edit Content in admin.
-6. **Donations via Ko-fi** — set up free Ko-fi account (takes 0% of donations), then add a "Support The Good I Found ❤️" link in the footer alongside About/AI Policy links. No popups or interruptions — subtle and honest. Consider a small floating heart button as well. No ads ever.
+6. ~~**Donations via Ko-fi**~~ — DONE. Ko-fi account live at ko-fi.com/thegoodifound. "Support Us" link in the footer, "❤️ Support the Good" banners between sections, a desktop "Share a Story with Us!" link beside them, and a mobile floating heart button after first scroll. No popups, no ads.
 7. ~~**Daily DB cleanup job**~~ — DONE. `/api/cleanup` hard-deletes stories where `fetched_at` > 30 days old, excluding `published` and custom stories; also purges `submission_attestations` rows older than 7 years. Runs daily at 6am UTC via Vercel cron (`vercel.json`). Secured with `CRON_SECRET` env var.
 8. ~~**Published date per article (admin only)**~~ — DONE. `site_published_at` column added; set at publish time; shown on Published tab cards only.
 9. **Sort-by on Published tab (admin only)** — add a sort control on the Published tab so admin can sort cards by: Section (alphabetical) or Date Published. Default order stays as-is (current public page order by ai_score).
