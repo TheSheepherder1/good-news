@@ -410,16 +410,25 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
             )}
 
             {!isSearching && filteredSections.length > 0 && (
-              <a
-                href="https://ko-fi.com/thegoodifound"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden md:flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-blue-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-blue-200 transition-all group -my-8"
-              >
-                <span className="text-rose-500 text-lg">❤️</span>
-                <span className="text-blue-700 text-sm">{t.enjoyingGoodNews}</span>
-                <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">{t.supportTheGood} →</span>
-              </a>
+              <div className="hidden md:flex items-center justify-center gap-4 -my-8">
+                <Link
+                  href="/contribute"
+                  className="flex items-center gap-2 bg-white/40 backdrop-blur-sm rounded-2xl border border-emerald-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-emerald-200 transition-all group"
+                >
+                  <span className="text-lg">✍️</span>
+                  <span className="text-emerald-700 font-semibold text-sm group-hover:text-emerald-800 transition-colors">{t.shareStoryWithUs}</span>
+                </Link>
+                <a
+                  href="https://ko-fi.com/thegoodifound"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-blue-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-blue-200 transition-all group"
+                >
+                  <span className="text-rose-500 text-lg">❤️</span>
+                  <span className="text-blue-700 text-sm">{t.enjoyingGoodNews}</span>
+                  <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">{t.supportTheGood} →</span>
+                </a>
+              </div>
             )}
 
             {filteredSections.map(({ category, stories }, index) => (
@@ -444,16 +453,25 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                 </div>
 
                 {!isSearching && (index + 1) % 3 === 0 && (
-                  <a
-                    href="https://ko-fi.com/thegoodifound"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hidden md:flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-blue-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-blue-200 transition-all group -my-8"
-                  >
-                    <span className="text-rose-500 text-lg">❤️</span>
-                    <span className="text-blue-700 text-sm">{t.enjoyingGoodNews}</span>
-                    <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">{t.supportTheGood} →</span>
-                  </a>
+                  <div className="hidden md:flex items-center justify-center gap-4 -my-8">
+                    <Link
+                      href="/contribute"
+                      className="flex items-center gap-2 bg-white/40 backdrop-blur-sm rounded-2xl border border-emerald-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-emerald-200 transition-all group"
+                    >
+                      <span className="text-lg">✍️</span>
+                      <span className="text-emerald-700 font-semibold text-sm group-hover:text-emerald-800 transition-colors">{t.shareStoryWithUs}</span>
+                    </Link>
+                    <a
+                      href="https://ko-fi.com/thegoodifound"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 bg-white/40 backdrop-blur-sm rounded-2xl border border-blue-100 py-2 px-6 shadow-sm hover:bg-white/60 hover:border-blue-200 transition-all group"
+                    >
+                      <span className="text-rose-500 text-lg">❤️</span>
+                      <span className="text-blue-700 text-sm">{t.enjoyingGoodNews}</span>
+                      <span className="text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">{t.supportTheGood} →</span>
+                    </a>
+                  </div>
                 )}
               </React.Fragment>
             ))}
