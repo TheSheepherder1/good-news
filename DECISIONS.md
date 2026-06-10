@@ -89,7 +89,7 @@ Four tabs: **Pending | Approved | Skipped | Published**
 - **Pending:** approve/skip, section override dropdown (with AI suggested label), image upload
 - **Approved:** set as featured (conflict confirmation), image upload, custom story badge, section override dropdown
 - **Skipped:** rescue back to approved, section override dropdown
-- **Published:** mirrors public page order; section change, image add/replace/remove, unpublish (→ Skipped), featured change
+- **Published:** mirrors public page order; section change, image add/replace/remove, unpublish (→ Skipped), featured change; search + Section/Date Published filters; **Unpublish All** button (with confirmation) bulk-unpublishes every story matching the active filters
 
 ### Admin header buttons
 **Edit Content** | **Refresh Site** | **Create Story** | **Publish Stories** | **Fetch New Stories**

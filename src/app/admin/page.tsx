@@ -48,6 +48,8 @@ export default function AdminPage() {
   const [msg, setMsg] = useState('')
   const [featureConflict, setFeatureConflict] = useState<FeatureConflict | null>(null)
   const [showPublishModal, setShowPublishModal] = useState(false)
+  const [showUnpublishAllModal, setShowUnpublishAllModal] = useState(false)
+  const [unpublishingAll, setUnpublishingAll] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showContentModal, setShowContentModal] = useState(false)
   const [contentForm, setContentForm] = useState({
@@ -179,6 +181,16 @@ export default function AdminPage() {
     await patchStory(id, { status: 'skipped' })
     setStories((prev) => prev.filter((s) => s.id !== id))
     setMsg('Story unpublished and moved to Skipped.')
+  }
+
+  async function unpublishAll() {
+    const ids = displayedStories.map((s) => s.id)
+    setUnpublishingAll(true)
+    await Promise.all(ids.map((id) => patchStory(id, { status: 'skipped' })))
+    setStories((prev) => prev.filter((s) => !ids.includes(s.id)))
+    setMsg(`Unpublished ${ids.length} ${ids.length === 1 ? 'story' : 'stories'} and moved to Skipped.`)
+    setUnpublishingAll(false)
+    setShowUnpublishAllModal(false)
   }
 
   async function removeImage(id: string) {
@@ -594,6 +606,34 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Unpublish All confirmation modal */}
+      {showUnpublishAllModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h2 className="font-bold text-gray-900 mb-2">Unpublish {displayedStories.length} {displayedStories.length === 1 ? 'Story' : 'Stories'}?</h2>
+            <p className="text-gray-500 text-sm mb-6">
+              This moves every story matching the current filters from Published to Skipped. They can be rescued back to Approved later. Click Refresh Site afterward to update the public page.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={unpublishAll}
+                disabled={unpublishingAll}
+                className="w-full bg-red-500 hover:bg-red-600 text-white rounded-lg py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {unpublishingAll ? 'Unpublishing…' : `Unpublish ${displayedStories.length} ${displayedStories.length === 1 ? 'Story' : 'Stories'}`}
+              </button>
+              <button
+                onClick={() => setShowUnpublishAllModal(false)}
+                disabled={unpublishingAll}
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Featured conflict modal */}
       {featureConflict && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -801,6 +841,15 @@ export default function AdminPage() {
                 </div>
 
                 <p className="text-sm text-gray-400">{displayedStories.length} {displayedStories.length === 1 ? 'story' : 'stories'}</p>
+
+                {(selectedSections.length > 0 || selectedDates.length > 0 || publishedSearch.trim() !== '') && displayedStories.length > 0 && (
+                  <button
+                    onClick={() => setShowUnpublishAllModal(true)}
+                    className="ml-auto bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-500 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                  >
+                    Unpublish All ({displayedStories.length})
+                  </button>
+                )}
               </div>
             )}
 
