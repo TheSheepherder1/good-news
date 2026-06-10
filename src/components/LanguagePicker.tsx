@@ -7,9 +7,10 @@ type Props = {
   current: Language
   translating: boolean
   onChange: (lang: Language) => void
+  translatingLabel?: string
 }
 
-export default function LanguagePicker({ current, translating, onChange }: Props) {
+export default function LanguagePicker({ current, translating, onChange, translatingLabel = 'Translating…' }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -34,7 +35,7 @@ export default function LanguagePicker({ current, translating, onChange }: Props
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
         </svg>
         {translating ? (
-          <span className="text-emerald-600">Translating…</span>
+          <span className="text-emerald-600">{translatingLabel}</span>
         ) : (
           <span>{currentLabel}</span>
         )}

@@ -8,20 +8,36 @@ import { TextStyle, FontSize } from '@tiptap/extension-text-style'
 
 type Mode = 'html' | 'markdown'
 
+export type ToolbarLabels = {
+  bold: string
+  italic: string
+  underline: string
+  bulletList: string
+  fontSizeSmall: string
+  fontSizeNormal: string
+  fontSizeLarge: string
+  fontSizeHeading: string
+}
+
+const DEFAULT_LABELS: ToolbarLabels = {
+  bold: 'Bold',
+  italic: 'Italic',
+  underline: 'Underline',
+  bulletList: 'Bullet list',
+  fontSizeSmall: 'Small',
+  fontSizeNormal: 'Normal',
+  fontSizeLarge: 'Large',
+  fontSizeHeading: 'Heading',
+}
+
 type Props = {
   value: string
   onChange: (value: string) => void
   mode: Mode
   maxLength: number
   minHeightClass?: string
+  labels?: ToolbarLabels
 }
-
-const FONT_SIZES = [
-  { label: 'Small', value: '14px' },
-  { label: 'Normal', value: '16px' },
-  { label: 'Large', value: '20px' },
-  { label: 'Heading', value: '28px' },
-]
 
 function serializeInline(nodes: JSONContent[]): string {
   return nodes.map((n) => {
@@ -66,7 +82,7 @@ function ToolbarButton({ active, onClick, label, children }: { active: boolean; 
   )
 }
 
-export default function RichTextEditor({ value, onChange, mode, maxLength, minHeightClass = 'min-h-[100px]' }: Props) {
+export default function RichTextEditor({ value, onChange, mode, maxLength, minHeightClass = 'min-h-[100px]', labels = DEFAULT_LABELS }: Props) {
   const [charCount, setCharCount] = useState(0)
   const [, setTick] = useState(0)
 
@@ -112,16 +128,16 @@ export default function RichTextEditor({ value, onChange, mode, maxLength, minHe
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-1 border border-gray-200 rounded-t-lg bg-gray-50 px-2 py-1 flex-wrap">
-        <ToolbarButton active={!!editor?.isActive('bold')} onClick={() => editor?.chain().focus().toggleBold().run()} label="Bold">
+        <ToolbarButton active={!!editor?.isActive('bold')} onClick={() => editor?.chain().focus().toggleBold().run()} label={labels.bold}>
           <span className="font-bold">B</span>
         </ToolbarButton>
-        <ToolbarButton active={!!editor?.isActive('italic')} onClick={() => editor?.chain().focus().toggleItalic().run()} label="Italic">
+        <ToolbarButton active={!!editor?.isActive('italic')} onClick={() => editor?.chain().focus().toggleItalic().run()} label={labels.italic}>
           <span className="italic">I</span>
         </ToolbarButton>
-        <ToolbarButton active={!!editor?.isActive('underline')} onClick={() => editor?.chain().focus().toggleUnderline().run()} label="Underline">
+        <ToolbarButton active={!!editor?.isActive('underline')} onClick={() => editor?.chain().focus().toggleUnderline().run()} label={labels.underline}>
           <span className="underline">U</span>
         </ToolbarButton>
-        <ToolbarButton active={!!editor?.isActive('bulletList')} onClick={() => editor?.chain().focus().toggleBulletList().run()} label="Bullet list">
+        <ToolbarButton active={!!editor?.isActive('bulletList')} onClick={() => editor?.chain().focus().toggleBulletList().run()} label={labels.bulletList}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h.007v.008H3.75V6.75zm0 5.25h.007v.008H3.75V12zm0 5.25h.007v.008H3.75v-.008zM6 6.75h12M6 12h12m-12 5.25h12" />
           </svg>
@@ -136,7 +152,10 @@ export default function RichTextEditor({ value, onChange, mode, maxLength, minHe
             }}
             className="ml-1 text-xs border border-gray-200 rounded px-1.5 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
           >
-            {FONT_SIZES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+            <option value="14px">{labels.fontSizeSmall}</option>
+            <option value="16px">{labels.fontSizeNormal}</option>
+            <option value="20px">{labels.fontSizeLarge}</option>
+            <option value="28px">{labels.fontSizeHeading}</option>
           </select>
         )}
       </div>

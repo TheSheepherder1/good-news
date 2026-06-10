@@ -8,7 +8,7 @@ import ArticleSheet from '@/components/ArticleSheet'
 import FooterModal from '@/components/FooterModal'
 import LanguagePicker from '@/components/LanguagePicker'
 import { type Story } from '@/lib/supabase'
-import { UI, type Language } from '@/lib/translations'
+import { UI, LANGUAGES, type Language, LANG_STORAGE_KEY } from '@/lib/translations'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 
 type Section = { category: string; stories: Story[] }
@@ -173,6 +173,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
 
   const handleLanguageChange = useCallback(async (newLang: Language) => {
     setLang(newLang)
+    localStorage.setItem(LANG_STORAGE_KEY, newLang)
     if (newLang === 'en') {
       setCurrentTranslations(new Map())
       return
@@ -201,6 +202,15 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
     setCurrentTranslations(map)
     setTranslating(false)
   }, [allStories])
+
+  // Restore the reader's previously chosen language on first load
+  useEffect(() => {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY) as Language | null
+    if (stored && stored !== 'en' && LANGUAGES.some((l) => l.code === stored)) {
+      handleLanguageChange(stored)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const query = searchQuery.trim()
   const isSearching = query.length > 0

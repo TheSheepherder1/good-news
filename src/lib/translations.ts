@@ -1,5 +1,8 @@
 export type Language = 'en' | 'zh' | 'de' | 'nl' | 'es' | 'fr' | 'ja' | 'pl' | 'pt' | 'sr'
 
+// localStorage key used to remember the reader's chosen language across pages
+export const LANG_STORAGE_KEY = 'tgif_lang'
+
 export const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'en', label: 'English' },
   { code: 'zh', label: '中文' },

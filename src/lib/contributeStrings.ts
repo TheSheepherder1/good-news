@@ -1,0 +1,132 @@
+import { type Language } from '@/lib/translations'
+
+// English source strings for the /contribute ("Share a Story") page.
+// Translated on the fly via /api/translate for non-English readers —
+// see src/lib/useContributeStrings.ts. Error message values must match
+// the English strings returned by src/app/api/submit/route.ts exactly,
+// so a returned error can be looked up and translated.
+export const CONTRIBUTE_EN = {
+  back: 'Back to The Good I Found',
+  pageTitle: 'Share a Story',
+  pageDescription: 'Got some good news to share? Write up your own story, or point us to one you found elsewhere. Every submission is reviewed by a real person before it goes live.',
+  writeArticle: 'Write an Article',
+  recommendStory: 'Recommend a Story',
+  yourName: 'Your Name',
+  email: 'Email',
+  optional: '(optional)',
+  emailPlaceholder: "In case we'd like to follow up",
+  title: 'Title',
+  shortSummary: 'Short Summary',
+  shortSummaryHint: '(shows on the story card, 500 chars max)',
+  fullStory: 'Full Story',
+  photo: 'Photo',
+  photoHint: '(optional, 1 image)',
+  chooseImage: 'Choose image…',
+  attestation: 'I confirm this story is accurate to the best of my knowledge.',
+  urlLabel: 'URL of the Story',
+  whyBelong: 'Why does this belong here?',
+  submit: 'Submit',
+  submitting: 'Submitting…',
+  translating: 'Translating…',
+
+  // Toolbar (RichTextEditor)
+  bold: 'Bold',
+  italic: 'Italic',
+  underline: 'Underline',
+  bulletList: 'Bullet list',
+  fontSizeSmall: 'Small',
+  fontSizeNormal: 'Normal',
+  fontSizeLarge: 'Large',
+  fontSizeHeading: 'Heading',
+
+  // Result messages
+  successMessage: "Thanks! We'll take a look and may reach out if you left an email.",
+  genericError: 'Something went wrong. Please try again.',
+  fillRequired: 'Please fill in the summary and full story.',
+
+  // Server validation messages — must mirror src/app/api/submit/route.ts
+  errInvalidType: 'Invalid submission type',
+  errNameRequired: 'Name is required',
+  errNameTooLong: 'Name is too long',
+  errEmailInvalid: 'Email looks invalid',
+  errRequired: 'Title, summary, and full story are required',
+  errAttestation: 'Please confirm the accuracy attestation',
+  errTitleTooLong: 'Title is too long (200 max)',
+  errSummaryTooLong: 'Summary is too long (500 max)',
+  errStoryTooLong: 'Story is too long (20,000 max)',
+  errStoryTooLongGeneric: 'Story is too long',
+  errImageType: 'Image must be a picture file',
+  errImageSize: 'Image is too large (5MB max)',
+  errUrlRequired: 'URL is required',
+  errUrlTooLong: 'URL is too long',
+  errNoteTooLong: 'That note is too long (1,000 max)',
+  errInvalidUrl: 'Please enter a valid http(s) URL',
+}
+
+export type ContributeStrings = typeof CONTRIBUTE_EN
+
+// Short, context-free UI words (toolbar buttons, Submit/Submitting/Translating)
+// translate poorly via the free single-word Google Translate endpoint — e.g.
+// "Bold" comes back as the personality sense ("daring") in several languages.
+// Hand-curated overrides win over the machine translation for these keys.
+type OverrideKey =
+  | 'bold' | 'italic' | 'underline' | 'bulletList'
+  | 'fontSizeSmall' | 'fontSizeNormal' | 'fontSizeLarge' | 'fontSizeHeading'
+  | 'submit' | 'submitting' | 'translating'
+
+export const CONTRIBUTE_OVERRIDES: Partial<Record<Exclude<Language, 'en'>, Partial<Pick<ContributeStrings, OverrideKey>>>> = {
+  zh: {
+    bold: '加粗', italic: '斜体', underline: '下划线', bulletList: '项目符号列表',
+    fontSizeSmall: '小', fontSizeNormal: '正常', fontSizeLarge: '大', fontSizeHeading: '标题',
+    submit: '提交', submitting: '提交中…', translating: '翻译中…',
+  },
+  de: {
+    bold: 'Fett', italic: 'Kursiv', underline: 'Unterstrichen', bulletList: 'Aufzählung',
+    fontSizeSmall: 'Klein', fontSizeNormal: 'Normal', fontSizeLarge: 'Groß', fontSizeHeading: 'Überschrift',
+    submit: 'Absenden', submitting: 'Wird gesendet…', translating: 'Übersetzen…',
+  },
+  nl: {
+    bold: 'Vet', italic: 'Cursief', underline: 'Onderstrepen', bulletList: 'Opsomming',
+    fontSizeSmall: 'Klein', fontSizeNormal: 'Normaal', fontSizeLarge: 'Groot', fontSizeHeading: 'Kop',
+    submit: 'Verzenden', submitting: 'Bezig met verzenden…', translating: 'Vertalen…',
+  },
+  es: {
+    bold: 'Negrita', italic: 'Cursiva', underline: 'Subrayado', bulletList: 'Lista con viñetas',
+    fontSizeSmall: 'Pequeño', fontSizeNormal: 'Normal', fontSizeLarge: 'Grande', fontSizeHeading: 'Título',
+    submit: 'Enviar', submitting: 'Enviando…', translating: 'Traduciendo…',
+  },
+  fr: {
+    bold: 'Gras', italic: 'Italique', underline: 'Souligné', bulletList: 'Liste à puces',
+    fontSizeSmall: 'Petit', fontSizeNormal: 'Normal', fontSizeLarge: 'Grand', fontSizeHeading: 'Titre',
+    submit: 'Envoyer', submitting: 'Envoi en cours…', translating: 'Traduction…',
+  },
+  ja: {
+    bold: '太字', italic: 'イタリック', underline: '下線', bulletList: '箇条書き',
+    fontSizeSmall: '小', fontSizeNormal: '標準', fontSizeLarge: '大', fontSizeHeading: '見出し',
+    submit: '送信', submitting: '送信中…', translating: '翻訳中…',
+  },
+  pl: {
+    bold: 'Pogrubienie', italic: 'Kursywa', underline: 'Podkreślenie', bulletList: 'Lista punktowana',
+    fontSizeSmall: 'Mały', fontSizeNormal: 'Normalny', fontSizeLarge: 'Duży', fontSizeHeading: 'Nagłówek',
+    submit: 'Wyślij', submitting: 'Wysyłanie…', translating: 'Tłumaczenie…',
+  },
+  pt: {
+    bold: 'Negrito', italic: 'Itálico', underline: 'Sublinhado', bulletList: 'Lista com marcadores',
+    fontSizeSmall: 'Pequeno', fontSizeNormal: 'Normal', fontSizeLarge: 'Grande', fontSizeHeading: 'Título',
+    submit: 'Enviar', submitting: 'Enviando…', translating: 'Traduzindo…',
+  },
+  sr: {
+    bold: 'Podebljano', italic: 'Kurziv', underline: 'Podvučeno', bulletList: 'Lista sa tačkama',
+    fontSizeSmall: 'Malo', fontSizeNormal: 'Normalno', fontSizeLarge: 'Veliko', fontSizeHeading: 'Naslov',
+    submit: 'Pošalji', submitting: 'Slanje…', translating: 'Prevođenje…',
+  },
+}
+
+// Looks up an English error string returned by /api/submit and returns its
+// translated equivalent for the current language, falling back to the
+// original message if it isn't one of our known strings.
+export function translateServerMessage(message: string, s: ContributeStrings): string {
+  const keys = Object.keys(CONTRIBUTE_EN) as (keyof ContributeStrings)[]
+  const match = keys.find((k) => CONTRIBUTE_EN[k] === message)
+  return match ? s[match] : message
+}
