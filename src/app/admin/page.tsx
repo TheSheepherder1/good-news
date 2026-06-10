@@ -3,11 +3,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import StoryCard from '@/components/StoryCard'
 import { type Story } from '@/lib/supabase'
-import { SECTIONS } from '@/lib/sections'
+import { SECTIONS, CATEGORY_ORDER } from '@/lib/sections'
 
 type Tab = 'pending' | 'approved' | 'skipped' | 'published'
-
-const CATEGORY_ORDER = ['Humanity', 'Culture', 'Art', 'Health', 'Animals', 'Science', 'Good News', 'Environment', 'Technology', 'Space', 'Sports']
 
 function sortPublished(stories: Story[]): Story[] {
   const featured = stories.filter((s) => s.is_featured)

@@ -2,10 +2,9 @@ import { supabaseAdmin } from '@/lib/supabase'
 import PublicFeed from '@/components/PublicFeed'
 import { type Story } from '@/lib/supabase'
 import { format } from 'date-fns'
+import { CATEGORY_ORDER } from '@/lib/sections'
 
 export const revalidate = 120
-
-const CATEGORY_ORDER = ['Humanity', 'Culture', 'History', 'Art', 'Health', 'Animals', 'Science', 'Good News', 'Environment', 'Space', 'Technology', 'Sports']
 
 const jsonLd = {
   '@context': 'https://schema.org',
