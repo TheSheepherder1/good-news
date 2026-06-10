@@ -40,7 +40,7 @@ function titleSimilarity(a: string, b: string): number {
   return overlap / Math.min(setA.size, setB.size)
 }
 
-type RawStory = {
+export type RawStory = {
   title: string
   url: string
   summary: string
@@ -106,7 +106,7 @@ type AIResult = {
   reason: string
 }
 
-async function classifyStories(stories: RawStory[]): Promise<(RawStory & AIResult)[]> {
+export async function classifyStories(stories: RawStory[]): Promise<(RawStory & AIResult)[]> {
   if (stories.length === 0) return []
 
   const prompt = stories

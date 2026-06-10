@@ -2,10 +2,19 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import StoryCard from '@/components/StoryCard'
-import { type Story } from '@/lib/supabase'
+import SubmissionCard from '@/components/SubmissionCard'
+import { type Story, type ReaderSubmission } from '@/lib/supabase'
 import { SECTIONS, CATEGORY_ORDER } from '@/lib/sections'
 
-type Tab = 'pending' | 'approved' | 'skipped' | 'published'
+type Tab = 'pending' | 'approved' | 'skipped' | 'published' | 'submissions'
+
+const TAB_LABELS: Record<Tab, string> = {
+  pending: 'Pending',
+  approved: 'Approved',
+  skipped: 'Skipped',
+  published: 'Published',
+  submissions: 'Public Created',
+}
 
 // Local (viewer's timezone) date, e.g. "2026-06-09" — not the UTC date from the ISO string.
 function localDateKey(iso: string): string {
@@ -72,8 +81,10 @@ export default function AdminPage() {
   const [createForm, setCreateForm] = useState<{ title: string; summary: string; content: string; source: string; category: string; externalUrl: string }>({ title: '', summary: '', content: '', source: '', category: SECTIONS[0], externalUrl: '' })
   const [createImageFile, setCreateImageFile] = useState<File | null>(null)
   const [creating, setCreating] = useState(false)
+  const [submissions, setSubmissions] = useState<ReaderSubmission[]>([])
+  const [submissionsCount, setSubmissionsCount] = useState<number | null>(null)
 
-  const fetchStories = useCallback(async (status: Tab) => {
+  const fetchStories = useCallback(async (status: Exclude<Tab, 'submissions'>) => {
     setLoading(true)
     const res = await fetch(`/api/stories?status=${status}&limit=150`)
     const data = await res.json()
@@ -86,14 +97,38 @@ export default function AdminPage() {
     setLoading(false)
   }, [])
 
+  const fetchSubmissions = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch('/api/reader-submissions', {
+      headers: { Authorization: `Bearer ${password}` },
+    })
+    const data = await res.json()
+    const rows = Array.isArray(data) ? data : []
+    setSubmissions(rows)
+    setSubmissionsCount(rows.length)
+    setLoading(false)
+  }, [password])
+
   useEffect(() => {
-    if (authed) fetchStories(tab)
+    if (authed) {
+      if (tab === 'submissions') fetchSubmissions()
+      else fetchStories(tab)
+    }
     setPublishedSearch('')
     setSelectedSections([])
     setSelectedDates([])
     setSectionDropdownOpen(false)
     setDateDropdownOpen(false)
-  }, [authed, tab, fetchStories])
+  }, [authed, tab, fetchStories, fetchSubmissions])
+
+  // Pick up the unread submissions count for the tab badge regardless of which tab is open.
+  useEffect(() => {
+    if (!authed) return
+    fetch('/api/reader-submissions', { headers: { Authorization: `Bearer ${password}` } })
+      .then((res) => res.json())
+      .then((data) => setSubmissionsCount(Array.isArray(data) ? data.length : 0))
+      .catch(() => {})
+  }, [authed, password])
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -202,6 +237,38 @@ export default function AdminPage() {
   async function changeCategory(id: string, category: string) {
     await patchStory(id, { category })
     setStories((prev) => prev.map((s) => s.id === id ? { ...s, category } : s))
+  }
+
+  async function approveSubmission(id: string, category: string) {
+    const res = await fetch('/api/reader-submissions', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ id, action: 'approve', category }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setSubmissions((prev) => prev.filter((s) => s.id !== id))
+      setSubmissionsCount((c) => (c ?? 1) - 1)
+      setMsg(data.message || 'Submission approved.')
+    } else {
+      setMsg(`Error: ${data.error}`)
+    }
+  }
+
+  async function dismissSubmission(id: string) {
+    const res = await fetch('/api/reader-submissions', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ id, action: 'dismiss' }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setSubmissions((prev) => prev.filter((s) => s.id !== id))
+      setSubmissionsCount((c) => (c ?? 1) - 1)
+      setMsg('Submission dismissed.')
+    } else {
+      setMsg(`Error: ${data.error}`)
+    }
   }
 
   async function uploadFeaturedImage(storyId: string, file: File): Promise<boolean> {
@@ -666,15 +733,20 @@ export default function AdminPage() {
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-bold text-gray-900">The Good I Found · Admin</h1>
           <div className="flex gap-1">
-            {(['pending', 'approved', 'skipped', 'published'] as Tab[]).map((t) => (
+            {(['pending', 'approved', 'skipped', 'published', 'submissions'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   tab === t ? 'bg-emerald-100 text-emerald-700' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {t.charAt(0).toUpperCase() + t.slice(1)}
+                {TAB_LABELS[t]}
+                {t === 'submissions' && !!submissionsCount && (
+                  <span className="bg-rose-500 text-white text-xs font-semibold rounded-full px-1.5 py-0.5 leading-none">
+                    {submissionsCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -720,6 +792,21 @@ export default function AdminPage() {
       <section className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center text-gray-400 py-20">Loading…</div>
+        ) : tab === 'submissions' ? (
+          submissions.length === 0 ? (
+            <div className="text-center text-gray-400 py-20">No new submissions.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {submissions.map((submission) => (
+                <SubmissionCard
+                  key={submission.id}
+                  submission={submission}
+                  onApprove={approveSubmission}
+                  onDismiss={dismissSubmission}
+                />
+              ))}
+            </div>
+          )
         ) : stories.length === 0 ? (
           <div className="text-center text-gray-400 py-20">
             {tab === 'pending' && 'Queue is empty — fetch new stories to fill it up.'}

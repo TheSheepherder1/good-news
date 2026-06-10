@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
+import Link from 'next/link'
 import StoryCard from '@/components/StoryCard'
 import SectionNav from '@/components/SectionNav'
 import ArticleSheet from '@/components/ArticleSheet'
@@ -452,6 +453,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
           <button onClick={openAboutModal} className="hover:text-emerald-600 transition-colors font-medium">{t.about}</button>
           <button onClick={() => setModal('ai-policy')} className="hover:text-emerald-600 transition-colors font-medium">{t.aiPolicy}</button>
           <button onClick={() => setModal('advertising')} className="hover:text-emerald-600 transition-colors font-medium">{t.advertisingPolicy}</button>
+          <Link href="/contribute" className="hover:text-emerald-600 transition-colors font-medium">{t.shareStory}</Link>
           <a
             href="https://ko-fi.com/thegoodifound"
             target="_blank"

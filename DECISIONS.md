@@ -84,12 +84,26 @@ Custom stories go directly to Approved, bypass AI filter, survive fetch clears, 
 ### Image uploads
 Admin can upload images (including WebP) to any story card from any tab. Images stored in Supabase Storage (`featured-images` bucket). Upload button shows "Uploading…" then "✓ Image added!" on success. Auth passed as URL query param (header approach caused issues on Vercel).
 
+### Reader Submissions
+Public page has a "Share a Story" footer link (`/contribute`, English-only for now) with two modes:
+1. **Write an Article** — title, card summary, full story, optional 1 image, name, optional email, and a required attestation checkbox ("I confirm this story is accurate to the best of my knowledge").
+2. **Recommend a Story** — name, URL, optional "why does this belong here?" note, optional email.
+
+Both submit (multipart, with a hidden honeypot field) to `/api/submit` (unauthenticated) and land as `new` rows in the `reader_submissions` table, reviewed in the admin **Public Created** tab.
+
+**Approval flow** (admin picks a Section, then clicks Approve):
+- **Article** → admin review only, no automated fact-check. Inserted directly into `stories` as a Custom Hosted story (`is_custom: true`, `status: 'approved'`, `source` = the reader's name, `ai_score: 10`) — follows the same path as admin-created custom stories.
+- **URL recommendation** → server fetches the page (`src/lib/extractMetadata.ts`) to pull `title`/`description`/`og:site_name`, runs it through the existing Claude classification (`classifyStories` in `src/lib/ingest.ts`, now exported), and inserts into `stories` as `status: 'pending'` with the AI score/reason — reviewed like any fetched story in the normal Pending queue.
+
+**Dismiss** marks the submission `dismissed` with no further action.
+
 ### Admin tabs
-Four tabs: **Pending | Approved | Skipped | Published**
+Five tabs: **Pending | Approved | Skipped | Published | Public Created**
 - **Pending:** approve/skip, section override dropdown (with AI suggested label), image upload
 - **Approved:** set as featured (conflict confirmation), image upload, custom story badge, section override dropdown
 - **Skipped:** rescue back to approved, section override dropdown
 - **Published:** mirrors public page order; section change, image add/replace/remove, unpublish (→ Skipped), featured change; search + Section/Date Published filters; **Unpublish All** button (with confirmation) bulk-unpublishes every story matching the active filters
+- **Public Created:** review queue for reader submissions (see **Reader Submissions** below). Tab shows an unread-count badge. Each card has a Section dropdown (required) plus **Approve** / **Dismiss**.
 
 ### Admin header buttons
 **Edit Content** | **Refresh Site** | **Create Story** | **Publish Stories** | **Fetch New Stories**
@@ -134,7 +148,7 @@ Client-side filtering by title, summary, and source. Desktop: always-visible sea
 Max width `max-w-7xl` (1280px) on both public site and admin. 3-column card grid on desktop.
 
 ### Footer
-Three modal links: **About**, **AI Policy**, **Advertising Policy**. Content editable from admin. About modal content translates to selected language.
+Three modal links (**About**, **AI Policy**, **Advertising Policy**) plus a **Share a Story** link to the `/contribute` page (see Reader Submissions). Modal content editable from admin; About modal content translates to selected language.
 
 ### SEO
 - Canonical domain is `https://www.thegoodifound.com` (www) — non-www 307-redirects to www on Vercel. All metadata, sitemap, robots, JSON-LD use www.
@@ -252,9 +266,26 @@ site_settings (
   key text primary key,      -- about_title, about_text, ai_policy_title, etc.
   value text not null
 )
+
+reader_submissions (
+  id uuid primary key,
+  type text not null,            -- 'article' | 'url'
+  status text not null,          -- 'new' | 'approved' | 'dismissed'
+  submitter_name text not null,
+  submitter_email text,          -- optional
+  title text,                    -- article only
+  summary text,                  -- article only (card description)
+  content text,                  -- article only (full story)
+  image_url text,                -- article only (optional)
+  attested boolean not null,     -- article only — accuracy sign-off
+  url text,                      -- url type only
+  reason text,                   -- url type only — "why does this belong here?"
+  created_at timestamptz not null,
+  reviewed_at timestamptz
+)
 ```
 
-RLS enabled on both tables. `stories`: public SELECT where status = `published`. `site_settings`: public SELECT all. All writes use service role key (bypasses RLS).
+RLS enabled on all three tables. `stories`: public SELECT where status = `published`. `site_settings`: public SELECT all. `reader_submissions`: no public policies — fully locked down, all access via service role. All writes use service role key (bypasses RLS).
 
 ---
 
@@ -291,6 +322,7 @@ RLS enabled on both tables. `stories`: public SELECT where status = `published`.
 9. **Sort-by on Published tab (admin only)** — add a sort control on the Published tab so admin can sort cards by: Section (alphabetical) or Date Published. Default order stays as-is (current public page order by ai_score).
 10. **Mobile app (React Native / Expo)** — build iOS and Android apps that read published stories from the same Supabase database. Admin stays as-is on the web; no separate sync needed — publishing via admin is already the sync. App needs: card feed by section, slide-up story reader, search, language/translation, and section navigation. Supabase React Native SDK handles data. Rewrite UI in React Native components (no Tailwind); logic and data layer port almost directly from the web app.
 11. **Article Likes** — allow public readers to like a story. Needs a `story_likes` table (story_id, fingerprint or session — no login required). Like count displayed on story cards and in the article panel. Admin Published tab could show like counts too. Decide: anonymous (device fingerprint/localStorage) or require account.
-12. **Reader Article Recommendations** — allow readers to submit a URL they think belongs on the site. Needs a submission form (title, URL, why they recommend it), stored in a `reader_submissions` table, visible to admin for review. Admin can approve (moves to Pending queue for AI filtering) or dismiss. No login required to submit.
-13. **Reader-Written Articles** — allow readers to write and submit original articles. Needs a submission form (title, body, author name), a fact-verification step (run submission through Claude to check for accuracy and flag unsupported claims), and admin review before publishing. Verified custom stories follow the existing custom story path. Flagged or unverified submissions held for admin judgement.
+12. ~~**Reader Article Recommendations**~~ — DONE. See **Reader Submissions** section — "Recommend a Story" mode on `/contribute`.
+13. ~~**Reader-Written Articles**~~ — DONE. See **Reader Submissions** section — "Write an Article" mode on `/contribute`.
 14. **Switch story images to next/image** — `StoryCard.tsx` uses a plain `<img>` for `story.image_url`, which serves admin-uploaded images at full size with no compression/format conversion. Switching to Next.js's `<Image />` would auto-resize, convert to WebP/AVIF, and lazy-load — reducing bandwidth. Requires adding the Supabase Storage domain to `next.config.ts`'s allowed image domains.
+15. **Translate the `/contribute` page** — the Reader Submissions form (`/contribute`) is currently English-only. Translate field labels, buttons, and messages into the other 9 supported languages, matching the pattern in `src/lib/translations.ts`.

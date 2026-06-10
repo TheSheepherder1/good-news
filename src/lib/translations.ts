@@ -27,6 +27,7 @@ export type UIStrings = {
   about: string
   aiPolicy: string
   advertisingPolicy: string
+  shareStory: string
   enjoyingGoodNews: string
   supportUs: string
   supportTheGood: string
@@ -49,6 +50,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'About',
     aiPolicy: 'AI Policy',
     advertisingPolicy: 'Advertising Policy',
+    shareStory: 'Share a Story',
     enjoyingGoodNews: 'Enjoying the Good News?',
     supportUs: 'Support Us ❤️',
     supportTheGood: 'Support the Good',
@@ -73,6 +75,7 @@ export const UI: Record<Language, UIStrings> = {
     about: '关于',
     aiPolicy: 'AI政策',
     advertisingPolicy: '广告政策',
+    shareStory: '分享故事',
     enjoyingGoodNews: '喜欢好消息吗？',
     supportUs: '支持我们 ❤️',
     supportTheGood: '支持美好',
@@ -97,6 +100,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'Über uns',
     aiPolicy: 'KI-Richtlinie',
     advertisingPolicy: 'Werberichtlinie',
+    shareStory: 'Geschichte teilen',
     enjoyingGoodNews: 'Gefallen Ihnen die guten Nachrichten?',
     supportUs: 'Unterstützen ❤️',
     supportTheGood: 'Das Gute unterstützen',
@@ -121,6 +125,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'Over ons',
     aiPolicy: 'AI-beleid',
     advertisingPolicy: 'Advertentiebeleid',
+    shareStory: 'Deel een verhaal',
     enjoyingGoodNews: 'Geniet u van het goede nieuws?',
     supportUs: 'Steun ons ❤️',
     supportTheGood: 'Steun het Goede',
@@ -145,6 +150,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'Acerca de',
     aiPolicy: 'Política de IA',
     advertisingPolicy: 'Política de Publicidad',
+    shareStory: 'Comparte una historia',
     enjoyingGoodNews: '¿Disfrutas las buenas noticias?',
     supportUs: 'Apóyanos ❤️',
     supportTheGood: 'Apoya el Bien',
@@ -169,6 +175,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'À propos',
     aiPolicy: 'Politique IA',
     advertisingPolicy: 'Politique Publicitaire',
+    shareStory: 'Partager une histoire',
     enjoyingGoodNews: 'Vous aimez les bonnes nouvelles ?',
     supportUs: 'Soutenez-nous ❤️',
     supportTheGood: 'Soutenir le Bien',
@@ -193,6 +200,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'O nas',
     aiPolicy: 'Polityka AI',
     advertisingPolicy: 'Polityka reklamowa',
+    shareStory: 'Podziel się historią',
     enjoyingGoodNews: 'Podoba Ci się dobre wiadomości?',
     supportUs: 'Wesprzyj nas ❤️',
     supportTheGood: 'Wesprzyj Dobro',
@@ -217,6 +225,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'Sobre',
     aiPolicy: 'Política de IA',
     advertisingPolicy: 'Política de Publicidade',
+    shareStory: 'Compartilhar história',
     enjoyingGoodNews: 'Gostando das boas notícias?',
     supportUs: 'Apoie-nos ❤️',
     supportTheGood: 'Apoie o Bem',
@@ -241,6 +250,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'このサイトについて',
     aiPolicy: 'AIポリシー',
     advertisingPolicy: '広告ポリシー',
+    shareStory: 'ストーリーを共有',
     enjoyingGoodNews: '良いニュースを楽しんでいますか？',
     supportUs: 'サポートする ❤️',
     supportTheGood: '良いことを応援する',
@@ -265,6 +275,7 @@ export const UI: Record<Language, UIStrings> = {
     about: 'O nama',
     aiPolicy: 'AI politika',
     advertisingPolicy: 'Politika oglašavanja',
+    shareStory: 'Podeli priču',
     enjoyingGoodNews: 'Uživate u dobrim vestima?',
     supportUs: 'Podržite nas ❤️',
     supportTheGood: 'Podržite Dobro',

@@ -27,3 +27,20 @@ export type Story = {
   content: string | null
   site_published_at: string | null
 }
+
+export type ReaderSubmission = {
+  id: string
+  type: 'article' | 'url'
+  status: 'new' | 'approved' | 'dismissed'
+  submitter_name: string
+  submitter_email: string | null
+  title: string | null
+  summary: string | null
+  content: string | null
+  image_url: string | null
+  attested: boolean
+  url: string | null
+  reason: string | null
+  created_at: string
+  reviewed_at: string | null
+}
