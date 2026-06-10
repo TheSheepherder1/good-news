@@ -299,16 +299,14 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
             </div>
           ) : (
             <>
-              <div className={`grid transition-all duration-1000 ease-out ${headerCollapsed ? 'grid-rows-[0fr] opacity-0 mt-0' : 'grid-rows-[1fr] opacity-100'}`}>
-                <div className="overflow-hidden">
-                  <h1 className="text-[2.43rem] md:text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>
-                    {t.siteTitle}
-                  </h1>
-                  <p className="mt-2 text-gray-600 text-lg">{t.tagline}</p>
-                  {localDate && (
-                    <p className="mt-1 text-blue-700 font-medium text-sm">{localDate}</p>
-                  )}
-                </div>
+              <div className={`overflow-hidden transition-all duration-1000 ease-out ${headerCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-72 opacity-100'}`}>
+                <h1 className="text-[2.43rem] md:text-[2.7rem] font-bold text-gray-900 tracking-tight" style={{ fontFamily: 'var(--font-merriweather)' }}>
+                  {t.siteTitle}
+                </h1>
+                <p className="mt-2 text-gray-600 text-lg">{t.tagline}</p>
+                {localDate && (
+                  <p className="mt-1 text-blue-700 font-medium text-sm">{localDate}</p>
+                )}
               </div>
               {(featured || sections.length > 0) && (
                 <div className="mt-4 flex justify-center items-center gap-3 flex-wrap">
