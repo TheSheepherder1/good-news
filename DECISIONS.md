@@ -85,7 +85,7 @@ Custom stories go directly to Approved, bypass AI filter, survive fetch clears, 
 Admin can upload images (including WebP) to any story card from any tab. Images stored in Supabase Storage (`featured-images` bucket). Upload button shows "Uploading…" then "✓ Image added!" on success. Auth passed as URL query param (header approach caused issues on Vercel).
 
 ### Reader Submissions
-Public page has a "Share a Story" footer link (`/contribute`, English-only for now) with two modes:
+Public page has a "Share a Story" footer link (`/contribute`, translates into the reader's chosen language — see "Language translation" below) with two modes:
 1. **Write an Article** — title, card summary, full story, optional 1 image, name, optional email, and a required attestation checkbox ("I confirm this story is accurate to the best of my knowledge").
 2. **Recommend a Story** — name, URL, optional "why does this belong here?" note, optional email.
 
@@ -141,7 +141,17 @@ Dynamically populated from whichever categories have published stories that day.
 Client-side filtering by title, summary, and source. Desktop: always-visible search bar inline with Sections/Language row. Mobile: tap 🔍 to expand full-width search bar. Font size 16px on mobile input prevents iOS Safari auto-zoom.
 
 ### Language translation
-5 languages: English, Español, Français, Deutsch, Srpski. Static UI strings pre-translated in `src/lib/translations.ts`. Story content translated via Google Translate through `/api/translate` server route. About modal content also translates dynamically. Cached per session. Card sizes consistent with `line-clamp-2` titles and `line-clamp-3` summaries.
+10 languages: English, 中文, Deutsch, Nederlands, Español, Français, 日本語, Polski, Português, Srpski (`src/lib/translations.ts`). Static site-chrome UI strings are pre-translated by hand in the `UI` table. Story content/summaries and the About/Policy modal content translate dynamically via Google Translate through `/api/translate`, cached per session. Card sizes consistent with `line-clamp-2` titles and `line-clamp-3` summaries.
+
+The reader's chosen language is saved to `localStorage` (`LANG_STORAGE_KEY = 'tgif_lang'`) and restored on load, so the choice carries from the home page to `/contribute`.
+
+### `/contribute` page translation
+The "Share a Story" form's UI chrome (labels, descriptions, buttons, validation/result messages, and the `RichTextEditor` toolbar — see "Rich text formatting" above) translates into the reader's chosen language. These ~50 strings are too numerous to hand-translate for 10 languages like the `UI` table, so instead:
+
+- `src/lib/contributeStrings.ts` defines `CONTRIBUTE_EN` (the English source strings) and `translateServerMessage()`, which reverse-looks-up an English error string returned by `/api/submit` and returns its translated equivalent.
+- `src/lib/useContributeStrings.ts`'s `useContributeStrings(lang)` hook batch-translates `CONTRIBUTE_EN` via one `/api/translate` call, caching the result per language at module scope (English is instant — no API call, `cache.en = CONTRIBUTE_EN`).
+- `CONTRIBUTE_OVERRIDES` (also in `contributeStrings.ts`) hand-corrects short, context-free UI words — Bold/Italic/Underline/Bullet list, the 4 font-size labels, and Submit/Submitting/Translating — that the free Google Translate endpoint mistranslates for several languages (e.g. "Bold" → "daring" in fr/de/zh/ja/pt/es). These overrides win over the machine translation.
+- `/contribute` has its own `LanguagePicker` reading/writing the same `LANG_STORAGE_KEY`, so the language choice stays in sync with the home page in both directions. User-entered content (title/summary/full story) is never translated — only the form's UI chrome.
 
 ### Visual design
 - **Background:** linear gradient top-to-bottom soft blue `#c8dde6` → near-white `#f8fbfa` (set in `page.tsx`; sticky header bg matches at `rgba(200,221,230,0.95)`)
@@ -335,4 +345,6 @@ RLS enabled on all three tables. `stories`: public SELECT where status = `publis
 12. ~~**Reader Article Recommendations**~~ — DONE. See **Reader Submissions** section — "Recommend a Story" mode on `/contribute`.
 13. ~~**Reader-Written Articles**~~ — DONE. See **Reader Submissions** section — "Write an Article" mode on `/contribute`.
 14. **Switch story images to next/image** — `StoryCard.tsx` uses a plain `<img>` for `story.image_url`, which serves admin-uploaded images at full size with no compression/format conversion. Switching to Next.js's `<Image />` would auto-resize, convert to WebP/AVIF, and lazy-load — reducing bandwidth. Requires adding the Supabase Storage domain to `next.config.ts`'s allowed image domains.
-15. **Translate the `/contribute` page** — the Reader Submissions form (`/contribute`) is currently English-only. Translate field labels, buttons, and messages into the other 9 supported languages, matching the pattern in `src/lib/translations.ts`.
+15. ~~**Translate the `/contribute` page**~~ — DONE. See "`/contribute` page translation" under Language translation.
+16. **Expand the contribution attestation** — the `/contribute` "Write an Article" checkbox currently only confirms accuracy ("I confirm this story is accurate to the best of my knowledge"). Expand it to cover everything the submitter agrees to by submitting — e.g. no compensation/payment for their story, granting the site permission to publish/edit it. Update `CONTRIBUTE_EN.attestation` in `src/lib/contributeStrings.ts` (translates automatically via `useContributeStrings`).
+17. **Promote "Share a Story" on-page, not just in the footer** — the "❤️ Enjoying the good news? Support the Good →" donation banners shown above the first section and between every 3 sections (`PublicFeed.tsx`) currently only link to Ko-fi. Add a "Share a Story" link alongside/near these banners so reader contributions are visible throughout the page, not just the footer — a strong differentiator from similar sites.
