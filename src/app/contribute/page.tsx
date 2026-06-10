@@ -138,7 +138,7 @@ export default function ContributePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={100}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -149,7 +149,7 @@ export default function ContributePage() {
                   onChange={(e) => setEmail(e.target.value)}
                   maxLength={200}
                   placeholder="In case we'd like to follow up"
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                 />
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function ContributePage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     maxLength={200}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -175,7 +175,7 @@ export default function ContributePage() {
                     onChange={(e) => setSummary(e.target.value)}
                     maxLength={500}
                     rows={2}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -186,7 +186,7 @@ export default function ContributePage() {
                     onChange={(e) => setContent(e.target.value)}
                     maxLength={20000}
                     rows={10}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -218,7 +218,7 @@ export default function ContributePage() {
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://…"
                     maxLength={2000}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -228,7 +228,7 @@ export default function ContributePage() {
                     onChange={(e) => setReason(e.target.value)}
                     maxLength={1000}
                     rows={3}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
                 </div>
               </>
