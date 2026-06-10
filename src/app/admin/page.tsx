@@ -7,6 +7,15 @@ import { SECTIONS, CATEGORY_ORDER } from '@/lib/sections'
 
 type Tab = 'pending' | 'approved' | 'skipped' | 'published'
 
+// Local (viewer's timezone) date, e.g. "2026-06-09" — not the UTC date from the ISO string.
+function localDateKey(iso: string): string {
+  const d = new Date(iso)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function sortPublished(stories: Story[]): Story[] {
   const featured = stories.filter((s) => s.is_featured)
   const rest = stories.filter((s) => !s.is_featured)
@@ -100,7 +109,7 @@ export default function AdminPage() {
   const availableSections = CATEGORY_ORDER.filter((cat) => stories.some((s) => s.category === cat))
 
   const availableDates = [...new Set(
-    stories.filter((s) => s.site_published_at).map((s) => s.site_published_at!.split('T')[0])
+    stories.filter((s) => s.site_published_at).map((s) => localDateKey(s.site_published_at!))
   )].sort().reverse()
 
   async function callAPI(path: string, body?: object) {
@@ -343,7 +352,7 @@ export default function AdminPage() {
     if (selectedDates.length > 0) {
       list = list.filter((s) => {
         if (!s.site_published_at) return false
-        return selectedDates.includes(s.site_published_at.split('T')[0])
+        return selectedDates.includes(localDateKey(s.site_published_at))
       })
     }
     const q = publishedSearch.trim().toLowerCase()
