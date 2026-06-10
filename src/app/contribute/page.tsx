@@ -203,7 +203,11 @@ export default function ContributePage() {
                     type="text"
                     required
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setTitle(value)
+                      if (!value.trim()) setAttested(false)
+                    }}
                     maxLength={200}
                     className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
@@ -237,16 +241,36 @@ export default function ContributePage() {
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
                   </label>
                 </div>
-                <label className="flex items-start gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={attested}
-                    onChange={(e) => setAttested(e.target.checked)}
-                    className="mt-0.5"
-                  />
-                  {s.attestation}
-                </label>
+                <div className="bg-white/70 border border-emerald-100 rounded-xl p-4 flex flex-col gap-3">
+                  <p className="text-sm text-gray-700">{s.attestationThanks}</p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1.5">{s.attestationIntro}</p>
+                    <ul className="text-sm text-gray-600 list-disc pl-5 flex flex-col gap-1">
+                      <li>{s.attestationOriginal}</li>
+                      <li>{s.attestationCopyright}</li>
+                      <li>{s.attestationPrivacy}</li>
+                      <li>{s.attestationHuman}</li>
+                      <li>{s.attestationTrue}</li>
+                      <li>{s.attestationNoCompensation}</li>
+                      <li>{s.attestationNoEdits}</li>
+                      <li>{s.attestationEditorial}</li>
+                    </ul>
+                  </div>
+                  <label className={`flex items-start gap-2 text-sm text-gray-700 ${!title.trim() ? 'opacity-60' : ''}`}>
+                    <input
+                      type="checkbox"
+                      required
+                      disabled={!title.trim()}
+                      checked={attested}
+                      onChange={(e) => setAttested(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    {s.attestationCheckbox}
+                  </label>
+                  {!title.trim() && (
+                    <p className="text-xs text-gray-400 italic">{s.attestationNeedsTitle}</p>
+                  )}
+                </div>
               </>
             ) : (
               <>
@@ -283,7 +307,7 @@ export default function ContributePage() {
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || (mode === 'article' && !attested)}
               className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors w-fit px-6"
             >
               {submitting ? s.submitting : s.submit}

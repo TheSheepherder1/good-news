@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Title, summary, and full story are required' }, { status: 400 })
     }
     if (!attested) {
-      return NextResponse.json({ error: 'Please confirm the accuracy attestation' }, { status: 400 })
+      return NextResponse.json({ error: 'Please confirm you agree to the submission terms' }, { status: 400 })
     }
     if (tooLong(title, 200)) return NextResponse.json({ error: 'Title is too long (200 max)' }, { status: 400 })
     if (tooLong(summary, 500)) return NextResponse.json({ error: 'Summary is too long (500 max)' }, { status: 400 })
@@ -86,6 +86,16 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Log proof of agreement to the submission terms — retained for 7 years
+    // (purged by /api/cleanup) regardless of what happens to the submission.
+    const { error: attestationError } = await supabaseAdmin.from('submission_attestations').insert({
+      submission_id: data.id,
+      story_title: title,
+      submitter_name: submitterName,
+      submitter_email: submitterEmail,
+    })
+    if (attestationError) console.error('Failed to log submission attestation:', attestationError.message)
 
     if (image && image.size > 0) {
       const ext = image.name.split('.').pop()?.toLowerCase() || 'jpg'

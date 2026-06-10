@@ -20,5 +20,17 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ ok: true, deleted: data?.length ?? 0 })
+  // Submission attestations are kept as proof of agreement to the
+  // Share-a-Story terms for 7 years, then purged.
+  const sevenYearsAgo = new Date(Date.now() - 7 * 365 * 24 * 60 * 60 * 1000).toISOString()
+
+  const { data: attestations, error: attestationError } = await supabaseAdmin
+    .from('submission_attestations')
+    .delete()
+    .lt('submitted_at', sevenYearsAgo)
+    .select('id')
+
+  if (attestationError) return NextResponse.json({ error: attestationError.message }, { status: 500 })
+
+  return NextResponse.json({ ok: true, deleted: data?.length ?? 0, attestationsDeleted: attestations?.length ?? 0 })
 }

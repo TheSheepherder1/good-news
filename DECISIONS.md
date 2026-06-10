@@ -86,7 +86,7 @@ Admin can upload images (including WebP) to any story card from any tab. Images 
 
 ### Reader Submissions
 Public page has a "Share a Story" footer link (`/contribute`, translates into the reader's chosen language — see "Language translation" below) with two modes:
-1. **Write an Article** — title, card summary, full story, optional 1 image, name, optional email, and a required attestation checkbox ("I confirm this story is accurate to the best of my knowledge").
+1. **Write an Article** — title, card summary, full story, optional 1 image, name, optional email, and a required submission agreement checkbox (see "Submission agreement" below).
 2. **Recommend a Story** — name, URL, optional "why does this belong here?" note, optional email.
 
 Both submit (multipart, with a hidden honeypot field) to `/api/submit` (unauthenticated) and land as `new` rows in the `reader_submissions` table, reviewed in the admin **Public Created** tab.
@@ -96,6 +96,13 @@ Both submit (multipart, with a hidden honeypot field) to `/api/submit` (unauthen
 - **URL recommendation** → server fetches the page (`src/lib/extractMetadata.ts`) to pull `title`/`description`/`og:site_name`, runs it through the existing Claude classification (`classifyStories` in `src/lib/ingest.ts`, now exported), and inserts into `stories` as `status: 'pending'` with the AI score/reason — reviewed like any fetched story in the normal Pending queue.
 
 **Dismiss** marks the submission `dismissed` with no further action.
+
+### Submission agreement (Write an Article)
+Replaces the old single-line accuracy attestation. Shows a thank-you message, then a bulleted list of terms the submitter agrees to (original work, no plagiarism/copyright issues, no others' personal info without permission, written by a human not AI, true story, no compensation — credited by submitted name, The Good I Found will not edit/spell-check the text, and The Good I Found may decline to publish or remove the story at its sole editorial discretion). A single checkbox ("I have read and agree to all of the above") confirms agreement. All text lives in `CONTRIBUTE_EN` (`src/lib/contributeStrings.ts`, keys prefixed `attestation*`) and translates via `useContributeStrings`.
+
+On successful submission, `/api/submit` writes a row to `submission_attestations` (`submission_id`, `submitted_at`, `story_title`, `submitter_name`, `submitter_email`) as a permanent record of agreement — independent of what later happens to the `reader_submissions`/`stories` rows. `submission_id` is the `reader_submissions.id` for that submission (no foreign key, kept independent), letting an attestation be looked up by its submission's UUID. `/api/cleanup` purges these rows after 7 years.
+
+The checkbox is disabled (with a hint, `attestationNeedsTitle`) until the Title field is non-empty, and clearing the title after agreeing un-checks it again. The Submit button stays disabled until the checkbox is checked.
 
 ### Rich text formatting (Write an Article)
 The Short Summary and Full Story fields on `/contribute` use a Tiptap-based `RichTextEditor` (`src/components/RichTextEditor.tsx`) with a Bold/Italic/Underline/Bullet-list toolbar; Full Story also gets a Font Size selector (Small 14px / Normal 16px / Large 20px / Heading 28px).
@@ -297,15 +304,24 @@ reader_submissions (
   summary text,                  -- article only (card description)
   content text,                  -- article only (full story)
   image_url text,                -- article only (optional)
-  attested boolean not null,     -- article only — accuracy sign-off
+  attested boolean not null,     -- article only — agreed to submission terms
   url text,                      -- url type only
   reason text,                   -- url type only — "why does this belong here?"
   created_at timestamptz not null,
   reviewed_at timestamptz
 )
+
+submission_attestations (        -- proof of agreement to submission terms, kept 7 years
+  id uuid primary key,
+  submission_id uuid,            -- the reader_submissions row this attestation belongs to
+  submitted_at timestamptz not null default now(),
+  story_title text not null,
+  submitter_name text not null,
+  submitter_email text           -- optional
+)
 ```
 
-RLS enabled on all three tables. `stories`: public SELECT where status = `published`. `site_settings`: public SELECT all. `reader_submissions`: no public policies — fully locked down, all access via service role. All writes use service role key (bypasses RLS).
+RLS enabled on all four tables. `stories`: public SELECT where status = `published`. `site_settings`: public SELECT all. `reader_submissions` and `submission_attestations`: no public policies — fully locked down, all access via service role. All writes use service role key (bypasses RLS).
 
 ---
 
@@ -337,7 +353,7 @@ RLS enabled on all three tables. `stories`: public SELECT where status = `publis
 4. ~~**AI Policy content**~~ — DONE. Added via Edit Content in admin.
 5. ~~**Advertising Policy content**~~ — DONE. Added via Edit Content in admin.
 6. **Donations via Ko-fi** — set up free Ko-fi account (takes 0% of donations), then add a "Support The Good I Found ❤️" link in the footer alongside About/AI Policy links. No popups or interruptions — subtle and honest. Consider a small floating heart button as well. No ads ever.
-7. ~~**Daily DB cleanup job**~~ — DONE. `/api/cleanup` hard-deletes stories where `fetched_at` > 30 days old, excluding `published` and custom stories. Runs daily at 6am UTC via Vercel cron (`vercel.json`). Secured with `CRON_SECRET` env var.
+7. ~~**Daily DB cleanup job**~~ — DONE. `/api/cleanup` hard-deletes stories where `fetched_at` > 30 days old, excluding `published` and custom stories; also purges `submission_attestations` rows older than 7 years. Runs daily at 6am UTC via Vercel cron (`vercel.json`). Secured with `CRON_SECRET` env var.
 8. ~~**Published date per article (admin only)**~~ — DONE. `site_published_at` column added; set at publish time; shown on Published tab cards only.
 9. **Sort-by on Published tab (admin only)** — add a sort control on the Published tab so admin can sort cards by: Section (alphabetical) or Date Published. Default order stays as-is (current public page order by ai_score).
 10. **Mobile app (React Native / Expo)** — build iOS and Android apps that read published stories from the same Supabase database. Admin stays as-is on the web; no separate sync needed — publishing via admin is already the sync. App needs: card feed by section, slide-up story reader, search, language/translation, and section navigation. Supabase React Native SDK handles data. Rewrite UI in React Native components (no Tailwind); logic and data layer port almost directly from the web app.
@@ -346,5 +362,5 @@ RLS enabled on all three tables. `stories`: public SELECT where status = `publis
 13. ~~**Reader-Written Articles**~~ — DONE. See **Reader Submissions** section — "Write an Article" mode on `/contribute`.
 14. **Switch story images to next/image** — `StoryCard.tsx` uses a plain `<img>` for `story.image_url`, which serves admin-uploaded images at full size with no compression/format conversion. Switching to Next.js's `<Image />` would auto-resize, convert to WebP/AVIF, and lazy-load — reducing bandwidth. Requires adding the Supabase Storage domain to `next.config.ts`'s allowed image domains.
 15. ~~**Translate the `/contribute` page**~~ — DONE. See "`/contribute` page translation" under Language translation.
-16. **Expand the contribution attestation** — the `/contribute` "Write an Article" checkbox currently only confirms accuracy ("I confirm this story is accurate to the best of my knowledge"). Expand it to cover everything the submitter agrees to by submitting — e.g. no compensation/payment for their story, granting the site permission to publish/edit it. Update `CONTRIBUTE_EN.attestation` in `src/lib/contributeStrings.ts` (translates automatically via `useContributeStrings`).
+16. ~~**Expand the contribution attestation**~~ — DONE. See "Submission agreement" under Reader Submissions.
 17. ~~**Promote "Share a Story" on-page, not just in the footer**~~ — DONE. Desktop-only "✍️ Share a Story with Us!" link to `/contribute` (translated, `t.shareStoryWithUs`) sits to the left of each "❤️ Support the Good" Ko-fi banner in `PublicFeed.tsx`.
