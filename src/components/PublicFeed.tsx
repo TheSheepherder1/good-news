@@ -124,6 +124,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   useEffect(() => {
     const THRESHOLD = 12
     function handleScroll() {
+      if (isTransitioning.current) return
       const current = window.scrollY
       const diff = current - lastScrollY.current
       lastScrollY.current = current
@@ -137,21 +138,11 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
         return
       }
 
-      if (isTransitioning.current) return
-
       if (diff > 0) {
         scrollDelta.current = Math.max(0, scrollDelta.current) + diff
         if (scrollDelta.current > THRESHOLD) {
           isTransitioning.current = true
           setHeaderCollapsed(true)
-          scrollDelta.current = 0
-          setTimeout(() => { isTransitioning.current = false }, 350)
-        }
-      } else if (diff < 0) {
-        scrollDelta.current = Math.min(0, scrollDelta.current) + diff
-        if (scrollDelta.current < -THRESHOLD) {
-          isTransitioning.current = true
-          setHeaderCollapsed(false)
           scrollDelta.current = 0
           setTimeout(() => { isTransitioning.current = false }, 350)
         }
