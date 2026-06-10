@@ -112,7 +112,7 @@ export default function StoryCard({ story, displayTitle, displaySummary, sourceP
                 <option value={aiCategory}>{aiCategory} (AI suggested)</option>
               )}
               {SECTIONS.map((s) => (
-                <option key={s} value={s}>{s}{s === aiCategory ? ' (AI suggested)' : ''}</option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </div>
