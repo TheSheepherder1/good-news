@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 
 export const revalidate = 120
 
-const CATEGORY_ORDER = ['Humanity', 'Culture', 'History', 'Art', 'Health', 'Animals', 'Science', 'Good News', 'Environment', 'Technology', 'Space', 'Sports']
+const CATEGORY_ORDER = ['Humanity', 'Culture', 'History', 'Art', 'Health', 'Animals', 'Science', 'Good News', 'Environment', 'Space', 'Technology', 'Sports']
 
 const jsonLd = {
   '@context': 'https://schema.org',

@@ -62,7 +62,7 @@ Curated good-news feeds are flagged as `curated=true`.
 Within each category section, cards are sorted by `ai_score` descending — highest rated stories appear top-left, filling left to right across rows.
 
 ### Section order (public page)
-Humanity → Culture → History → Art → Health → Animals → Science → Good News → Environment → Technology → Space → Sports
+Humanity → Culture → History → Art → Health → Animals → Science → Good News → Environment → Space → Technology → Sports
 
 ### Publish modes
 When clicking "Publish Stories" the admin chooses:
@@ -95,7 +95,7 @@ Four tabs: **Pending | Approved | Skipped | Published**
 **Edit Content** | **Refresh Site** | **Create Story** | **Publish Stories** | **Fetch New Stories**
 
 ### Admin sections list (alphabetical)
-Animals, Art, Culture, Environment, Good News, Health, History, Humanity, Science, Space, Sports
+Animals, Art, Culture, Environment, Good News, Health, History, Humanity, Science, Space, Sports, Technology
 
 ### Site content editor
 Admin can edit the title and body text of the **About**, **AI Policy**, and **Advertising Policy** modals via **Edit Content** in the admin header. Content stored in `site_settings` Supabase table. Toolbar supports **Bold** (`**text**`), *Italic* (`*text*`), and bullet points (`- item`). Paragraphs separated by blank lines. Changes go live after clicking **Refresh Site**.

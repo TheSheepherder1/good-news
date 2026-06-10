@@ -10,6 +10,7 @@ export const SECTIONS = [
   'Science',
   'Space',
   'Sports',
+  'Technology',
 ] as const
 
 export type Section = typeof SECTIONS[number]
