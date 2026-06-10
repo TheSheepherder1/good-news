@@ -91,7 +91,6 @@ export async function POST(req: NextRequest) {
     // (purged by /api/cleanup) regardless of what happens to the submission.
     const { error: attestationError } = await supabaseAdmin.from('submission_attestations').insert({
       submission_id: data.id,
-      story_title: title,
       submitter_name: submitterName,
       submitter_email: submitterEmail,
     })

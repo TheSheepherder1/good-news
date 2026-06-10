@@ -203,11 +203,7 @@ export default function ContributePage() {
                     type="text"
                     required
                     value={title}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      setTitle(value)
-                      if (!value.trim()) setAttested(false)
-                    }}
+                    onChange={(e) => setTitle(e.target.value)}
                     maxLength={200}
                     className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   />
@@ -256,20 +252,16 @@ export default function ContributePage() {
                       <li>{s.attestationEditorial}</li>
                     </ul>
                   </div>
-                  <label className={`flex items-start gap-2 text-sm text-gray-700 ${!title.trim() ? 'opacity-60' : ''}`}>
+                  <label className="flex items-start gap-2 text-sm text-gray-700">
                     <input
                       type="checkbox"
                       required
-                      disabled={!title.trim()}
                       checked={attested}
                       onChange={(e) => setAttested(e.target.checked)}
                       className="mt-0.5"
                     />
                     {s.attestationCheckbox}
                   </label>
-                  {!title.trim() && (
-                    <p className="text-xs text-gray-400 italic">{s.attestationNeedsTitle}</p>
-                  )}
                 </div>
               </>
             ) : (

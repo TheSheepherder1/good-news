@@ -34,7 +34,6 @@ export const CONTRIBUTE_EN = {
   attestationNoEdits: 'The Good I Found will not edit, spell-check, or otherwise change your text.',
   attestationEditorial: 'The Good I Found may decline to publish, or may remove your story after publishing, at its sole editorial discretion, for any reason.',
   attestationCheckbox: 'I have read and agree to all of the above.',
-  attestationNeedsTitle: 'Add a title above before you can agree to the terms.',
 
   urlLabel: 'URL of the Story',
   whyBelong: 'Why does this belong here?',

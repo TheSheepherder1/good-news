@@ -100,9 +100,9 @@ Both submit (multipart, with a hidden honeypot field) to `/api/submit` (unauthen
 ### Submission agreement (Write an Article)
 Replaces the old single-line accuracy attestation. Shows a thank-you message, then a bulleted list of terms the submitter agrees to (original work, no plagiarism/copyright issues, no others' personal info without permission, written by a human not AI, true story, no compensation — credited by submitted name, The Good I Found will not edit/spell-check the text, and The Good I Found may decline to publish or remove the story at its sole editorial discretion). A single checkbox ("I have read and agree to all of the above") confirms agreement. All text lives in `CONTRIBUTE_EN` (`src/lib/contributeStrings.ts`, keys prefixed `attestation*`) and translates via `useContributeStrings`.
 
-On successful submission, `/api/submit` writes a row to `submission_attestations` (`submission_id`, `submitted_at`, `story_title`, `submitter_name`, `submitter_email`) as a permanent record of agreement — independent of what later happens to the `reader_submissions`/`stories` rows. `submission_id` is the `reader_submissions.id` for that submission (no foreign key, kept independent), letting an attestation be looked up by its submission's UUID. `/api/cleanup` purges these rows after 7 years.
+On successful submission, `/api/submit` writes a row to `submission_attestations` (`submission_id`, `submitted_at`, `submitter_name`, `submitter_email`) as a permanent record of agreement — independent of what later happens to the `reader_submissions`/`stories` rows. `submission_id` is the `reader_submissions.id` for that submission (no foreign key, kept independent), letting an attestation be looked up by its submission's UUID, including the title via the linked submission. `/api/cleanup` purges these rows after 7 years.
 
-The checkbox is disabled (with a hint, `attestationNeedsTitle`) until the Title field is non-empty, and clearing the title after agreeing un-checks it again. The Submit button stays disabled until the checkbox is checked.
+The Submit button stays disabled until the checkbox is checked.
 
 ### Rich text formatting (Write an Article)
 The Short Summary and Full Story fields on `/contribute` use a Tiptap-based `RichTextEditor` (`src/components/RichTextEditor.tsx`) with a Bold/Italic/Underline/Bullet-list toolbar; Full Story also gets a Font Size selector (Small 14px / Normal 16px / Large 20px / Heading 28px).
@@ -315,7 +315,6 @@ submission_attestations (        -- proof of agreement to submission terms, kept
   id uuid primary key,
   submission_id uuid,            -- the reader_submissions row this attestation belongs to
   submitted_at timestamptz not null default now(),
-  story_title text not null,
   submitter_name text not null,
   submitter_email text           -- optional
 )
