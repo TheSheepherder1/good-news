@@ -8,17 +8,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data, error } = await supabaseAdmin
     .from('stories')
     .delete()
-    .lt('fetched_at', thirtyDaysAgo)
+    .lt('fetched_at', tenDaysAgo)
     .neq('status', 'published')
     .eq('is_custom', false)
     .select('id')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Skipped stories have already been reviewed and rejected — clear them
+  // out faster than the general 10-day cleanup.
+  const seventyTwoHoursAgo = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()
+
+  const { data: skipped, error: skippedError } = await supabaseAdmin
+    .from('stories')
+    .delete()
+    .eq('status', 'skipped')
+    .lt('fetched_at', seventyTwoHoursAgo)
+    .eq('is_custom', false)
+    .select('id')
+
+  if (skippedError) return NextResponse.json({ error: skippedError.message }, { status: 500 })
 
   // Submission attestations are kept as proof of agreement to the
   // Share-a-Story terms for 7 years, then purged.
@@ -32,5 +46,10 @@ export async function POST(req: NextRequest) {
 
   if (attestationError) return NextResponse.json({ error: attestationError.message }, { status: 500 })
 
-  return NextResponse.json({ ok: true, deleted: data?.length ?? 0, attestationsDeleted: attestations?.length ?? 0 })
+  return NextResponse.json({
+    ok: true,
+    deleted: data?.length ?? 0,
+    skippedDeleted: skipped?.length ?? 0,
+    attestationsDeleted: attestations?.length ?? 0,
+  })
 }
