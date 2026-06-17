@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import StoryCard from '@/components/StoryCard'
 import SectionNav from '@/components/SectionNav'
@@ -20,6 +20,8 @@ type Props = {
   publishDate: string | null
   siteContent?: Record<string, string>
 }
+
+const SECTION_ORDER_KEY = 'section_order'
 
 function slugify(cat: string) {
   return cat.toLowerCase().replace(/\s+/g, '-')
@@ -96,6 +98,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const desktopInputRef = useRef<HTMLInputElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
+  const [userOrder, setUserOrder] = useState<string[] | null>(null)
 
   const aboutParagraphs = (siteContent.about_text || '').split('\n\n').filter(Boolean)
 
@@ -120,6 +123,46 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   useEffect(() => {
     setLocalDate(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))
   }, [])
+
+  useEffect(() => {
+    const stored = localStorage.getItem(SECTION_ORDER_KEY)
+    if (stored) {
+      try { setUserOrder(JSON.parse(stored)) } catch { /* ignore corrupt data */ }
+    }
+  }, [])
+
+  // Apply the reader's saved section order. "New!" is always pinned first.
+  // Any section added to the site after the reader saved their order appends at the end.
+  const displaySections = useMemo(() => {
+    const pinned = sections.filter((s) => s.category === 'New!')
+    const reorderable = sections.filter((s) => s.category !== 'New!')
+    if (!userOrder) return sections
+    return [
+      ...pinned,
+      ...[
+        ...userOrder
+          .map((cat) => reorderable.find((s) => s.category === cat))
+          .filter((s): s is Section => s != null),
+        ...reorderable.filter((s) => !userOrder.includes(s.category)),
+      ],
+    ]
+  }, [sections, userOrder])
+
+  function handleReorder(category: string, direction: 'up' | 'down') {
+    const reorderableCats = displaySections
+      .filter((s) => s.category !== 'New!')
+      .map((s) => s.category)
+    const idx = reorderableCats.indexOf(category)
+    if (idx === -1) return
+    const newOrder = [...reorderableCats]
+    if (direction === 'up' && idx > 0) {
+      [newOrder[idx - 1], newOrder[idx]] = [newOrder[idx], newOrder[idx - 1]]
+    } else if (direction === 'down' && idx < newOrder.length - 1) {
+      [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]]
+    } else return
+    setUserOrder(newOrder)
+    localStorage.setItem(SECTION_ORDER_KEY, JSON.stringify(newOrder))
+  }
 
   useEffect(() => {
     const THRESHOLD = 12
@@ -170,7 +213,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   // regular sections, so we avoid double-translating or double-searching them.
   const allStories = [
     ...(featured ? [featured] : []),
-    ...sections.flatMap((s) => s.stories),
+    ...displaySections.flatMap((s) => s.stories),
   ].filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i)
 
   const handleLanguageChange = useCallback(async (newLang: Language) => {
@@ -218,7 +261,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const isSearching = query.length > 0
 
   const filteredFeatured = featured && (!isSearching || matches(featured, currentTranslations.get(featured.id), query)) ? featured : null
-  const filteredSections = sections
+  const filteredSections = displaySections
     .filter((s) => !isSearching || s.category !== 'New!')
     .map((s) => ({
       ...s,
@@ -312,6 +355,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                     sectionsLabel={t.sections}
                     featuredLabel={t.brightSpot}
                     onNavigate={scrollToSection}
+                    onReorder={handleReorder}
+                    pinnedCategories={['New!']}
                   />
 
                   {/* Desktop search */}
