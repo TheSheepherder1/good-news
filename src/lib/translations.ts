@@ -61,6 +61,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: 'Support the Good',
     footerCopyright: 'All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.',
     categories: {
+      'New!': 'New!',
       'Animals': 'Animals', 'Good News': 'Good News', 'Science': 'Science', 'Health': 'Health',
       'Environment': 'Environment', 'Culture': 'Culture', 'Art': 'Art',
       'Humanity': 'Humanity', 'Space': 'Space', 'Sports': 'Sports', 'Technology': 'Technology', 'History': 'History',
@@ -87,6 +88,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: '支持美好',
     footerCopyright: '所有故事版权归各自出版商所有。我发现的美好仅整理原始来源的链接，不主张对任何内容拥有所有权。',
     categories: {
+      'New!': '最新!',
       'Animals': '动物', 'Good News': '好消息', 'Science': '科学', 'Health': '健康',
       'Environment': '环境', 'Culture': '文化', 'Art': '艺术',
       'Humanity': '人文', 'Space': '太空', 'Sports': '体育', 'Technology': '科技', 'History': '历史',
@@ -113,6 +115,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: 'Das Gute unterstützen',
     footerCopyright: 'Alle Geschichten © ihre jeweiligen Verlage. The Good I Found kuratiert Links zu Originalquellen und beansprucht kein Eigentum an Inhalten.',
     categories: {
+      'New!': 'Neu!',
       'Good News': 'Gute Nachrichten', 'Science': 'Wissenschaft', 'Health': 'Gesundheit',
       'Environment': 'Umwelt', 'Culture': 'Kultur', 'Art': 'Kunst',
       'Humanity': 'Menschheit', 'Space': 'Weltraum', 'Sports': 'Sport', 'Animals': 'Tiere', 'Technology': 'Technologie', 'History': 'Geschichte',
@@ -139,6 +142,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: 'Steun het Goede',
     footerCopyright: 'Alle verhalen © hun respectieve uitgevers. Het Goede dat ik Vond verzamelt links naar originele bronnen en claimt geen eigendom van enige inhoud.',
     categories: {
+      'New!': 'Nieuw!',
       'Animals': 'Dieren', 'Good News': 'Goed Nieuws', 'Science': 'Wetenschap', 'Health': 'Gezondheid',
       'Environment': 'Milieu', 'Culture': 'Cultuur', 'Art': 'Kunst',
       'Humanity': 'Mensheid', 'Space': 'Ruimte', 'Sports': 'Sport', 'Technology': 'Technologie', 'History': 'Geschiedenis',
@@ -165,6 +169,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: 'Apoya el Bien',
     footerCopyright: 'Todas las historias © sus respectivos editores. The Good I Found selecciona enlaces a fuentes originales y no reclama la propiedad de ningún contenido.',
     categories: {
+      'New!': '¡Nuevo!',
       'Good News': 'Buenas Noticias', 'Science': 'Ciencia', 'Health': 'Salud',
       'Environment': 'Medio Ambiente', 'Culture': 'Cultura', 'Art': 'Arte',
       'Humanity': 'Humanidad', 'Space': 'Espacio', 'Sports': 'Deportes', 'Animals': 'Animales', 'Technology': 'Tecnología', 'History': 'Historia',
@@ -191,6 +196,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: 'Soutenir le Bien',
     footerCopyright: "Toutes les histoires © leurs éditeurs respectifs. The Good I Found sélectionne des liens vers des sources originales et ne revendique aucun droit sur le contenu.",
     categories: {
+      'New!': 'Nouveau !',
       'Good News': 'Bonnes Nouvelles', 'Science': 'Science', 'Health': 'Santé',
       'Environment': 'Environnement', 'Culture': 'Culture', 'Art': 'Art',
       'Humanity': 'Humanité', 'Space': 'Espace', 'Sports': 'Sports', 'Animals': 'Animaux', 'Technology': 'Technologie', 'History': 'Histoire',
@@ -217,6 +223,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: 'Wesprzyj Dobro',
     footerCopyright: 'Wszystkie historie © ich odpowiednich wydawców. Dobro, które Znalazłem gromadzi linki do oryginalnych źródeł i nie rości sobie praw do żadnych treści.',
     categories: {
+      'New!': 'Nowe!',
       'Animals': 'Zwierzęta', 'Good News': 'Dobre Wiadomości', 'Science': 'Nauka', 'Health': 'Zdrowie',
       'Environment': 'Środowisko', 'Culture': 'Kultura', 'Art': 'Sztuka',
       'Humanity': 'Ludzkość', 'Space': 'Kosmos', 'Sports': 'Sport', 'Technology': 'Technologia', 'History': 'Historia',
@@ -243,6 +250,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: 'Apoie o Bem',
     footerCopyright: 'Todas as histórias © seus respectivos editores. O Bem que Encontrei coleciona links para fontes originais e não reivindica a propriedade de nenhum conteúdo.',
     categories: {
+      'New!': 'Novo!',
       'Animals': 'Animais', 'Good News': 'Boas Notícias', 'Science': 'Ciência', 'Health': 'Saúde',
       'Environment': 'Meio Ambiente', 'Culture': 'Cultura', 'Art': 'Arte',
       'Humanity': 'Humanidade', 'Space': 'Espaço', 'Sports': 'Esportes', 'Technology': 'Tecnologia', 'History': 'História',
@@ -269,6 +277,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: '良いことを応援する',
     footerCopyright: 'すべての記事はそれぞれの発行者に帰属します。私が見つけた良いことは元の情報源へのリンクを提供するのみで、コンテンツの所有権を主張しません。',
     categories: {
+      'New!': '新着!',
       'Animals': '動物', 'Good News': '良いニュース', 'Science': '科学', 'Health': '健康',
       'Environment': '環境', 'Culture': '文化', 'Art': '芸術',
       'Humanity': '人間性', 'Space': '宇宙', 'Sports': 'スポーツ', 'Technology': 'テクノロジー', 'History': '歴史',
@@ -295,6 +304,7 @@ export const UI: Record<Language, UIStrings> = {
     supportTheGood: 'Podržite Dobro',
     footerCopyright: 'Sve priče © njihovi odgovarajući izdavači. The Good I Found prikuplja veze do originalnih izvora i ne tvrdi vlasništvo nad sadržajem.',
     categories: {
+      'New!': 'Novo!',
       'Good News': 'Dobre vesti', 'Science': 'Nauka', 'Health': 'Zdravlje',
       'Environment': 'Životna sredina', 'Culture': 'Kultura', 'Art': 'Umetnost',
       'Humanity': 'Čovečanstvo', 'Space': 'Svemir', 'Sports': 'Sport', 'Animals': 'Životinje', 'Technology': 'Tehnologija', 'History': 'Istorija',

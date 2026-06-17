@@ -166,10 +166,12 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
 
   const t = UI[lang]
 
+  // Deduplicate by ID — "New!" section contains the same stories as their
+  // regular sections, so we avoid double-translating or double-searching them.
   const allStories = [
     ...(featured ? [featured] : []),
     ...sections.flatMap((s) => s.stories),
-  ]
+  ].filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i)
 
   const handleLanguageChange = useCallback(async (newLang: Language) => {
     setLang(newLang)
@@ -217,6 +219,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
 
   const filteredFeatured = featured && (!isSearching || matches(featured, currentTranslations.get(featured.id), query)) ? featured : null
   const filteredSections = sections
+    .filter((s) => !isSearching || s.category !== 'New!')
     .map((s) => ({
       ...s,
       stories: isSearching

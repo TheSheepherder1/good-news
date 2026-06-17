@@ -63,10 +63,31 @@ export default async function Home() {
     ...[...grouped.keys()].filter((c) => !CATEGORY_ORDER.includes(c)).sort(),
   ]
 
-  const sections = sortedCategories.map((category) => ({
-    category,
-    stories: grouped.get(category)!,
-  }))
+  // "New!" virtual section — all stories from the latest publish batch,
+  // ordered by their section's position in CATEGORY_ORDER so the reader
+  // can see what's new across all categories at a glance.
+  const latestBatchAt = rest.reduce<string | null>((max, s) => {
+    if (!s.site_published_at) return max
+    return !max || s.site_published_at > max ? s.site_published_at : max
+  }, null)
+
+  const newStories = latestBatchAt
+    ? rest
+        .filter((s) => s.site_published_at === latestBatchAt)
+        .sort((a, b) => {
+          const ai = CATEGORY_ORDER.indexOf(a.category ?? '')
+          const bi = CATEGORY_ORDER.indexOf(b.category ?? '')
+          return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
+        })
+    : []
+
+  const sections = [
+    ...(newStories.length > 0 ? [{ category: 'New!', stories: newStories }] : []),
+    ...sortedCategories.map((category) => ({
+      category,
+      stories: grouped.get(category)!,
+    })),
+  ]
 
   const latestDate = stories[0]?.site_published_at ?? stories[0]?.approved_at
   const publishDate = latestDate ? format(new Date(latestDate), 'MMMM d, yyyy') : null
