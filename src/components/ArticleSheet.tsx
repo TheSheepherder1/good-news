@@ -93,12 +93,10 @@ export default function ArticleSheet({ story, onClose, displayTitle, displaySumm
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
           )}
           <div className="px-5 pt-4 flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
-                {story.is_featured && <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-semibold">Featured</span>}
-                <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">{story.category || story.source}</span>
-                <span className="text-xs text-gray-400">Source: {story.source}</span>
-              </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {story.is_featured && <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-semibold">Featured</span>}
+              <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">{story.category || story.source}</span>
+              <span className="text-xs text-gray-400">Source: {story.source}</span>
               <ShareButton title={displayTitle || story.title} url={story.url} />
             </div>
             <h2 className="text-gray-900 font-bold text-lg leading-snug">{displayTitle || story.title}</h2>
@@ -148,12 +146,10 @@ export default function ArticleSheet({ story, onClose, displayTitle, displaySumm
 
           {/* Content */}
           <div className="overflow-y-auto flex-1 px-8 py-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
-                {story.is_featured && <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-semibold">Featured</span>}
-                <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">{story.category || story.source}</span>
-                <span className="text-xs text-gray-400">Source: {story.source}</span>
-              </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {story.is_featured && <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-semibold">Featured</span>}
+              <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">{story.category || story.source}</span>
+              <span className="text-xs text-gray-400">Source: {story.source}</span>
               <ShareButton title={displayTitle || story.title} url={story.url} />
             </div>
             <h2 className="text-gray-900 font-bold text-xl leading-snug">{displayTitle || story.title}</h2>
