@@ -24,7 +24,7 @@ async function getPublishedStories(): Promise<Story[]> {
     .from('stories')
     .select('*')
     .eq('status', 'published')
-    .order('approved_at', { ascending: false })
+    .order('site_published_at', { ascending: false })
     .limit(100)
   return data || []
 }
@@ -51,7 +51,11 @@ export default async function Home() {
     grouped.get(cat)!.push(story)
   }
   for (const [cat, catStories] of grouped) {
-    grouped.set(cat, catStories.sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0)))
+    grouped.set(cat, catStories.sort((a, b) => {
+      const aTime = new Date(a.site_published_at ?? a.approved_at ?? 0).getTime()
+      const bTime = new Date(b.site_published_at ?? b.approved_at ?? 0).getTime()
+      return bTime - aTime
+    }))
   }
 
   const sortedCategories = [
@@ -64,9 +68,8 @@ export default async function Home() {
     stories: grouped.get(category)!,
   }))
 
-  const publishDate = stories[0]?.approved_at
-    ? format(new Date(stories[0].approved_at), 'MMMM d, yyyy')
-    : null
+  const latestDate = stories[0]?.site_published_at ?? stories[0]?.approved_at
+  const publishDate = latestDate ? format(new Date(latestDate), 'MMMM d, yyyy') : null
 
   return (
     <>
