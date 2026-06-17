@@ -27,6 +27,7 @@ export type Story = {
   content: string | null
   site_published_at: string | null
   content_format: 'text' | 'rich'
+  likes: number
 }
 
 export type ReaderSubmission = {

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { type Story } from '@/lib/supabase'
 import { SECTIONS } from '@/lib/sections'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
+import LikeButton from '@/components/LikeButton'
 
 type Props = {
   story: Story
@@ -182,6 +183,12 @@ export default function StoryCard({ story, displayTitle, displaySummary, sourceP
                 Remove Image
               </button>
             )}
+          </div>
+        )}
+
+        {!adminMode && (
+          <div className="flex justify-end mt-auto pt-1">
+            <LikeButton storyId={story.id} initialCount={story.likes ?? 0} />
           </div>
         )}
 
