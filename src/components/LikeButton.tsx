@@ -19,7 +19,6 @@ export default function LikeButton({ storyId, initialCount }: Props) {
       const likedIds = JSON.parse(localStorage.getItem(LIKED_KEY) || '[]') as string[]
       if (likedIds.includes(storyId)) {
         setLiked(true)
-        // Use whichever is higher: server count (may have caught up) or our stored expected count
         const storedCounts = JSON.parse(localStorage.getItem(LIKED_COUNTS_KEY) || '{}') as Record<string, number>
         const expected = storedCounts[storyId] ?? 0
         setCount((c) => Math.max(c, expected))
@@ -27,35 +26,70 @@ export default function LikeButton({ storyId, initialCount }: Props) {
     } catch {}
   }, [storyId, initialCount])
 
-  async function handleLike(e: React.MouseEvent) {
+  // Sync with other LikeButton instances for the same story (e.g. New! + section card)
+  useEffect(() => {
+    function onEvent(e: Event) {
+      const { storyId: id, liked: newLiked, count: newCount } =
+        (e as CustomEvent<{ storyId: string; liked: boolean; count: number }>).detail
+      if (id !== storyId) return
+      setLiked(newLiked)
+      setCount(newCount)
+    }
+    window.addEventListener('tgif:like-change', onEvent)
+    return () => window.removeEventListener('tgif:like-change', onEvent)
+  }, [storyId])
+
+  function broadcast(newLiked: boolean, newCount: number) {
+    window.dispatchEvent(
+      new CustomEvent('tgif:like-change', { detail: { storyId, liked: newLiked, count: newCount } })
+    )
+  }
+
+  function handleClick(e: React.MouseEvent) {
     e.stopPropagation()
-    if (liked) return
-    setLiked(true)
-    setCount((c) => {
-      const next = c + 1
+    if (liked) {
+      // Unlike
+      const next = Math.max(0, count - 1)
+      setLiked(false)
+      setCount(next)
+      broadcast(false, next)
       try {
-        // Store expected count so a refresh before ISR updates still shows the right number
+        const likedIds = JSON.parse(localStorage.getItem(LIKED_KEY) || '[]') as string[]
+        localStorage.setItem(LIKED_KEY, JSON.stringify(likedIds.filter((id) => id !== storyId)))
+        const storedCounts = JSON.parse(localStorage.getItem(LIKED_COUNTS_KEY) || '{}') as Record<string, number>
+        delete storedCounts[storyId]
+        localStorage.setItem(LIKED_COUNTS_KEY, JSON.stringify(storedCounts))
+      } catch {}
+      fetch('/api/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyId, action: 'unlike' }),
+      }).catch(() => {})
+    } else {
+      // Like
+      const next = count + 1
+      setLiked(true)
+      setCount(next)
+      broadcast(true, next)
+      try {
+        const likedIds = JSON.parse(localStorage.getItem(LIKED_KEY) || '[]') as string[]
+        localStorage.setItem(LIKED_KEY, JSON.stringify([...likedIds, storyId]))
         const storedCounts = JSON.parse(localStorage.getItem(LIKED_COUNTS_KEY) || '{}') as Record<string, number>
         storedCounts[storyId] = next
         localStorage.setItem(LIKED_COUNTS_KEY, JSON.stringify(storedCounts))
       } catch {}
-      return next
-    })
-    try {
-      const likedIds = JSON.parse(localStorage.getItem(LIKED_KEY) || '[]') as string[]
-      localStorage.setItem(LIKED_KEY, JSON.stringify([...likedIds, storyId]))
-    } catch {}
-    fetch('/api/like', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storyId }),
-    }).catch(() => {})
+      fetch('/api/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyId, action: 'like' }),
+      }).catch(() => {})
+    }
   }
 
   return (
     <button
-      onClick={handleLike}
-      aria-label={liked ? 'Liked' : 'Like this story'}
+      onClick={handleClick}
+      aria-label={liked ? 'Unlike this story' : 'Like this story'}
       className={`flex items-center gap-1 text-xs transition-colors select-none ${
         liked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
       }`}
