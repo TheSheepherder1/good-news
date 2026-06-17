@@ -10,6 +10,7 @@ import LanguagePicker from '@/components/LanguagePicker'
 import { type Story } from '@/lib/supabase'
 import { UI, LANGUAGES, type Language, LANG_STORAGE_KEY } from '@/lib/translations'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
+import LikeButton from '@/components/LikeButton'
 
 type Section = { category: string; stories: Story[] }
 type TranslatedStory = { title: string; summary: string }
@@ -437,6 +438,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                         {getCategoryLabel(filteredFeatured.category || filteredFeatured.source)}
                       </span>
                       <span>{t.sourcePrefix}{filteredFeatured.source}</span>
+                      <LikeButton storyId={filteredFeatured.id} initialCount={filteredFeatured.likes ?? 0} />
                     </div>
                     <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
                       {getDisplayTitle(filteredFeatured)}
