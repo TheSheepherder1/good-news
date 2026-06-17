@@ -59,10 +59,14 @@ Curated good-news feeds are flagged as `curated=true`.
 - **Pending queue order:** AI score descending — best stories appear first for review
 
 ### Public page card ordering
-Within each category section, cards are sorted by `ai_score` descending — highest rated stories appear top-left, filling left to right across rows.
+Within each category section, cards are sorted by `site_published_at` descending — most recently published stories appear top-left. Falls back to `approved_at` for older stories that pre-date that column.
 
 ### Section order (public page)
-Humanity → Culture → History → Art → Health → Animals → Science → Good News → Environment → Space → Technology → Sports
+Default: **New!** → Humanity → Culture → History → Art → Health → Animals → Science → Good News → Environment → Space → Technology → Sports
+
+**"New!" section** — a virtual pinned section always shown first (after Today's Bright Spot) containing all stories from the most recent "Publish Stories" batch. Stories within it are ordered by their section's position in the default section order. When the next batch is published the previous batch's stories leave "New!" automatically (they remain in their own sections). "New!" is hidden during search to avoid duplicate results since those stories also appear under their own sections.
+
+**Reader section reordering** — readers can reorder sections using ↑ ↓ arrows inside the Sections dropdown. "New!" is always pinned first (shown with a lock icon, no arrows). The reader's order is saved to `localStorage` under `section_order` and restored on every visit. If new sections are added to the site later they append to the end of the reader's saved order automatically.
 
 ### Publish modes
 When clicking "Publish Stories" the admin chooses:
@@ -144,7 +148,7 @@ On mobile only, scrolling DOWN collapses the title/tagline/date away (smooth tra
 Shows the VIEWER's local date (their timezone), computed client-side via `toLocaleDateString` in a `useEffect`. Not the server/UTC date.
 
 ### Sections dropdown
-Dynamically populated from whichever categories have published stories that day. Includes "Top of Page" as the first option always. Labels translate with selected language.
+Dynamically populated from whichever categories have published stories. Includes "Top of Page" and "Today's Bright Spot" as fixed nav items at the top, followed by the section list. Each section row has ↑ ↓ reorder arrows on the right (see **Reader section reordering** above). Labels translate with selected language.
 
 ### Search
 Client-side filtering by title, summary, and source. Desktop: always-visible search bar inline with Sections/Language row. Mobile: tap 🔍 to expand full-width search bar. Font size 16px on mobile input prevents iOS Safari auto-zoom.
