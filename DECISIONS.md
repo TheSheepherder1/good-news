@@ -181,6 +181,34 @@ Max width `max-w-7xl` (1280px) on both public site and admin. 3-column card grid
 ### Footer
 Three modal links (**About**, **AI Policy**, **Advertising Policy**) plus a **Share a Story** link to the `/contribute` page (see Reader Submissions). Modal content editable from admin; About modal content translates to selected language.
 
+### Social sharing
+Each story's slide-in panel (`ArticleSheet`) has a share icon button inline on the category/source line, to the right of the source name. Behavior:
+- **Web Share API (primary):** on iOS, Android, macOS Safari/Chrome, and Windows Chrome the button opens the device's native share sheet — readers see all their installed apps and pick one. No platform icons to design or maintain.
+- **Fallback dropdown:** on browsers without `navigator.share` (Firefox desktop, etc.) clicking the button opens a small dropdown with five options: X / Twitter, Facebook, WhatsApp, LinkedIn, Email. Each opens the platform's share page in a new tab with text pre-filled.
+- **Share content:** the original article URL is what gets shared. Pre-filled text reads `"[Article Title] — via The Good I Found https://thegoodifound.com"` — credits the site without replacing the article link.
+- **Component:** `src/components/ShareButton.tsx`. Accepts `title` and `url` props. Uses `navigator.share` if available, otherwise toggles a dropdown. Click-outside closes the dropdown.
+
+### Story Likes
+Public readers can like (and unlike) any story. No login required — state is anonymous and device-local.
+
+**How it works:**
+- A `likes integer not null default 0` column on `stories` tracks the total count.
+- Two Postgres functions handle atomic updates (no race conditions when two readers click simultaneously): `increment_story_likes(story_id uuid)` and `decrement_story_likes(story_id uuid)` (floors at 0).
+- `/api/like` (POST) accepts `{ storyId, action: 'like' | 'unlike' }` and calls the appropriate function via the service role client.
+- `LikeButton` component (`src/components/LikeButton.tsx`) — outline gray heart when not liked, filled red heart when liked. Like count shown beside the heart. Clicking toggles like/unlike with optimistic UI (instant visual response; API fires in background).
+
+**Where it appears:**
+- On every story card in section grids (bottom-right of card, not shown in admin mode).
+- On the Today's Bright Spot (featured) card inline to the right of the source name.
+- Not on the slide-in panel (shares panel already serves that space).
+
+**Persistence & ISR resilience:**
+- `localStorage` key `tgif_liked` — array of liked story IDs. Restores the red heart on page revisit.
+- `localStorage` key `tgif_liked_counts` — map of `storyId → expectedCount`. Stored at like/unlike time. On reload, the displayed count is `Math.max(initialCount, expectedCount)` — so if the 2-minute ISR cache hasn't refreshed yet and still serves `likes: 0`, the reader still sees the correct count they left it at.
+
+**Cross-card sync:**
+Stories in the "New!" section are duplicates of their regular section cards. Liking one instantly syncs the other via a custom browser event `tgif:like-change` dispatched on `window`. All `LikeButton` instances for the same `storyId` listen for the event and update their state immediately — no refresh required.
+
 ### SEO
 - Canonical domain is `https://www.thegoodifound.com` (www) — non-www 307-redirects to www on Vercel. All metadata, sitemap, robots, JSON-LD use www.
 - Rich metadata with 15 keywords in `layout.tsx`
@@ -289,7 +317,8 @@ stories (
   is_featured boolean default false,
   is_custom boolean default false,
   site_published_at timestamptz, -- when admin clicked Publish (not the RSS article date)
-  content_format text not null default 'text'  -- 'text' | 'rich' — see "Rich text formatting" below
+  content_format text not null default 'text', -- 'text' | 'rich' — see "Rich text formatting" below
+  likes integer not null default 0             -- public like count; incremented/decremented atomically via Postgres functions
 )
 -- status check constraint allows: pending, approved, skipped, published, rejected, archived
 -- content_format check constraint allows: text, rich
@@ -362,7 +391,7 @@ RLS enabled on all four tables. `stories`: public SELECT where status = `publish
 8. ~~**Published date per article (admin only)**~~ — DONE. `site_published_at` column added; set at publish time; shown on Published tab cards only.
 9. **Sort-by on Published tab (admin only)** — add a sort control on the Published tab so admin can sort cards by: Section (alphabetical) or Date Published. Default order stays as-is (current public page order by ai_score).
 10. **Mobile app (React Native / Expo)** — build iOS and Android apps that read published stories from the same Supabase database. Admin stays as-is on the web; no separate sync needed — publishing via admin is already the sync. App needs: card feed by section, slide-up story reader, search, language/translation, and section navigation. Supabase React Native SDK handles data. Rewrite UI in React Native components (no Tailwind); logic and data layer port almost directly from the web app.
-11. **Article Likes** — allow public readers to like a story. Needs a `story_likes` table (story_id, fingerprint or session — no login required). Like count displayed on story cards and in the article panel. Admin Published tab could show like counts too. Decide: anonymous (device fingerprint/localStorage) or require account.
+11. ~~**Article Likes**~~ — DONE. See **Story Likes** section.
 12. ~~**Reader Article Recommendations**~~ — DONE. See **Reader Submissions** section — "Recommend a Story" mode on `/contribute`.
 13. ~~**Reader-Written Articles**~~ — DONE. See **Reader Submissions** section — "Write an Article" mode on `/contribute`.
 14. **Switch story images to next/image** — `StoryCard.tsx` uses a plain `<img>` for `story.image_url`, which serves admin-uploaded images at full size with no compression/format conversion. Switching to Next.js's `<Image />` would auto-resize, convert to WebP/AVIF, and lazy-load — reducing bandwidth. Requires adding the Supabase Storage domain to `next.config.ts`'s allowed image domains.
