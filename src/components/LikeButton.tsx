@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 
 const LIKED_KEY = 'tgif_liked'
+const LIKED_COUNTS_KEY = 'tgif_liked_counts'
 
 type Props = {
   storyId: string
@@ -15,19 +16,34 @@ export default function LikeButton({ storyId, initialCount }: Props) {
 
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem(LIKED_KEY) || '[]') as string[]
-      setLiked(stored.includes(storyId))
+      const likedIds = JSON.parse(localStorage.getItem(LIKED_KEY) || '[]') as string[]
+      if (likedIds.includes(storyId)) {
+        setLiked(true)
+        // Use whichever is higher: server count (may have caught up) or our stored expected count
+        const storedCounts = JSON.parse(localStorage.getItem(LIKED_COUNTS_KEY) || '{}') as Record<string, number>
+        const expected = storedCounts[storyId] ?? 0
+        setCount((c) => Math.max(c, expected))
+      }
     } catch {}
-  }, [storyId])
+  }, [storyId, initialCount])
 
   async function handleLike(e: React.MouseEvent) {
     e.stopPropagation()
     if (liked) return
     setLiked(true)
-    setCount((c) => c + 1)
+    setCount((c) => {
+      const next = c + 1
+      try {
+        // Store expected count so a refresh before ISR updates still shows the right number
+        const storedCounts = JSON.parse(localStorage.getItem(LIKED_COUNTS_KEY) || '{}') as Record<string, number>
+        storedCounts[storyId] = next
+        localStorage.setItem(LIKED_COUNTS_KEY, JSON.stringify(storedCounts))
+      } catch {}
+      return next
+    })
     try {
-      const stored = JSON.parse(localStorage.getItem(LIKED_KEY) || '[]') as string[]
-      localStorage.setItem(LIKED_KEY, JSON.stringify([...stored, storyId]))
+      const likedIds = JSON.parse(localStorage.getItem(LIKED_KEY) || '[]') as string[]
+      localStorage.setItem(LIKED_KEY, JSON.stringify([...likedIds, storyId]))
     } catch {}
     fetch('/api/like', {
       method: 'POST',
