@@ -181,6 +181,20 @@ Max width `max-w-7xl` (1280px) on both public site and admin. 3-column card grid
 ### Footer
 Three modal links (**About**, **AI Policy**, **Advertising Policy**) plus a **Share a Story** link to the `/contribute` page (see Reader Submissions). Modal content editable from admin; About modal content translates to selected language.
 
+### Bookmarks (Save for Later)
+Readers can bookmark any story with a bookmark icon — bottom-right of every story card (alongside the like button) and inline on the Bright Spot card. No login required.
+
+**Storage:** A full snapshot is written to `localStorage` under `tgif_bookmarks` (JSON array). Each snapshot includes: `id`, `title`, `summary`, `source`, `url`, `image_url`, `category`, `site_published_at`. Because the full content is saved locally, bookmarks remain accessible even if the story is later removed or unpublished from the site — the original source URL still works.
+
+**UI:**
+- Outline gray bookmark icon when not saved; filled green when saved.
+- Tapping toggles save/remove with instant visual feedback.
+- Cross-card sync via `tgif:bookmark-change` custom event — liking in "New!" instantly reflects in the section card and vice versa.
+- Header bookmark button shows a green badge with the count of saved stories (hidden when zero).
+- Clicking the header button opens the **Saved Stories panel** — mobile bottom sheet / desktop centered modal. Each item shows a thumbnail, title (links to original article in a new tab), source, category, and summary snippet, with an X to remove. Empty state shows a friendly prompt.
+
+**Components:** `src/components/BookmarkButton.tsx`, `src/components/BookmarksPanel.tsx`, `src/lib/bookmarks.ts` (shared type + localStorage utilities).
+
 ### Social sharing
 Each story's slide-in panel (`ArticleSheet`) has a share icon button inline on the category/source line, to the right of the source name. Behavior:
 - **Web Share API (primary):** on iOS, Android, macOS Safari/Chrome, and Windows Chrome the button opens the device's native share sheet — readers see all their installed apps and pick one. No platform icons to design or maintain.
@@ -405,4 +419,4 @@ RLS enabled on all four tables. `stories`: public SELECT where status = `publish
 22. **Video / Podcast section** — add a dedicated section for curated uplifting YouTube videos and/or a podcast. Good News Network has a YouTube section; Positive.News has a podcast. Could start with a curated video section pulling from YouTube (no hosting needed — just embed or link), then add a podcast later if there's appetite. Decide on format and whether Mike hosts or just curates.
 23. **Social media accounts + site links** — create The Good I Found accounts on Instagram, Facebook, and potentially Bluesky/X. Once created, add social links to the site footer alongside the existing Ko-fi and About links. Accounts can be used to cross-post stories and grow readership back to the site.
 23. **Most Liked section** — a virtual pinned section (like "New!") showing the top-liked stories of the past 7 days, ordered by `likes` descending. Hold off until readership and like counts are high enough to make the ranking meaningful.
-23. **Bookmarks (Save for Later)** — reader can bookmark any story card with a bookmark icon. Full snapshot saved to localStorage (title, summary, source, original URL, image URL, category) so saved stories remain accessible even if the story is later removed from the site — the original source link still works. A "Saved Stories" view accessible from the header lets readers browse and remove bookmarks. No login required. localStorage key: `tgif_bookmarks`.
+23. ~~**Bookmarks (Save for Later)**~~ — DONE. See **Bookmarks** section.
