@@ -314,7 +314,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
 
   return (
     <>
-      <ArticleSheet story={sheetStory} onClose={() => { setSheetStory(null); setSheetDisplay(null) }} displayTitle={sheetDisplay?.title} displaySummary={sheetDisplay?.summary} />
+      <ArticleSheet story={sheetStory} onClose={() => { setSheetStory(null); setSheetDisplay(null) }} displayTitle={sheetDisplay?.title} displaySummary={sheetDisplay?.summary} lang={lang} />
       {bookmarksOpen && <BookmarksPanel onClose={() => setBookmarksOpen(false)} />}
 
       <div ref={headerRef} className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(200, 221, 230, 0.95)' }}>

@@ -4,15 +4,17 @@ import { useEffect, useRef, useState } from 'react'
 import { type Story } from '@/lib/supabase'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 import ShareButton from '@/components/ShareButton'
+import TextToSpeechButton from '@/components/TextToSpeechButton'
 
 type Props = {
   story: Story | null
   onClose: () => void
   displayTitle?: string
   displaySummary?: string
+  lang?: string
 }
 
-export default function ArticleSheet({ story, onClose, displayTitle, displaySummary }: Props) {
+export default function ArticleSheet({ story, onClose, displayTitle, displaySummary, lang = 'en' }: Props) {
   const [dragY, setDragY] = useState(0)
   const [visible, setVisible] = useState(false)
   const touchStartY = useRef(0)
@@ -98,6 +100,7 @@ export default function ArticleSheet({ story, onClose, displayTitle, displaySumm
               <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">{story.category || story.source}</span>
               <span className="text-xs text-gray-400">Source: {story.source}</span>
               <ShareButton title={displayTitle || story.title} url={story.url} />
+              <TextToSpeechButton title={displayTitle || story.title} summary={summaryText || ''} lang={lang} />
             </div>
             <h2 className="text-gray-900 font-bold text-lg leading-snug">{displayTitle || story.title}</h2>
             {summaryText && (
@@ -151,6 +154,7 @@ export default function ArticleSheet({ story, onClose, displayTitle, displaySumm
               <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">{story.category || story.source}</span>
               <span className="text-xs text-gray-400">Source: {story.source}</span>
               <ShareButton title={displayTitle || story.title} url={story.url} />
+              <TextToSpeechButton title={displayTitle || story.title} summary={summaryText || ''} lang={lang} />
             </div>
             <h2 className="text-gray-900 font-bold text-xl leading-snug">{displayTitle || story.title}</h2>
             {summaryText && (
