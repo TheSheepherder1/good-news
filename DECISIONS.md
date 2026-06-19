@@ -181,6 +181,23 @@ Max width `max-w-7xl` (1280px) on both public site and admin. 3-column card grid
 ### Footer
 Three modal links (**About**, **AI Policy**, **Advertising Policy**) plus a **Share a Story** link to the `/contribute` page (see Reader Submissions). Modal content editable from admin; About modal content translates to selected language.
 
+### Text-to-Speech (Read Aloud)
+A speaker icon appears in the category/source row of the story slide-in panel (alongside the share button), on both mobile and desktop. Designed primarily as an accessibility feature for readers who have difficulty reading or seeing — they can listen to the story title and summary read aloud in their chosen language.
+
+**How it works:**
+- Uses the browser's built-in Web Speech API (`speechSynthesis`) — no API keys, no cost, works offline, no external dependency.
+- Tap the speaker icon to start reading; tap again (stop square icon) to stop. Icon turns green while speaking.
+- Reads the title first, then the summary, in the reader's currently selected language. Language codes are mapped to BCP 47 tags so the device picks the appropriate voice.
+- Resets automatically when the panel closes or a different story is opened.
+- Button is hidden entirely on browsers that don't support the API (graceful degradation).
+- User tap is always required to start — no auto-play on any platform (required by iOS).
+
+**Language support:** All 10 site languages are mapped (en→en-US, zh→zh-CN, de→de-DE, nl→nl-NL, es→es-ES, fr→fr-FR, pl→pl-PL, pt→pt-PT, ja→ja-JP, sr→sr-RS). Uses the device's built-in voices — quality is excellent for major languages; Polish and Serbian may fall back to a default voice on some devices.
+
+**Compatibility:** Works on iOS Safari, Android Chrome, Chrome/Safari/Edge/Firefox desktop.
+
+**Component:** `src/components/TextToSpeechButton.tsx`.
+
 ### Bookmarks (Save for Later)
 Readers can bookmark any story with a bookmark icon — bottom-right of every story card (alongside the like button) and inline on the Bright Spot card. No login required.
 
