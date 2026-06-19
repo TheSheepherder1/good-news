@@ -16,8 +16,8 @@ A daily curated good-news website, live at **www.thegoodifound.com**. Stories ar
 - **Analytics:** Vercel Analytics
 - **Deployment:** Vercel (auto-deploys on push to GitHub)
 - **RSS Parsing:** rss-parser
-- **Fonts:** Geist Sans (body), Merriweather Bold (site title)
-- **Favicon:** 😊 emoji SVG
+- **Fonts:** Geist Sans (body) — Merriweather removed; site title is now the SVG logo
+- **Favicon:** Logo icon PNG (`public/logo-icon.png`, sourced from `TheGoodIFound_Icon_512.png`). Also placed at `src/app/icon.png` for Next.js App Router auto-detection.
 
 ---
 
@@ -171,8 +171,9 @@ The "Share a Story" form's UI chrome (labels, descriptions, buttons, validation/
 - **Section panels:** `bg-white/50 backdrop-blur-sm rounded-3xl` frosted glass containers, `gap-16` between sections
 - **Section headers:** `text-emerald-800`, 18px (`text-lg`), uppercase, tracking-widest
 - **Today's Bright Spot:** bright gold `#F0B429`, 1.35rem, uppercase; featured card has 4px gold border, sits in its own frosted panel
-- **Site title:** Merriweather Bold, 2.43rem mobile / 2.7rem desktop
-- **Tagline:** `text-gray-600`
+- **Site title:** SVG logo (`public/logo.svg`) — icon + "The Good / I Found" wordmark in Georgia serif, rendered as `<img>` at `h-[72px]` mobile / `h-[90px]` desktop. Replaces the old Merriweather text `<h1>`.
+- **Tagline:** `text-gray-600` (still shown below the logo, still translates with selected language)
+- **Header date:** `text-emerald-500` — matches the brand green (#10B981), same font size/weight as tagline
 - **Layout:** max-width 1280px (`max-w-7xl`), 3-column card grid on desktop
 
 ### Layout width
@@ -240,6 +241,33 @@ Public readers can like (and unlike) any story. No login required — state is a
 **Cross-card sync:**
 Stories in the "New!" section are duplicates of their regular section cards. Liking one instantly syncs the other via a custom browser event `tgif:like-change` dispatched on `window`. All `LikeButton` instances for the same `storyId` listen for the event and update their state immediately — no refresh required.
 
+### Brand & Logo
+The Good I Found has a full brand identity. Source files live in `~/Downloads/` (not in the repo — keep originals safe).
+
+**Files delivered by designer:**
+| File | Use |
+|---|---|
+| `TGIF_Light.svg` / `.png` | Full color logo on off-white (#F8FBFA) |
+| `TGIF_Dark.svg` / `.png` | White + emerald on dark (#102126) |
+| `TGIF_Reversed.svg` / `.png` | White logo on emerald (#10B981) |
+| `TGIF_Mono.svg` / `TGIF_Monochrome.png` | Monochrome (dark gray) version |
+| `TheGoodIFound_Wordmark.svg` | Full wordmark with tagline, Georgia serif, proper viewBox |
+| `TheGoodIFound_Wordmark_1200x400.png` | Raster wordmark |
+| `TheGoodIFound_Icon_512.png` | Icon only, 512×512px — used as favicon |
+| `TGIF_Brand_Guidelines.pdf` | Full brand spec |
+
+**Color palette:**
+- Emerald green: `#10B981`
+- Soft blue: `#C8DDE6`
+- Gold: `#F0B429`
+- Off-white: `#F8FBFA`
+- Dark teal (text): `#2F3A3A`
+
+**What's implemented:**
+- `public/logo.svg` — clean wordmark SVG (no background rect, trimmed viewBox) for the site header
+- `public/logo-icon.png` + `src/app/icon.png` — favicon
+- `public/og-image.png` — 1200×630 OG image, soft blue background, full color logo
+
 ### SEO
 - Canonical domain is `https://www.thegoodifound.com` (www) — non-www 307-redirects to www on Vercel. All metadata, sitemap, robots, JSON-LD use www.
 - Rich metadata with 15 keywords in `layout.tsx`
@@ -247,7 +275,7 @@ Stories in the "New!" section are duplicates of their regular section cards. Lik
 - JSON-LD structured data (WebSite schema)
 - **Sitemap is a STATIC file** at `public/sitemap.xml` (the dynamic `src/app/sitemap.ts` was removed — static is more reliable for Google). Update it manually only if permanent pages are added.
 - robots.txt via `src/app/robots.ts` (blocks `/admin`, points to www sitemap)
-- OG image generated via `opengraph-image.tsx` (tagline forced to one line; basic — redesign is a to-do)
+- OG image: `public/og-image.png` — 1200×630, soft blue (#C8DDE6) background, full-color logo (emerald icon, gold sun, dark/emerald wordmark, tagline). Generated via Node/sharp from the brand SVG source. Replaces the old placeholder.
 - Google Search Console verified via `public/google2deb88195915a625.html`. Both www and non-www properties added.
 
 ---
@@ -413,7 +441,7 @@ RLS enabled on all four tables. `stories`: public SELECT where status = `publish
 
 ## To Do
 1. **Daily automation** — schedule the fetch to run each morning automatically via Vercel cron
-2. **OG image redesign** — make the social share preview image look great (currently functional but basic)
+2. ~~**OG image redesign**~~ — DONE. 1200×630 soft blue (#C8DDE6) background with full-color logo. See **Brand & Logo** section.
 3. **Desktop article panel** — show a slide-up panel on desktop (like mobile sheet) with image, summary, and "Read Full Article" button. Keeps users on site longer.
 4. ~~**AI Policy content**~~ — DONE. Added via Edit Content in admin.
 5. ~~**Advertising Policy content**~~ — DONE. Added via Edit Content in admin.
