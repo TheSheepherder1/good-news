@@ -11,6 +11,9 @@ import { type Story } from '@/lib/supabase'
 import { UI, LANGUAGES, type Language, LANG_STORAGE_KEY } from '@/lib/translations'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 import LikeButton from '@/components/LikeButton'
+import BookmarkButton from '@/components/BookmarkButton'
+import BookmarksPanel from '@/components/BookmarksPanel'
+import { getBookmarks } from '@/lib/bookmarks'
 
 type Section = { category: string; stories: Story[] }
 type TranslatedStory = { title: string; summary: string }
@@ -100,6 +103,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const desktopInputRef = useRef<HTMLInputElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const [userOrder, setUserOrder] = useState<string[] | null>(null)
+  const [bookmarksOpen, setBookmarksOpen] = useState(false)
+  const [bookmarkCount, setBookmarkCount] = useState(0)
 
   const aboutParagraphs = (siteContent.about_text || '').split('\n\n').filter(Boolean)
 
@@ -130,6 +135,13 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
     if (stored) {
       try { setUserOrder(JSON.parse(stored)) } catch { /* ignore corrupt data */ }
     }
+  }, [])
+
+  useEffect(() => {
+    setBookmarkCount(getBookmarks().length)
+    function onUpdate() { setBookmarkCount(getBookmarks().length) }
+    window.addEventListener('tgif:bookmarks-updated', onUpdate)
+    return () => window.removeEventListener('tgif:bookmarks-updated', onUpdate)
   }, [])
 
   // Apply the reader's saved section order. "New!" is always pinned first.
@@ -303,6 +315,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   return (
     <>
       <ArticleSheet story={sheetStory} onClose={() => { setSheetStory(null); setSheetDisplay(null) }} displayTitle={sheetDisplay?.title} displaySummary={sheetDisplay?.summary} />
+      {bookmarksOpen && <BookmarksPanel onClose={() => setBookmarksOpen(false)} />}
 
       <div ref={headerRef} className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: 'rgba(200, 221, 230, 0.95)' }}>
         <header className={`max-w-7xl mx-auto px-4 text-center transition-all duration-1000 ease-out ${headerCollapsed ? 'pt-2 pb-4' : 'pt-5 pb-4 md:pt-10 md:pb-6'}`}>
@@ -394,6 +407,22 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                     </svg>
                   </button>
+
+                  {/* Bookmarks */}
+                  <button
+                    onClick={() => setBookmarksOpen(true)}
+                    aria-label="Saved stories"
+                    className="relative flex items-center justify-center w-9 h-9 bg-white border border-gray-200 rounded-full shadow-sm hover:border-emerald-400 hover:text-emerald-700 text-gray-500 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                    </svg>
+                    {bookmarkCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                        {bookmarkCount > 9 ? '9+' : bookmarkCount}
+                      </span>
+                    )}
+                  </button>
                 </div>
               )}
             </>
@@ -439,6 +468,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                       </span>
                       <span>{t.sourcePrefix}{filteredFeatured.source}</span>
                       <LikeButton storyId={filteredFeatured.id} initialCount={filteredFeatured.likes ?? 0} />
+                      <BookmarkButton story={filteredFeatured} displayTitle={getDisplayTitle(filteredFeatured)} />
                     </div>
                     <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
                       {getDisplayTitle(filteredFeatured)}

@@ -5,6 +5,7 @@ import { type Story } from '@/lib/supabase'
 import { SECTIONS } from '@/lib/sections'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 import LikeButton from '@/components/LikeButton'
+import BookmarkButton from '@/components/BookmarkButton'
 
 type Props = {
   story: Story
@@ -187,8 +188,9 @@ export default function StoryCard({ story, displayTitle, displaySummary, sourceP
         )}
 
         {!adminMode && (
-          <div className="flex justify-end mt-auto pt-1">
+          <div className="flex items-center justify-between mt-auto pt-1">
             <LikeButton storyId={story.id} initialCount={story.likes ?? 0} />
+            <BookmarkButton story={story} displayTitle={displayTitle} />
           </div>
         )}
 
