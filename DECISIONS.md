@@ -213,12 +213,16 @@ Readers can bookmark any story with a bookmark icon — bottom-right of every st
 
 **Components:** `src/components/BookmarkButton.tsx`, `src/components/BookmarksPanel.tsx`, `src/lib/bookmarks.ts` (shared type + localStorage utilities).
 
+### RSS Reader Feed
+Readers can subscribe to published stories via a standard RSS 2.0 feed at `/feed.xml` (`src/app/feed.xml/route.ts`). Returns the 50 most recent published stories with title, summary, source, category, image, and a link to the original article. Each item's description includes a Ko-fi donation callout. The feed is cached for 5 minutes (`Cache-Control: public, max-age=300`). An RSS autodiscovery `<link>` tag is included in the site `<head>` via `layout.tsx` metadata (`alternates.types`), so RSS readers can auto-detect it. A small RSS icon in the footer links to the feed directly.
+
 ### Social sharing
 Each story's slide-in panel (`ArticleSheet`) has a share icon button inline on the category/source line, to the right of the source name. Behavior:
 - **Web Share API (primary):** on iOS, Android, macOS Safari/Chrome, and Windows Chrome the button opens the device's native share sheet — readers see all their installed apps and pick one. No platform icons to design or maintain.
 - **Fallback dropdown:** on browsers without `navigator.share` (Firefox desktop, etc.) clicking the button opens a small dropdown with five options: X / Twitter, Facebook, WhatsApp, LinkedIn, Email. Each opens the platform's share page in a new tab with text pre-filled.
 - **Share content:** the original article URL is what gets shared. Pre-filled text reads `"[Article Title] — via The Good I Found https://thegoodifound.com"` — credits the site without replacing the article link.
 - **Component:** `src/components/ShareButton.tsx`. Accepts `title` and `url` props. Uses `navigator.share` if available, otherwise toggles a dropdown. Click-outside closes the dropdown.
+- **OG image limitation:** because the share button shares the *original article URL*, the preview card shown to the recipient uses the original publisher's OG image — not The Good I Found's. Our OG image only appears when someone shares the root `thegoodifound.com` URL directly. Dynamic per-story OG images (to-do #25) would fix this.
 
 ### Story Likes
 Public readers can like (and unlike) any story. No login required — state is anonymous and device-local.
@@ -276,6 +280,8 @@ The Good I Found has a full brand identity. Source files live in `~/Downloads/` 
 - **Sitemap is a STATIC file** at `public/sitemap.xml` (the dynamic `src/app/sitemap.ts` was removed — static is more reliable for Google). Update it manually only if permanent pages are added.
 - robots.txt via `src/app/robots.ts` (blocks `/admin`, points to www sitemap)
 - OG image: `public/og-image.png` — 1200×630, soft blue (#C8DDE6) background, full-color logo (emerald icon, gold sun, dark/emerald wordmark, tagline). Generated via Node/sharp from the brand SVG source. Replaces the old placeholder.
+- **Gotcha — Next.js App Router OG precedence:** the special file `opengraph-image.tsx` (or `.png`) placed in `src/app/` takes precedence over `metadata.openGraph.images` in `layout.tsx` and silently overrides it. The old `opengraph-image.tsx` (emoji + gradient) was doing this — deleted in favour of the static `public/og-image.png`. If a dynamic OG route is ever added back, it must replace `public/og-image.png` entirely rather than coexist with it.
+- Social platforms cache OG images aggressively. After updating, use the Facebook Sharing Debugger and LinkedIn Post Inspector to force a re-scrape.
 - Google Search Console verified via `public/google2deb88195915a625.html`. Both www and non-www properties added.
 
 ---
@@ -462,6 +468,7 @@ RLS enabled on all four tables. `stories`: public SELECT where status = `publish
 20. **Managing a Recommended Story on receipt** — decide how admin should handle a "Recommend a Story" submission once approved. Currently it's inserted straight into Pending via the normal AI classification pipeline (same as RSS stories), with nothing marking it as a reader recommendation.
 21. **Weekly email digest** — send a weekly newsletter to subscribers summarizing that week's published stories. Format: short personal note from Mike at the top (his voice is a key differentiator vs. algorithm-driven sites), followed by 5–10 handpicked story highlights (headline + 1–2 sentence summary + "Read more" link), closing with a soft call-to-action (support us, share with a friend). Stories can be auto-pulled from the database (published stories from the past 7 days), Mike writes the intro and hits send. Use an email platform such as Mailchimp (free up to 500 contacts), Beehiiv, or Substack for list management and delivery — some have APIs that could auto-populate the story list. Add a newsletter signup to the site (footer and/or inline). Daily digest (just the top 3–5 stories, very brief) is an alternative if weekly feels too infrequent.
 22. **Video / Podcast section** — add a dedicated section for curated uplifting YouTube videos and/or a podcast. Good News Network has a YouTube section; Positive.News has a podcast. Could start with a curated video section pulling from YouTube (no hosting needed — just embed or link), then add a podcast later if there's appetite. Decide on format and whether Mike hosts or just curates.
-23. **Social media accounts + site links** — create The Good I Found accounts on Instagram, Facebook, and potentially Bluesky/X. Once created, add social links to the site footer alongside the existing Ko-fi and About links. Accounts can be used to cross-post stories and grow readership back to the site.
-23. **Most Liked section** — a virtual pinned section (like "New!") showing the top-liked stories of the past 7 days, ordered by `likes` descending. Hold off until readership and like counts are high enough to make the ranking meaningful.
 23. ~~**Bookmarks (Save for Later)**~~ — DONE. See **Bookmarks** section.
+24. **Social media accounts + site links** — create The Good I Found accounts on Instagram, Facebook, and potentially Bluesky/X. Once created, add social links to the site footer alongside the existing Ko-fi and About links. Accounts can be used to cross-post stories and grow readership back to the site.
+25. **Dynamic per-story OG images** — when a reader shares a story via the share button, the OG preview shown is the original publisher's image (not ours). A `/api/og?storyId=...` route using `@vercel/og` (Next.js built-in) could generate a 1200×630 branded card with the story title and logo on the fly, so every shared story carries The Good I Found branding. Requires updating `ShareButton.tsx` to share `thegoodifound.com/?story=[id]` or a similar canonical story URL instead of the raw original URL.
+26. **Most Liked section** — a virtual pinned section (like "New!") showing the top-liked stories of the past 7 days, ordered by `likes` descending. Hold off until readership and like counts are high enough to make the ranking meaningful.
