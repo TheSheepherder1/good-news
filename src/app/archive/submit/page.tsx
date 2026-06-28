@@ -631,15 +631,24 @@ function ImageUpload({
 
   return (
     <div className="mb-6">
-      <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 rounded-xl px-4 py-4 cursor-pointer hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors group">
+      <label className="flex flex-col sm:flex-row items-center gap-3 border-2 border-dashed border-gray-200 rounded-xl px-4 py-5 cursor-pointer hover:border-emerald-300 hover:bg-emerald-50/30 active:bg-emerald-50/50 transition-colors group select-none">
         {image.uploading ? (
           <span className="text-sm text-gray-400">Uploading…</span>
         ) : (
           <>
-            <svg className="w-5 h-5 text-gray-300 group-hover:text-emerald-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="text-sm text-gray-400 group-hover:text-emerald-600 transition-colors">{label}</span>
+            {/* Camera icon */}
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition-colors flex-shrink-0">
+              <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+              </svg>
+            </div>
+            <div className="text-center sm:text-left">
+              <p className="text-sm font-medium text-gray-600 group-hover:text-emerald-700 transition-colors">
+                📷 Take a photo or choose from your library
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+            </div>
           </>
         )}
         <input
