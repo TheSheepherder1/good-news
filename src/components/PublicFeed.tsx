@@ -460,15 +460,18 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
                   className="block bg-white rounded-3xl shadow-md overflow-hidden border-2 border-emerald-100 hover:border-emerald-300 transition-colors"
                 >
                   <div className="flex flex-col md:grid md:grid-cols-3">
-                    {archiveFeatured.image_1_url && (
-                      <img
-                        src={archiveFeatured.image_1_url}
-                        alt=""
-                        className="w-full h-52 md:h-full object-cover md:col-span-1"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                      />
-                    )}
-                    <div className={`p-6 flex flex-col gap-3 justify-center ${archiveFeatured.image_1_url ? 'md:col-span-2' : 'md:col-span-3'}`}>
+                    {(() => {
+                      const img = archiveFeatured.image_1_url ?? archiveFeatured.image_2_url ?? archiveFeatured.image_3_url
+                      return img ? (
+                        <img
+                          src={img}
+                          alt=""
+                          className="w-full h-52 md:h-full object-cover md:col-span-1"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
+                      ) : null
+                    })()}
+                    <div className={`p-6 flex flex-col gap-3 justify-center ${(archiveFeatured.image_1_url ?? archiveFeatured.image_2_url ?? archiveFeatured.image_3_url) ? 'md:col-span-2' : 'md:col-span-3'}`}>
                       <div className="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
                         {archiveFeatured.archive_chapters && (
                           <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">

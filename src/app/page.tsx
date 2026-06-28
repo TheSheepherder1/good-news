@@ -9,6 +9,8 @@ export type ArchiveFeatured = {
   opening: string
   impact: string | null
   image_1_url: string | null
+  image_2_url: string | null
+  image_3_url: string | null
   author_name: string | null
   is_anonymous: boolean
   occurred_year: number | null
@@ -42,7 +44,7 @@ async function getPublishedStories(): Promise<Story[]> {
 }
 
 async function getArchiveFeatured(): Promise<ArchiveFeatured | null> {
-  const SELECT = 'id, opening, impact, image_1_url, author_name, is_anonymous, occurred_year, country, archive_chapters(name, slug)'
+  const SELECT = 'id, opening, impact, image_1_url, image_2_url, image_3_url, author_name, is_anonymous, occurred_year, country, archive_chapters(name, slug)'
 
   // Prefer the admin-pinned story
   const { data: pinned } = await supabaseAdmin
