@@ -56,6 +56,9 @@ export default function ArchivePage() {
   const [tag, setTag] = useState('')
   const [author, setAuthor] = useState('')
   const [authorInput, setAuthorInput] = useState('')
+  const [authorSuggestions, setAuthorSuggestions] = useState<{ name: string; story_count: number }[]>([])
+  const [authorFocused, setAuthorFocused] = useState(false)
+  const authorDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Filter panel open state
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
@@ -256,27 +259,52 @@ export default function ArchivePage() {
               />
             )}
 
-            {/* Author name */}
-            <div>
+            {/* Author name — fuzzy autocomplete */}
+            <div className="relative">
               <p className="text-xs font-medium text-gray-500 mb-1">Author Name</p>
-              <form onSubmit={(e) => { e.preventDefault(); setAuthor(authorInput.trim()) }} className="flex gap-2">
-                <input
-                  type="text"
-                  value={authorInput}
-                  onChange={(e) => setAuthorInput(e.target.value)}
-                  placeholder="Search by name…"
-                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
-                />
-                <button
-                  type="submit"
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium px-3 py-2 rounded-xl transition-colors"
-                >
-                  Search
-                </button>
-              </form>
+              <input
+                type="text"
+                value={authorInput}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setAuthorInput(val)
+                  setAuthor('')
+                  if (authorDebounce.current) clearTimeout(authorDebounce.current)
+                  if (val.trim().length < 2) { setAuthorSuggestions([]); return }
+                  authorDebounce.current = setTimeout(async () => {
+                    const res = await fetch(`/api/archive/authors?q=${encodeURIComponent(val.trim())}`)
+                    const data = await res.json()
+                    setAuthorSuggestions(Array.isArray(data) ? data : [])
+                  }, 250)
+                }}
+                onFocus={() => setAuthorFocused(true)}
+                onBlur={() => setTimeout(() => setAuthorFocused(false), 150)}
+                placeholder="Type a name…"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
+              />
+              {/* Suggestions dropdown */}
+              {authorFocused && authorSuggestions.length > 0 && (
+                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                  {authorSuggestions.map((s) => (
+                    <button
+                      key={s.name}
+                      type="button"
+                      onMouseDown={() => {
+                        setAuthor(s.name)
+                        setAuthorInput(s.name)
+                        setAuthorSuggestions([])
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors text-left"
+                    >
+                      <span>{s.name}</span>
+                      <span className="text-xs text-gray-400 ml-2">{s.story_count} {s.story_count === 1 ? 'story' : 'stories'}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {author && (
                 <button
-                  onClick={() => { setAuthor(''); setAuthorInput('') }}
+                  onClick={() => { setAuthor(''); setAuthorInput(''); setAuthorSuggestions([]) }}
                   className="text-xs text-gray-400 hover:text-red-500 mt-1 transition-colors"
                 >
                   Clear
