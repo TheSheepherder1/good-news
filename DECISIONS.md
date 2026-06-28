@@ -7,7 +7,7 @@ A daily curated good-news website, live at **www.thegoodifound.com**. Stories ar
 
 ---
 
-## The Archive — Big Idea (In Planning)
+## The Archive — Big Idea (Built — live on `archive-dev`, merging to production after QA)
 
 The site is evolving toward a two-layer destination:
 
@@ -18,6 +18,24 @@ Curated good news, fresh every day. Stays exactly as-is.
 A permanent, searchable, public library of human goodness. Anyone can submit a story — a personal account, a witnessed act, a family memory. Stories live forever, translated on demand, organized so anyone can find them. No ads, no PII collected, no accounts required.
 
 ### Archive — Decisions Made
+
+**Chapter taxonomy (9 chapters, defined and seeded):**
+Kindness, Courage, Community, Sacrifice, Love, Resilience, Innovation, Environment, Joy. One level of chapters to start — sub-chapters added later when volume and natural groupings earn them.
+
+**Seeding complete:** 27 stories seeded across all 9 chapters (3 per chapter) before public launch. 25 stories without world-event ties; 2 tied to world events still in the database (COVID-19 Pandemic, Paris Olympics 2024). Stories covering multiple countries, time periods, and historical moments.
+
+**Home page integration — "A Story of Goodness":**
+The opening/home page features one archive story as its hero card under the label "A Story of Goodness" (emerald color scheme). This replaced the "Today's Bright Spot" featured-news slot. All news stories now go into sections — none has a separate hero. Admin can pin any live archive story as the home feature via the admin panel; when none is pinned the most recently published live story is shown automatically. Image fallback: `image_1_url → image_2_url → image_3_url` (shows best available photo). A "Browse the Archive →" link sits alongside the hero label.
+
+**Admin home curation (`is_home_featured`):**
+`archive_stories.is_home_featured boolean not null default false`. A partial index (`where is_home_featured = true`) supports fast lookup. Admin "Live Stories" tab in the Archive group shows all live stories with "Set as Home Story" / "Remove from Home" buttons. Feature action unsets any previously pinned story first (only one at a time). Revalidate button clears the ISR cache (120s) so the change appears immediately.
+
+**`/contribute` is now a choice landing page:**
+Clicking "Share a Story" leads to `/contribute`, which shows two cards:
+1. **"Share a story of goodness"** — links to `/archive/submit` (the archive submission form)
+2. **"Recommend a news article"** — expands the existing URL recommendation form inline
+
+"Write an Article" (custom news article mode) is retired — the archive replaces it as the way readers contribute personal writing.
 
 **Submission:** Open to anyone in the world. No account required.
 - AI reviews each submission on arrival — passes automatically → goes live immediately
@@ -50,12 +68,8 @@ A permanent, searchable, public library of human goodness. Anyone can submit a s
 
 ### Archive — Decisions Pending
 
-- **Chapter taxonomy:** The actual list of theme-based chapters (to be defined — let the first 1,000 stories inform the final list)
 - **Sub-chapters:** Start with one level; add sub-chapters when the archive earns them through volume
 - **Story grouping within chapters:** How stories are sorted/grouped once a reader is inside a chapter — chronological, by place, by world event, by something else. Let real stories inform this.
-- **Archive home page:** What a reader sees before making any selection — the entry point to the whole archive
-- **Browsing entry points:** Whether chapters and attribute search are the same page or separate entry points
-- **Seed story list:** Which specific historical events and acts of goodness to use as anchor stories for each chapter at launch
 
 ### Archive — Launch Seeding
 
@@ -103,17 +117,17 @@ The archive will be seeded with AI-generated stories before public launch so the
 
 **Build phases:**
 
-**Phase 1 — Database + admin foundation**
+**Phase 1 — Database + admin foundation** ✓ DONE
 New tables, world events admin panel, archive moderation queue
 
-**Phase 2 — Submission experience**
+**Phase 2 — Submission experience** ✓ DONE
 `/archive/submit` with story template, prompted text areas, 3-image upload, submission form fields, AI quality check, pre-submit "Check My Story" button
 
-**Phase 3 — Public archive**
+**Phase 3 — Public archive** ✓ DONE
 `/archive` browsing with Kayak-effect attribute filters, chapter navigation, individual story pages at `/archive/[id]`
 
-**Phase 4 — Seeding + launch**
-AI-generate seed stories across all chapters, populate world events list with historical events, open to public, push to production
+**Phase 4 — Seeding + launch** ✓ DONE
+27 seed stories across all 9 chapters, home page integration ("A Story of Goodness" hero), admin home curation, `/contribute` choice page. Ready for production merge after QA.
 
 ### Archive — Browsing & Discovery
 
@@ -283,9 +297,11 @@ Custom stories go directly to Approved, bypass AI filter, survive fetch clears, 
 Admin can upload images (including WebP) to any story card from any tab. Images stored in Supabase Storage (`featured-images` bucket). Upload button shows "Uploading…" then "✓ Image added!" on success. Auth passed as URL query param (header approach caused issues on Vercel).
 
 ### Reader Submissions
-Public page has a "Share a Story" footer link (`/contribute`, translates into the reader's chosen language — see "Language translation" below) with two modes:
-1. **Write an Article** — title, card summary, full story, optional 1 image, name, optional email, and a required submission agreement checkbox (see "Submission agreement" below).
-2. **Recommend a Story** — name, URL, optional "why does this belong here?" note, optional email.
+Public page has a "Share a Story" footer link (`/contribute`, translates into the reader's chosen language — see "Language translation" below). `/contribute` is a **choice landing page** with two paths:
+1. **"Share a story of goodness"** — links to `/archive/submit`, the archive story submission form (see Archive section above). This is the primary contribution path.
+2. **"Recommend a news article"** — expands an inline URL recommendation form (name, URL, optional note, optional email).
+
+"Write an Article" (custom news article mode) is retired — the archive replaces it. The URL recommendation path remains.
 
 Both submit (multipart, with a hidden honeypot field) to `/api/submit` (unauthenticated) and land as `new` rows in the `reader_submissions` table, reviewed in the admin **Public Created** tab.
 
@@ -313,12 +329,18 @@ The Short Summary and Full Story fields on `/contribute` use a Tiptap-based `Ric
 - `SubmissionCard` (admin Public Created review) always renders article submissions with `renderSummaryMarkdown`/`sanitizeStoryHtml`, since all new article submissions use these formats regardless of the `content_format` flag (which only exists on `stories`).
 
 ### Admin tabs
-Five tabs: **Pending | Approved | Skipped | Published | Public Created**
+
+**Daily Feed group — five tabs: Pending | Approved | Skipped | Published | Public Created**
 - **Pending:** approve/skip, section override dropdown (with AI suggested label), image upload
 - **Approved:** set as featured (conflict confirmation), image upload, custom story badge, section override dropdown
 - **Skipped:** rescue back to approved, section override dropdown
 - **Published:** mirrors public page order; section change, image add/replace/remove, unpublish (→ Skipped), featured change; search + Section/Date Published filters; **Unpublish All** button (with confirmation) bulk-unpublishes every story matching the active filters
 - **Public Created:** review queue for reader submissions (see **Reader Submissions** below). Tab shows an unread-count badge. Each card has a Section dropdown (required) plus **Approve** / **Dismiss**.
+
+**Archive group — three tabs: Archive Review | Live Stories | World Events**
+- **Archive Review:** stories that failed AI auto-approval, awaiting human decision. Approve (with chapter assignment) or Decline.
+- **Live Stories:** all live archive stories. Each has "Set as Home Story" button (or "Remove from Home" + ⭐ badge if currently pinned). Setting a new home story automatically unsets the previous one.
+- **World Events:** add new events, retire active ones, re-activate retired ones. Active events appear in the archive submission dropdown; retired ones stay in reader search forever.
 
 ### Admin header buttons
 **Edit Content** | **Refresh Site** | **Create Story** | **Publish Stories** | **Fetch New Stories**
@@ -342,7 +364,7 @@ On mobile only, scrolling DOWN collapses the title/tagline/date away (smooth tra
 Shows the VIEWER's local date (their timezone), computed client-side via `toLocaleDateString` in a `useEffect`. Not the server/UTC date.
 
 ### Sections dropdown
-Dynamically populated from whichever categories have published stories. Includes "Top of Page" and "Today's Bright Spot" as fixed nav items at the top, followed by the section list. Each section row has ↑ ↓ reorder arrows on the right (see **Reader section reordering** above). Labels translate with selected language.
+Dynamically populated from whichever categories have published stories. Includes "Top of Page" and "A Story of Goodness" (the archive hero) as fixed nav items at the top when an archive story is featured, followed by the section list. "Today's Bright Spot" is retained in translations but no longer rendered — archive hero replaced it. Each section row has ↑ ↓ reorder arrows on the right (see **Reader section reordering** above). Labels translate with selected language.
 
 ### Search
 Client-side filtering by title, summary, and source. Desktop: always-visible search bar inline with Sections/Language row. Mobile: tap 🔍 to expand full-width search bar. Font size 16px on mobile input prevents iOS Safari auto-zoom.
@@ -364,7 +386,8 @@ The "Share a Story" form's UI chrome (labels, descriptions, buttons, validation/
 - **Background:** linear gradient top-to-bottom soft blue `#c8dde6` → near-white `#f8fbfa` (set in `page.tsx`; sticky header bg matches at `rgba(200,221,230,0.95)`)
 - **Section panels:** `bg-white/50 backdrop-blur-sm rounded-3xl` frosted glass containers, `gap-16` between sections
 - **Section headers:** `text-emerald-800`, 18px (`text-lg`), uppercase, tracking-widest
-- **Today's Bright Spot:** bright gold `#F0B429`, 1.35rem, uppercase; featured card has 4px gold border, sits in its own frosted panel
+- **Today's Bright Spot:** retired as a news hero slot. Label retained in translations but no longer rendered.
+- **A Story of Goodness:** emerald (`text-emerald-600`), 1.35rem, uppercase; archive hero card sits in its own `bg-white/50` frosted panel above all news sections. "Browse the Archive →" link sits alongside the label.
 - **Site title:** SVG logo (`public/logo.svg`) — icon + "The Good / I Found" wordmark in Georgia serif, rendered as `<img>` at `h-[72px]` mobile / `h-[90px]` desktop. Replaces the old Merriweather text `<h1>`.
 - **Tagline:** `text-gray-600` (still shown below the logo, still translates with selected language)
 - **Header date:** `text-emerald-500` — matches the brand green (#10B981), same font size/weight as tagline
@@ -614,7 +637,67 @@ submission_attestations (        -- proof of agreement to submission terms, kept
 )
 ```
 
-RLS enabled on all four tables. `stories`: public SELECT where status = `published`. `site_settings`: public SELECT all. `reader_submissions` and `submission_attestations`: no public policies — fully locked down, all access via service role. All writes use service role key (bypasses RLS).
+```
+
+**Archive tables:**
+
+```sql
+archive_chapters (
+  id uuid primary key,
+  name text not null,
+  slug text not null unique,
+  description text,
+  sort_order integer
+)
+-- 9 chapters: Kindness, Courage, Community, Sacrifice, Love, Resilience, Innovation, Environment, Joy
+
+world_events (
+  id uuid primary key,
+  name text not null,
+  slug text not null unique,
+  year integer,
+  status text not null default 'active',  -- active | retired
+  created_at timestamptz not null default now()
+)
+
+archive_stories (
+  id uuid primary key,
+  chapter_id uuid references archive_chapters(id),
+  world_event_id uuid references world_events(id),
+  opening text not null,
+  body text,
+  impact text,
+  image_1_url text,
+  image_2_url text,
+  image_3_url text,
+  image_1_caption text,
+  image_2_caption text,
+  image_3_caption text,
+  author_name text,
+  is_anonymous boolean not null default false,
+  relationship text,
+  occurred_year integer,
+  occurred_month integer,
+  country text,
+  city text,
+  tags text[],
+  status text not null default 'review',  -- review | live | declined
+  submitted_at timestamptz not null default now(),
+  reviewed_at timestamptz,
+  published_at timestamptz,
+  is_home_featured boolean not null default false  -- admin-pinned home page hero; partial index for fast lookup
+)
+-- partial index: archive_stories_home_featured_idx on archive_stories(is_home_featured) where is_home_featured = true
+
+archive_story_characters (
+  id uuid primary key,
+  story_id uuid references archive_stories(id),
+  name text not null,
+  sort_order integer not null default 0
+)
+```
+
+RLS enabled on all four daily-feed tables. `stories`: public SELECT where status = `published`. `site_settings`: public SELECT all. `reader_submissions` and `submission_attestations`: no public policies — fully locked down, all access via service role. All writes use service role key (bypasses RLS).
 
 ---
 
