@@ -7,6 +7,41 @@ A daily curated good-news website, live at **www.thegoodifound.com**. Stories ar
 
 ---
 
+## The Archive — Big Idea (In Planning)
+
+The site is evolving toward a two-layer destination:
+
+**Layer 1 — The Daily Feed** (live today)
+Curated good news, fresh every day. Stays exactly as-is.
+
+**Layer 2 — The Archive of Human Goodness** (future)
+A permanent, searchable, public library of human goodness. Anyone can submit a story — a personal account, a witnessed act, a family memory. Stories live forever, translated on demand, organized so anyone can find them. No ads, no PII collected, no accounts required.
+
+### Archive — Decisions Made
+
+**Submission:** Open to anyone in the world. No account required.
+- AI reviews each submission on arrival — passes automatically → goes live immediately
+- Fails AI → enters human review queue (Mike reviews before publishing)
+- A **"Check My Story"** button lets writers run the AI check *before* submitting, so they can self-correct. Returns friendly, specific feedback on what might prevent it from going live.
+- AI checks for: genuine goodness, no hate/negativity/political agenda, no third-party PII, not a copy/paste news article, not promotional.
+
+**Language:** Stories are stored permanently in the original language the writer used — no grammar or spelling corrections, no AI cleanup. The writer's voice is preserved exactly. Translation works the same as the daily feed — on-demand, reader's chosen language. The original is always accessible alongside the translation.
+
+**Permanence:** Stories are always available, no time limit, no expiry. Once submitted and live, a story stays forever. Operational implications to address before launch:
+- **Regular exports** — automated backups of the full archive to AWS S3, GitHub, or similar. Text is tiny; a million stories is still a small file.
+- **Internet Archive partnership** — the Wayback Machine actively partners with preservation projects; worth pursuing.
+- **Open dataset** — make the archive a publicly downloadable dataset so stories survive even if the site ever goes down.
+- **Legal/estate planning** — a non-profit structure would protect the archive long-term and ensure it outlives any single person's involvement.
+
+### Archive — Decisions Pending
+
+- **Curation standard:** Does every AI-passing story go live regardless of quality, or is there still a "genuinely belongs in the archive of human goodness" bar?
+- **Searchable attributes:** How stories are tagged and found — person, place, time/event, theme, relationship to subject (family, witness, self)
+- **Media:** Text only, or can submitters attach photos, documents, letters?
+- **Organization:** How the archive is browsed beyond search — by region, language, era, theme, major world events
+
+---
+
 ## Tech Stack
 - **Framework:** Next.js (App Router, TypeScript, Tailwind CSS)
 - **Database:** Supabase (PostgreSQL with RLS enabled)
