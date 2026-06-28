@@ -8,6 +8,7 @@ import ArticleSheet from '@/components/ArticleSheet'
 import FooterModal from '@/components/FooterModal'
 import LanguagePicker from '@/components/LanguagePicker'
 import { type Story } from '@/lib/supabase'
+import { type ArchiveFeatured } from '@/app/page'
 import { UI, LANGUAGES, type Language, LANG_STORAGE_KEY } from '@/lib/translations'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 import LikeButton from '@/components/LikeButton'
@@ -20,6 +21,7 @@ type TranslatedStory = { title: string; summary: string }
 
 type Props = {
   featured: Story | null
+  archiveFeatured: ArchiveFeatured | null
   sections: Section[]
   publishDate: string | null
   siteContent?: Record<string, string>
@@ -79,7 +81,7 @@ async function translateBatch(texts: string[], target: string): Promise<string[]
   }
 }
 
-export default function PublicFeed({ featured, sections, publishDate, siteContent = {} }: Props) {
+export default function PublicFeed({ featured, archiveFeatured, sections, publishDate, siteContent = {} }: Props) {
   const [sheetStory, setSheetStory] = useState<Story | null>(null)
   const [sheetDisplay, setSheetDisplay] = useState<{ title: string; summary: string } | null>(null)
   const [headerCollapsed, setHeaderCollapsed] = useState(false)
@@ -359,15 +361,15 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                   <p className="mt-1 text-emerald-500 text-base">{localDate}</p>
                 )}
               </div>
-              {(featured || sections.length > 0) && (
+              {(archiveFeatured || sections.length > 0) && (
                 <div className="mt-4 flex justify-center items-center gap-3 flex-wrap">
                   <SectionNav
                     categories={sortedCategories}
                     categoryLabels={t.categories}
-                    hasFeatured={!!filteredFeatured}
+                    hasFeatured={!!archiveFeatured}
                     topOfPageLabel={t.topOfPage}
                     sectionsLabel={t.sections}
-                    featuredLabel={t.brightSpot}
+                    featuredLabel={t.storyOfGoodness}
                     onNavigate={scrollToSection}
                     onReorder={handleReorder}
                     pinnedCategories={['New!']}
@@ -439,53 +441,57 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
           </p>
         )}
 
-        {!isSearching && featured === null && sections.length === 0 ? (
+        {!isSearching && archiveFeatured === null && sections.length === 0 ? (
           <div className="text-center text-gray-400 py-20 text-lg">{t.noStories}</div>
         ) : (
           <>
-            {filteredFeatured && (
+            {!isSearching && archiveFeatured && (
               <div id="featured" className="scroll-mt-56 md:scroll-mt-60 bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/70">
-                <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest mb-3" style={{ color: '#F0B429' }}>
-                  {t.brightSpot}
-                </h2>
-                <div
-                  className="bg-white rounded-3xl shadow-md overflow-hidden flex flex-col md:grid md:grid-cols-3 cursor-pointer md:cursor-default border-4"
-                  style={{ borderColor: '#F0B429' }}
-                  onClick={() => handleOpen(filteredFeatured)}
-                >
-                  {filteredFeatured.image_url && (
-                    <img
-                      src={filteredFeatured.image_url}
-                      alt=""
-                      className="w-full h-52 md:h-full object-cover md:col-span-1"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                  )}
-                  <div className={`p-6 flex flex-col gap-3 justify-center ${filteredFeatured.image_url ? 'md:col-span-2' : 'md:col-span-3'}`}>
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                        {getCategoryLabel(filteredFeatured.category || filteredFeatured.source)}
-                      </span>
-                      <span>{t.sourcePrefix}{filteredFeatured.source}</span>
-                      <LikeButton storyId={filteredFeatured.id} initialCount={filteredFeatured.likes ?? 0} />
-                      <BookmarkButton story={filteredFeatured} displayTitle={getDisplayTitle(filteredFeatured)} />
-                    </div>
-                    <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
-                      {getDisplayTitle(filteredFeatured)}
-                    </p>
-                    {filteredFeatured.summary && (
-                      filteredFeatured.content_format === 'rich' ? (
-                        <div className="text-gray-500 text-sm leading-relaxed line-clamp-4">
-                          {renderSummaryMarkdown(getDisplaySummary(filteredFeatured))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-4">
-                          {getDisplaySummary(filteredFeatured)}
-                        </p>
-                      )
-                    )}
-                  </div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest text-emerald-600">
+                    {t.storyOfGoodness}
+                  </h2>
+                  <Link href="/archive" className="text-xs text-emerald-500 hover:text-emerald-700 font-medium transition-colors">
+                    {t.browseArchive} →
+                  </Link>
                 </div>
+                <Link
+                  href={`/archive/${archiveFeatured.id}`}
+                  className="block bg-white rounded-3xl shadow-md overflow-hidden border-2 border-emerald-100 hover:border-emerald-300 transition-colors"
+                >
+                  <div className="flex flex-col md:grid md:grid-cols-3">
+                    {archiveFeatured.image_1_url && (
+                      <img
+                        src={archiveFeatured.image_1_url}
+                        alt=""
+                        className="w-full h-52 md:h-full object-cover md:col-span-1"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                    )}
+                    <div className={`p-6 flex flex-col gap-3 justify-center ${archiveFeatured.image_1_url ? 'md:col-span-2' : 'md:col-span-3'}`}>
+                      <div className="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+                        {archiveFeatured.archive_chapters && (
+                          <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                            {archiveFeatured.archive_chapters.name}
+                          </span>
+                        )}
+                        {archiveFeatured.occurred_year && <span>{archiveFeatured.occurred_year}</span>}
+                        {archiveFeatured.country && <span>· {archiveFeatured.country}</span>}
+                      </div>
+                      <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
+                        {archiveFeatured.opening}
+                      </p>
+                      {archiveFeatured.impact && (
+                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 border-l-2 border-emerald-200 pl-3 italic">
+                          {archiveFeatured.impact}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-1">
+                        {archiveFeatured.is_anonymous ? 'Anonymous' : archiveFeatured.author_name}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
               </div>
             )}
 

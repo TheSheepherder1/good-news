@@ -20,6 +20,8 @@ export type UIStrings = {
   siteTitle: string
   tagline: string
   brightSpot: string
+  storyOfGoodness: string
+  browseArchive: string
   searchPlaceholder: string
   topOfPage: string
   sections: string
@@ -44,6 +46,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: 'The Good I Found',
     tagline: 'Stories of Kindness, Progress, and Hope from Around the World',
     brightSpot: "Today's Bright Spot",
+    storyOfGoodness: 'A Story of Goodness',
+    browseArchive: 'Browse the Archive',
     searchPlaceholder: 'Search stories…',
     topOfPage: 'Top of Page',
     sections: 'Sections',
@@ -71,6 +75,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: '我发现的美好',
     tagline: '来自世界各地的善意、进步与希望的故事',
     brightSpot: '今日亮点',
+    storyOfGoodness: '一个善意的故事',
+    browseArchive: '浏览档案',
     searchPlaceholder: '搜索故事…',
     topOfPage: '页面顶部',
     sections: '分类',
@@ -98,6 +104,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: 'Das Gute, das ich Fand',
     tagline: 'Geschichten von Freundlichkeit, Fortschritt und Hoffnung aus aller Welt',
     brightSpot: 'Der Lichtblick des Tages',
+    storyOfGoodness: 'Eine Geschichte der Güte',
+    browseArchive: 'Archiv durchsuchen',
     searchPlaceholder: 'Geschichten suchen…',
     topOfPage: 'Seitenanfang',
     sections: 'Bereiche',
@@ -125,6 +133,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: 'Het Goede dat ik Vond',
     tagline: 'Verhalen over vriendelijkheid, vooruitgang en hoop van over de hele wereld',
     brightSpot: 'Het Lichtpuntje van Vandaag',
+    storyOfGoodness: 'Een verhaal van goedheid',
+    browseArchive: 'Archief verkennen',
     searchPlaceholder: 'Zoek verhalen…',
     topOfPage: 'Bovenkant van pagina',
     sections: 'Secties',
@@ -152,6 +162,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: 'Lo Bueno que Encontré',
     tagline: 'Historias de bondad, progreso y esperanza de todo el mundo',
     brightSpot: 'El Punto Brillante de Hoy',
+    storyOfGoodness: 'Una historia de bondad',
+    browseArchive: 'Explorar el archivo',
     searchPlaceholder: 'Buscar historias…',
     topOfPage: 'Inicio de Página',
     sections: 'Secciones',
@@ -179,6 +191,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: "Le Bien que J'ai Trouvé",
     tagline: "Des histoires de bonté, de progrès et d'espoir du monde entier",
     brightSpot: "Le Point Lumineux du Jour",
+    storyOfGoodness: "Une histoire de bonté",
+    browseArchive: "Parcourir l'archive",
     searchPlaceholder: 'Rechercher des histoires…',
     topOfPage: 'Haut de Page',
     sections: 'Sections',
@@ -206,6 +220,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: 'Dobro, które Znalazłem',
     tagline: 'Opowieści o życzliwości, postępie i nadziei z całego świata',
     brightSpot: 'Jasny Punkt Dnia',
+    storyOfGoodness: 'Historia dobroci',
+    browseArchive: 'Przeglądaj archiwum',
     searchPlaceholder: 'Szukaj historii…',
     topOfPage: 'Góra strony',
     sections: 'Sekcje',
@@ -233,6 +249,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: 'O Bem que Encontrei',
     tagline: 'Histórias de bondade, progresso e esperança de todo o mundo',
     brightSpot: 'O Ponto Brilhante de Hoje',
+    storyOfGoodness: 'Uma história de bondade',
+    browseArchive: 'Explorar o arquivo',
     searchPlaceholder: 'Pesquisar histórias…',
     topOfPage: 'Topo da página',
     sections: 'Seções',
@@ -260,6 +278,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: '私が見つけた良いこと',
     tagline: '世界中の優しさ、進歩、希望の物語',
     brightSpot: '今日のハイライト',
+    storyOfGoodness: '善意の物語',
+    browseArchive: 'アーカイブを見る',
     searchPlaceholder: '記事を検索…',
     topOfPage: 'ページトップ',
     sections: 'セクション',
@@ -287,6 +307,8 @@ export const UI: Record<Language, UIStrings> = {
     siteTitle: 'Dobro koje sam Pronašao',
     tagline: 'Priče o dobroti, napretku i nadi iz celog sveta',
     brightSpot: 'Svetla tačka dana',
+    storyOfGoodness: 'Priča o dobroti',
+    browseArchive: 'Pretraži arhivu',
     searchPlaceholder: 'Pretraži priče…',
     topOfPage: 'Vrh stranice',
     sections: 'Sekcije',
