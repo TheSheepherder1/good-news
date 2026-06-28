@@ -1,7 +1,7 @@
 # The Good I Found — Project Decisions
 
 ## Project Overview
-A daily curated good-news website, live at **www.thegoodifound.com**. Stories are fetched from 35 RSS feeds across the globe, filtered by AI for positivity and politics, reviewed by the admin, and published to the public site. Human-in-the-loop: nothing publishes automatically. Supports 5 languages, search, mobile slide-up reader, custom hand-written stories, and admin-editable footer content.
+A daily curated good-news website, live at **www.thegoodifound.com**. Stories are fetched from 35 RSS feeds across the globe, filtered by AI for positivity and politics, reviewed by the admin, and published to the public site. Human-in-the-loop: nothing publishes automatically. Supports 10 languages, search, mobile slide-up reader, custom hand-written stories, and admin-editable footer content.
 
 **To resume work in a fresh conversation:** read this whole file, then continue. It is the source of truth for the project's state and decisions.
 
