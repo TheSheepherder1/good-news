@@ -50,9 +50,50 @@ A permanent, searchable, public library of human goodness. Anyone can submit a s
 
 ### Archive — Decisions Pending
 
-- **Submission form:** What fields are explicitly asked of the writer at submission time (beyond the template prompts)
 - **Chapter taxonomy:** The actual list of theme-based chapters (to be defined — let the first 1,000 stories inform the final list)
 - **Sub-chapters:** Start with one level; add sub-chapters when the archive earns them through volume
+
+### Archive — Submission Form
+
+The submission form is separate from the story itself. It is metadata — never displayed as part of the published story, but powers search and organization. Presented to the writer after the story is written as a distinct step: *"Almost done — help us file your story so others can find it."*
+
+**About the story**
+- **Date occurred** — Month (optional) + Year (required). Year is almost always remembered; month less reliably so.
+- **Place occurred** — City (optional) + State/Province (optional) + Country (required)
+- **World event connection** — optional dropdown, curated and maintained by Mike (see World Events below)
+
+**About the people**
+- **Main characters** — multiple names supported; writer can add/remove fields as needed
+- **Organization involved** — optional (a school, charity, sports team, company, etc.)
+- **Relationship to this story** — required. Options: Witnessed it / It happened to me / Family story / Community story / I read about this
+
+**About the submitter**
+- **Author name** — required. Collected internally always; displayed publicly unless anonymous is toggled.
+- **Anonymous** — optional toggle. Name still collected for moderation purposes, displayed publicly as "Anonymous."
+
+**Discovery**
+- **Tags** — up to 3 free-form words the writer associates with the story. Captures things no taxonomy anticipates.
+
+**What AI handles automatically (writer does not fill in):**
+- Chapter assignment (theme)
+- Language detection
+- Attribute extraction from story text as fallback for any fields left blank
+
+### Archive — World Events
+
+A curated list of world events maintained by Mike, used to connect stories to larger historical moments (World Cup 2026, COVID-19 Pandemic, Hurricane Katrina, etc.).
+
+**Two states:**
+- **Active** — available in the dropdown for new story submissions
+- **Retired** — removed from the new submission dropdown, but all stories tagged to it remain permanently searchable. Can be re-activated at any time (e.g. for an anniversary moment when new stories may come in).
+
+**Two contexts:**
+- **Writers submitting** — see only active events. Clean, relevant, not overwhelming.
+- **Readers searching** — see all events ever created, active and retired. "World Cup 2026" is findable ten years from now with every story ever tagged to it.
+
+**Over time**, the full events list becomes a remarkable index of human goodness mapped to world history — every event a doorway into the stories connected to that moment.
+
+**Admin management:** Mike adds events, retires them, and re-activates them from an admin panel. Nothing is ever deleted — retired events stay in the database and remain fully searchable.
 
 ### Archive — Search & Organization
 
