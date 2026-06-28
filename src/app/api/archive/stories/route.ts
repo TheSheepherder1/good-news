@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
   const eventId    = searchParams.get('event') || ''
   const language   = searchParams.get('language') || ''
   const tag        = searchParams.get('tag') || ''
+  const author     = searchParams.get('author') || ''
   const limit      = Math.min(Number(searchParams.get('limit') || 24), 100)
   const offset     = Number(searchParams.get('offset') || 0)
 
@@ -34,6 +35,7 @@ export async function GET(req: NextRequest) {
   if (eventId)    storyQ = storyQ.eq('world_event_id', eventId)
   if (language)   storyQ = storyQ.eq('original_language', language)
   if (tag)        storyQ = storyQ.contains('tags', [tag])
+  if (author)     storyQ = storyQ.ilike('author_name', `%${author}%`).eq('is_anonymous', false)
 
   // Filter options query (all matching rows, minimal fields)
   let filterQ = supabaseAdmin
@@ -46,6 +48,7 @@ export async function GET(req: NextRequest) {
   if (eventId)    filterQ = filterQ.eq('world_event_id', eventId)
   if (language)   filterQ = filterQ.eq('original_language', language)
   if (tag)        filterQ = filterQ.contains('tags', [tag])
+  if (author)     filterQ = filterQ.ilike('author_name', `%${author}%`).eq('is_anonymous', false)
 
   const [storiesRes, filterRes, chaptersRes, eventsRes] = await Promise.all([
     storyQ.order('published_at', { ascending: false }).range(offset, offset + limit - 1),

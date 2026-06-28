@@ -54,6 +54,8 @@ export default function ArchivePage() {
   const [event, setEvent] = useState('')
   const [language, setLanguage] = useState('')
   const [tag, setTag] = useState('')
+  const [author, setAuthor] = useState('')
+  const [authorInput, setAuthorInput] = useState('')
 
   // Filter panel open state
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
@@ -61,7 +63,7 @@ export default function ArchivePage() {
   const offset = useRef(0)
   const PAGE = 24
 
-  const activeCount = [chapter, country, year, event, language, tag].filter(Boolean).length
+  const activeCount = [chapter, country, year, event, language, tag, author].filter(Boolean).length
 
   const buildParams = useCallback((off: number) => {
     const p = new URLSearchParams({ limit: String(PAGE), offset: String(off) })
@@ -71,6 +73,7 @@ export default function ArchivePage() {
     if (event)    p.set('event', event)
     if (language) p.set('language', language)
     if (tag)      p.set('tag', tag)
+    if (author)   p.set('author', author)
     return p
   }, [chapter, country, year, event, language, tag])
 
@@ -98,6 +101,7 @@ export default function ArchivePage() {
 
   function clearAll() {
     setChapter(''); setCountry(''); setYear(''); setEvent(''); setLanguage(''); setTag('')
+    setAuthor(''); setAuthorInput('')
   }
 
   const hasMore = stories.length < total
@@ -191,6 +195,7 @@ export default function ArchivePage() {
           {event && <FilterChip label={filters.events.find((e) => e.id === event)?.name || event} onRemove={() => setEvent('')} />}
           {language && <FilterChip label={LANG_LABELS[language] || language} onRemove={() => setLanguage('')} />}
           {tag && <FilterChip label={`#${tag}`} onRemove={() => setTag('')} />}
+          {author && <FilterChip label={`Author: ${author}`} onRemove={() => { setAuthor(''); setAuthorInput('') }} />}
           {activeCount > 1 && (
             <button onClick={clearAll} className="text-xs text-gray-400 hover:text-red-500 transition-colors ml-1">
               Clear all
@@ -250,6 +255,34 @@ export default function ArchivePage() {
                 placeholder="Any language"
               />
             )}
+
+            {/* Author name */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-1">Author Name</p>
+              <form onSubmit={(e) => { e.preventDefault(); setAuthor(authorInput.trim()) }} className="flex gap-2">
+                <input
+                  type="text"
+                  value={authorInput}
+                  onChange={(e) => setAuthorInput(e.target.value)}
+                  placeholder="Search by name…"
+                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
+                />
+                <button
+                  type="submit"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium px-3 py-2 rounded-xl transition-colors"
+                >
+                  Search
+                </button>
+              </form>
+              {author && (
+                <button
+                  onClick={() => { setAuthor(''); setAuthorInput('') }}
+                  className="text-xs text-gray-400 hover:text-red-500 mt-1 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
 
             {/* Tags */}
             {filters.tags.length > 0 && (
