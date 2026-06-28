@@ -56,5 +56,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ ok: true, message: 'Story declined.' })
   }
 
+  if (action === 'feature') {
+    // Unset any existing home feature, then set this one
+    await supabaseAdmin.from('archive_stories').update({ is_home_featured: false }).eq('is_home_featured', true)
+    const { error } = await supabaseAdmin.from('archive_stories').update({ is_home_featured: true }).eq('id', id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true, message: 'Story set as home feature.' })
+  }
+
+  if (action === 'unfeature') {
+    const { error } = await supabaseAdmin.from('archive_stories').update({ is_home_featured: false }).eq('id', id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true, message: 'Story removed from home.' })
+  }
+
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
 }

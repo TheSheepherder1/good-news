@@ -81,6 +81,7 @@ export type ArchiveStory = {
   ai_score: number | null
   ai_reason: string | null
   is_seed: boolean
+  is_home_featured: boolean
   submitted_at: string
   reviewed_at: string | null
   published_at: string | null

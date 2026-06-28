@@ -42,14 +42,26 @@ async function getPublishedStories(): Promise<Story[]> {
 }
 
 async function getArchiveFeatured(): Promise<ArchiveFeatured | null> {
+  const SELECT = 'id, opening, impact, image_1_url, author_name, is_anonymous, occurred_year, country, archive_chapters(name, slug)'
+
+  // Prefer the admin-pinned story
+  const { data: pinned } = await supabaseAdmin
+    .from('archive_stories')
+    .select(SELECT)
+    .eq('status', 'live')
+    .eq('is_home_featured', true)
+    .maybeSingle()
+  if (pinned) return pinned as unknown as ArchiveFeatured
+
+  // Fall back to most recently published
   const { data } = await supabaseAdmin
     .from('archive_stories')
-    .select('id, opening, impact, image_1_url, author_name, is_anonymous, occurred_year, country, archive_chapters(name, slug)')
+    .select(SELECT)
     .eq('status', 'live')
     .order('published_at', { ascending: false, nullsFirst: false })
     .limit(1)
     .maybeSingle()
-  return (data as ArchiveFeatured | null) ?? null
+  return data ? (data as unknown as ArchiveFeatured) : null
 }
 
 async function getSiteContent(): Promise<Record<string, string>> {

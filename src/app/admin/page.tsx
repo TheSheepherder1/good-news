@@ -6,7 +6,7 @@ import SubmissionCard from '@/components/SubmissionCard'
 import { type Story, type ReaderSubmission, type ArchiveChapter, type WorldEvent, type ArchiveStory } from '@/lib/supabase'
 import { SECTIONS, CATEGORY_ORDER } from '@/lib/sections'
 
-type Tab = 'pending' | 'approved' | 'skipped' | 'published' | 'submissions' | 'chapters' | 'events' | 'archive-queue'
+type Tab = 'pending' | 'approved' | 'skipped' | 'published' | 'submissions' | 'chapters' | 'events' | 'archive-queue' | 'archive-live'
 
 const TAB_LABELS: Record<Tab, string> = {
   pending: 'Pending',
@@ -17,6 +17,7 @@ const TAB_LABELS: Record<Tab, string> = {
   chapters: 'Chapters',
   events: 'World Events',
   'archive-queue': 'Story Review',
+  'archive-live': 'Live Stories',
 }
 
 // Local (viewer's timezone) date, e.g. "2026-06-09" — not the UTC date from the ISO string.
@@ -92,6 +93,8 @@ export default function AdminPage() {
   const [worldEvents, setWorldEvents] = useState<WorldEvent[]>([])
   const [archiveQueue, setArchiveQueue] = useState<ArchiveStory[]>([])
   const [archiveQueueCount, setArchiveQueueCount] = useState<number | null>(null)
+  const [archiveLive, setArchiveLive] = useState<ArchiveStory[]>([])
+  const [settingHomeFeatured, setSettingHomeFeatured] = useState<string | null>(null)
 
   // Chapter form modal
   const [showChapterModal, setShowChapterModal] = useState(false)
@@ -154,12 +157,21 @@ export default function AdminPage() {
     setLoading(false)
   }, [password])
 
+  const fetchArchiveLive = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch('/api/archive/queue?status=live', { headers: { Authorization: `Bearer ${password}` } })
+    const data = await res.json()
+    setArchiveLive(Array.isArray(data) ? data : [])
+    setLoading(false)
+  }, [password])
+
   useEffect(() => {
     if (authed) {
       if (tab === 'submissions') fetchSubmissions()
       else if (tab === 'chapters') fetchChapters()
       else if (tab === 'events') fetchWorldEvents()
       else if (tab === 'archive-queue') fetchArchiveQueue()
+      else if (tab === 'archive-live') fetchArchiveLive()
       else fetchStories(tab)
     }
     setPublishedSearch('')
@@ -167,7 +179,7 @@ export default function AdminPage() {
     setSelectedDates([])
     setSectionDropdownOpen(false)
     setDateDropdownOpen(false)
-  }, [authed, tab, fetchStories, fetchSubmissions, fetchChapters, fetchWorldEvents, fetchArchiveQueue])
+  }, [authed, tab, fetchStories, fetchSubmissions, fetchChapters, fetchWorldEvents, fetchArchiveQueue, fetchArchiveLive])
 
   // Badge counts for submissions and archive queue — fetched on load regardless of active tab.
   useEffect(() => {
@@ -525,6 +537,26 @@ export default function AdminPage() {
     } else {
       setMsg(`Error: ${data.error}`)
     }
+  }
+
+  async function setHomeFeatured(id: string, action: 'feature' | 'unfeature') {
+    setSettingHomeFeatured(id)
+    const res = await fetch('/api/archive/queue', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ id, action }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setArchiveLive((prev) => prev.map((s) => ({
+        ...s,
+        is_home_featured: action === 'feature' ? s.id === id : s.id === id ? false : s.is_home_featured,
+      })))
+      setMsg(data.message)
+    } else {
+      setMsg(`Error: ${data.error}`)
+    }
+    setSettingHomeFeatured(null)
   }
 
   async function runIngest() {
@@ -1029,7 +1061,7 @@ export default function AdminPage() {
               </button>
             ))}
             <span className="text-xs text-gray-300 self-center px-1 ml-1">Archive</span>
-            {(['chapters', 'events', 'archive-queue'] as Tab[]).map((t) => (
+            {(['chapters', 'events', 'archive-queue', 'archive-live'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -1289,6 +1321,60 @@ export default function AdminPage() {
                           Decline
                         </button>
                       </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        ) : tab === 'archive-live' ? (
+          <div className="max-w-3xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-base font-semibold text-gray-800">Live Stories</h2>
+              <span className="text-xs text-gray-400">{archiveLive.length} {archiveLive.length === 1 ? 'story' : 'stories'} live</span>
+            </div>
+
+            {archiveLive.length === 0 ? (
+              <div className="text-center text-gray-400 py-20">No live stories yet.</div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {archiveLive.map((story) => {
+                  const chapterName = (story as ArchiveStory & { chapter?: { name: string } }).chapter?.name
+                  const isFeatured = story.is_home_featured
+                  const isLoading = settingHomeFeatured === story.id
+
+                  return (
+                    <div
+                      key={story.id}
+                      className={`bg-white rounded-xl border p-4 flex items-start gap-4 ${isFeatured ? 'border-emerald-300 bg-emerald-50/30' : 'border-gray-100'}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400 mb-1">
+                          {chapterName && (
+                            <span className="bg-indigo-50 text-indigo-600 font-medium px-2 py-0.5 rounded-full">{chapterName}</span>
+                          )}
+                          {isFeatured && (
+                            <span className="bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded-full">⭐ Home Story</span>
+                          )}
+                          {story.occurred_year && <span>{story.occurred_year}</span>}
+                          {story.country && <span>· {story.country}</span>}
+                        </div>
+                        <p className="text-sm text-gray-800 line-clamp-2">{story.opening}</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {story.is_anonymous ? 'Anonymous' : story.author_name}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setHomeFeatured(story.id, isFeatured ? 'unfeature' : 'feature')}
+                        disabled={isLoading}
+                        className={`flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+                          isFeatured
+                            ? 'bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-500'
+                            : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                        }`}
+                      >
+                        {isLoading ? '…' : isFeatured ? 'Remove from Home' : 'Set as Home Story'}
+                      </button>
                     </div>
                   )
                 })}
