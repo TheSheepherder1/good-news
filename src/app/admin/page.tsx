@@ -16,7 +16,7 @@ const TAB_LABELS: Record<Tab, string> = {
   submissions: 'Public Created',
   chapters: 'Chapters',
   events: 'World Events',
-  'archive-queue': 'Archive Queue',
+  'archive-queue': 'Story Review',
 }
 
 // Local (viewer's timezone) date, e.g. "2026-06-09" — not the UTC date from the ISO string.
