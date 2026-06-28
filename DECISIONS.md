@@ -50,8 +50,34 @@ A permanent, searchable, public library of human goodness. Anyone can submit a s
 
 ### Archive — Decisions Pending
 
-- **Searchable attributes:** How stories are tagged and found — person, place, time/event, theme, relationship to subject (family, witness, self)
-- **Organization:** How the archive is browsed beyond search — by region, language, era, theme, major world events
+- **Submission form:** What fields are explicitly asked of the writer at submission time (beyond the template prompts)
+- **Chapter taxonomy:** The actual list of theme-based chapters (to be defined — let the first 1,000 stories inform the final list)
+- **Sub-chapters:** Start with one level; add sub-chapters when the archive earns them through volume
+
+### Archive — Search & Organization
+
+**Two distinct systems:**
+- **Search** — targeted lookup. Solved by attributes/metadata. John types his grandfather's name and finds the story regardless of what chapter it lives in.
+- **Browsing** — discovery. Solved by chapters. A stranger explores the archive without knowing what they're looking for yet.
+
+**Search attributes** (metadata collected at submission):
+- Name of the person the story is about — critical for the grandfather lookup
+- Location where it happened — country minimum, city if known
+- When it happened — year minimum, exact date optional
+- World event connection — was this tied to something larger? (a World Cup, a disaster, a war, a pandemic, etc.)
+- Submitter relationship — I witnessed this / This happened to me / This is a family story / I read about this
+- Original language
+- Submission date (automatic)
+
+Some attributes (who, where, when) can also be extracted by AI from the story text itself as a fallback if the writer doesn't fill them in — but explicitly asking is more reliable.
+
+**Chapter organization** (for browsing):
+- **Primary chapter = Theme** — what kind of goodness is this? (Kindness, Courage, Sacrifice, Community, Love, Innovation, etc.)
+- **Place and time are filters within chapters**, not separate chapters — a story about a firefighter in Brazil during the 2014 World Cup lives in Courage, findable by filtering Brazil + 2014
+- **AI assigns the chapter** — writer sees the assignment before submitting and can flag a disagreement. Writer doesn't need to know the taxonomy; AI applies it consistently.
+- **One level of chapters to start** — sub-chapters added later when natural groupings emerge from the stories themselves. Don't over-design the taxonomy before the archive has content.
+
+**Guiding principle:** Let the first 1,000 stories teach what the chapters and sub-chapters should actually be. Decide principles now; refine taxonomy from real submissions.
 
 ---
 
