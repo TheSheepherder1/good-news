@@ -55,6 +55,29 @@ A permanent, searchable, public library of human goodness. Anyone can submit a s
 - **Story grouping within chapters:** How stories are sorted/grouped once a reader is inside a chapter — chronological, by place, by world event, by something else. Let real stories inform this.
 - **Archive home page:** What a reader sees before making any selection — the entry point to the whole archive
 - **Browsing entry points:** Whether chapters and attribute search are the same page or separate entry points
+- **Seed story list:** Which specific historical events and acts of goodness to use as anchor stories for each chapter at launch
+
+### Archive — Launch Seeding
+
+The archive will be seeded with AI-generated stories before public launch so the first visitors arrive to a living, explorable archive rather than an empty one. Seed stories set the tone for what "archive-worthy" means — they are effectively the quality bar every future submitter sees.
+
+**What gets seeded:**
+- 3–5 stories per chapter at minimum
+- Stories based on well-known historical acts of goodness and public record events (Dunkirk fishermen, the Thai cave rescue, Fred Rogers, etc.)
+- Stories spread across multiple countries, languages, and time periods — demonstrating the global scope from day one
+- All chapters represented so none feel empty
+
+**Rules for seed stories:**
+- Never presented as first-person accounts from real named individuals who didn't submit them — that would undermine the archive's integrity
+- Historical public figures and well-documented public events are fair game
+- Clearly marked with a consistent attribution label (e.g. "Historical Account" or "Archived Story") so provenance is never in question
+- Must pass the same AI quality bar as any future submission — seed stories are the standard, not exceptions to it
+
+**What seed stories accomplish:**
+- Give first visitors something to explore immediately
+- Define what archive-worthy looks like for future submitters
+- Populate the Kayak filters so attribute search works from day one
+- Seed the world events list with historical events worth connecting stories to
 
 ### Archive — Browsing & Discovery
 
