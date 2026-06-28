@@ -79,6 +79,42 @@ The archive will be seeded with AI-generated stories before public launch so the
 - Populate the Kayak filters so attribute search works from day one
 - Seed the world events list with historical events worth connecting stories to
 
+### Archive — Build Plan
+
+**Architecture:** The archive lives inside the existing Next.js app — same codebase, same repo, same Supabase database, same Vercel deployment. Shares translation, styling, admin panel, and hosting. No separate app or monorepo needed.
+
+**Development approach:** All archive work is built and tested locally first. Nothing pushed to production until the archive is complete, seeded, and ready for public launch. The daily feed continues running in production unchanged throughout.
+
+**New routes:**
+- `/archive` — browsing and search experience
+- `/archive/submit` — story template + submission form
+- `/archive/[id]` — individual story page
+
+**New database tables:**
+- `archive_stories` — different schema from `stories` (characters, location, year, world event, chapter, 3× images, submission metadata)
+- `world_events` — Mike's curated event list with active/retired status
+- `archive_chapters` — theme taxonomy
+
+**Admin additions:**
+- Archive moderation queue tab (AI-failed stories awaiting human review)
+- World events management tab (add, retire, re-activate events)
+
+**What stays unchanged:** The daily feed, card grid, sections, slide-in panel, existing admin tabs, translation system, Supabase instance, Vercel hosting, brand, header, footer — all untouched.
+
+**Build phases:**
+
+**Phase 1 — Database + admin foundation**
+New tables, world events admin panel, archive moderation queue
+
+**Phase 2 — Submission experience**
+`/archive/submit` with story template, prompted text areas, 3-image upload, submission form fields, AI quality check, pre-submit "Check My Story" button
+
+**Phase 3 — Public archive**
+`/archive` browsing with Kayak-effect attribute filters, chapter navigation, individual story pages at `/archive/[id]`
+
+**Phase 4 — Seeding + launch**
+AI-generate seed stories across all chapters, populate world events list with historical events, open to public, push to production
+
 ### Archive — Browsing & Discovery
 
 Two paths for readers to find stories:
