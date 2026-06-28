@@ -52,6 +52,26 @@ A permanent, searchable, public library of human goodness. Anyone can submit a s
 
 - **Chapter taxonomy:** The actual list of theme-based chapters (to be defined — let the first 1,000 stories inform the final list)
 - **Sub-chapters:** Start with one level; add sub-chapters when the archive earns them through volume
+- **Story grouping within chapters:** How stories are sorted/grouped once a reader is inside a chapter — chronological, by place, by world event, by something else. Let real stories inform this.
+- **Archive home page:** What a reader sees before making any selection — the entry point to the whole archive
+- **Browsing entry points:** Whether chapters and attribute search are the same page or separate entry points
+
+### Archive — Browsing & Discovery
+
+Two paths for readers to find stories:
+
+**Path 1 — Attribute search (the Kayak effect)**
+Filters work with an AND effect — every active filter narrows results together, never OR. Selecting one attribute instantly updates all other filters to show only values that still have matching stories — no dead ends, no "0 results." A reader can start with any attribute and narrow from there:
+- Select Country: Brazil → Year filter shows only years with Brazilian stories
+- Select Year: 2014 → World Events shows only events tied to Brazil 2014
+- Select World Cup 2014 → results show exactly those stories
+
+Searchable attributes: Country, City, Year, World Event, Chapter/Theme, Character name, Organization, Author name, Tags, Relationship to story, Language.
+
+**Path 2 — Chapter browsing**
+Reader arrives at a chapter (e.g. Courage) and sees stories grouped within it. How stories are grouped inside a chapter is still to be determined — chronological, by place, by world event, or by something that emerges naturally from the content. Both chapters and sub-chapters are browsable this way.
+
+**The two paths connect** — a reader browsing a chapter can apply attribute filters within it, and a reader using attribute search can jump to the matching chapter view. Same stories, different entry points.
 
 ### Archive — Submission Form
 
