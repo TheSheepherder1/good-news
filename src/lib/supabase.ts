@@ -30,6 +30,62 @@ export type Story = {
   likes: number
 }
 
+export type ArchiveChapter = {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  parent_id: string | null
+  status: 'active' | 'retired'
+  sort_order: number
+  created_at: string
+}
+
+export type WorldEvent = {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  event_year: number | null
+  status: 'active' | 'retired'
+  sort_order: number
+  created_at: string
+}
+
+export type ArchiveStory = {
+  id: string
+  status: 'live' | 'review' | 'declined' | 'removed'
+  opening: string | null
+  body: string | null
+  impact: string | null
+  image_1_url: string | null
+  image_1_caption: string | null
+  image_2_url: string | null
+  image_2_caption: string | null
+  image_3_url: string | null
+  image_3_caption: string | null
+  occurred_year: number
+  occurred_month: number | null
+  country: string
+  state_province: string | null
+  city: string | null
+  chapter_id: string | null
+  world_event_id: string | null
+  tags: string[]
+  organization: string | null
+  author_name: string
+  is_anonymous: boolean
+  relationship: string
+  original_language: string
+  ai_passed: boolean | null
+  ai_score: number | null
+  ai_reason: string | null
+  is_seed: boolean
+  submitted_at: string
+  reviewed_at: string | null
+  published_at: string | null
+}
+
 export type ReaderSubmission = {
   id: string
   type: 'article' | 'url'
