@@ -33,11 +33,24 @@ A permanent, searchable, public library of human goodness. Anyone can submit a s
 - **Open dataset** — make the archive a publicly downloadable dataset so stories survive even if the site ever goes down.
 - **Legal/estate planning** — a non-profit structure would protect the archive long-term and ensure it outlives any single person's involvement.
 
+**Curation standard:** AI holds a high bar — not just "is this positive?" but "is this a genuine story of human goodness worthy of permanent preservation?" Specific criteria: a real human act at the center, specific enough to be credible (vague feel-good fluff doesn't pass), an original personal account (not a retelling of a news article), and something that would still matter to read in 50 years. The "Check My Story" pre-check button coaches writers to meet this bar before submitting.
+
+**Story template:** Stories follow a structured magazine-style layout with prompted text areas and optional images — mirrors how a great feature story reads, not a form. Structure:
+1. **Hero image** (optional) + caption
+2. **Opening** — prompted: "Set the scene. Who is this story about, where were they, and when did this happen?"
+3. **Body** — prompted: "Tell us what happened. What did they do, and why does it matter?"
+4. **Mid-story image** (optional) + caption
+5. **Impact** — prompted: "What changed because of this? How did it affect the people involved, or the world around them?"
+6. **Closing image** (optional) + caption
+7. **Submitter name** (or anonymous) + relationship to story (I witnessed this / This happened to me / This is a family story / I read about this)
+
+**Images:** Upload only — no external URL links. Images stored in Supabase Storage alongside the story permanently. Rationale: external URLs can disappear; uploaded images are under our control and consistent with the permanence principle.
+
+**No edits after submission:** Once submitted, a story cannot be edited. It is a permanent snapshot of what the person knew and felt at the moment of submission — allowing edits would enable revisionism. If a story needs to be removed (defamatory content, privacy violation), that is an admin removal decision, not an edit.
+
 ### Archive — Decisions Pending
 
-- **Curation standard:** Does every AI-passing story go live regardless of quality, or is there still a "genuinely belongs in the archive of human goodness" bar?
 - **Searchable attributes:** How stories are tagged and found — person, place, time/event, theme, relationship to subject (family, witness, self)
-- **Media:** Text only, or can submitters attach photos, documents, letters?
 - **Organization:** How the archive is browsed beyond search — by region, language, era, theme, major world events
 
 ---
