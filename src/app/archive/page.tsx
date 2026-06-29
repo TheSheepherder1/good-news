@@ -114,11 +114,13 @@ export default function ArchivePage() {
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-white/60 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
+          </Link>
+          <Link href="/" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">← Today&rsquo;s News</Link>
+        </div>
         <nav className="flex items-center gap-4 text-sm">
-          <Link href="/" className="text-gray-500 hover:text-gray-800 transition-colors">← Today&rsquo;s News</Link>
           <Link href="/archive" className="font-semibold text-gray-800">Archive</Link>
           <Link
             href="/archive/submit"
