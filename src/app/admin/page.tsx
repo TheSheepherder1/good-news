@@ -1276,6 +1276,21 @@ export default function AdminPage() {
                         ))}
                       </div>
 
+                      {/* Images */}
+                      {(story.image_1_url || story.image_2_url || story.image_3_url) && (
+                        <div className="flex gap-2 mb-3">
+                          {[story.image_1_url, story.image_2_url, story.image_3_url].filter(Boolean).map((url, i) => (
+                            <img
+                              key={i}
+                              src={url!}
+                              alt=""
+                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-gray-100"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                            />
+                          ))}
+                        </div>
+                      )}
+
                       {/* Story content */}
                       {story.opening && <p className="text-sm text-gray-800 font-medium mb-1">{story.opening}</p>}
                       {story.body && <p className="text-sm text-gray-600 line-clamp-4 mb-1">{story.body}</p>}
