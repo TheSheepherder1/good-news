@@ -15,6 +15,7 @@ export default function BookmarksPanel({ onClose }: Props) {
   const [newsBookmarks, setNewsBookmarks] = useState<BookmarkSnapshot[]>([])
   const [visible, setVisible] = useState(false)
   const [lang, setLang] = useState('en')
+  const [translatedContent, setTranslatedContent] = useState<Record<string, { title: string; summary: string | null }>>({})
   const touchStartY = useRef(0)
   const [dragY, setDragY] = useState(0)
 
@@ -44,6 +45,43 @@ export default function BookmarksPanel({ onClose }: Props) {
     window.addEventListener('tgif:bookmarks-updated', onUpdate)
     return () => window.removeEventListener('tgif:bookmarks-updated', onUpdate)
   }, [])
+
+  // Translate bookmark titles and summaries when lang or bookmarks change
+  useEffect(() => {
+    const all = [...archiveBookmarks, ...newsBookmarks]
+    if (lang === 'en' || all.length === 0) { setTranslatedContent({}); return }
+    let cancelled = false
+    const texts: string[] = []
+    const indexMap: { id: string; titleIdx: number; summaryIdx: number | null }[] = []
+    for (const b of all) {
+      const titleIdx = texts.length
+      texts.push(b.title)
+      let summaryIdx: number | null = null
+      if (b.summary) { summaryIdx = texts.length; texts.push(b.summary) }
+      indexMap.push({ id: b.id, titleIdx, summaryIdx })
+    }
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, target: lang }),
+    })
+      .then((r) => r.json())
+      .then((data: { translations?: string[] }) => {
+        if (cancelled) return
+        const results = data.translations || []
+        const map: Record<string, { title: string; summary: string | null }> = {}
+        for (const { id, titleIdx, summaryIdx } of indexMap) {
+          const orig = all.find((b) => b.id === id)!
+          map[id] = {
+            title: results[titleIdx] || orig.title,
+            summary: summaryIdx !== null ? (results[summaryIdx] || orig.summary) : null,
+          }
+        }
+        setTranslatedContent(map)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [lang, archiveBookmarks, newsBookmarks])
 
   function handleRemove(id: string) {
     removeBookmark(id)
@@ -89,7 +127,7 @@ export default function BookmarksPanel({ onClose }: Props) {
               <h3 className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">{t.archiveSection}</h3>
               <div className="flex flex-col divide-y divide-gray-100">
                 {archiveBookmarks.map((b) => (
-                  <BookmarkRow key={b.id} bookmark={b} onRemove={handleRemove} isArchive />
+                  <BookmarkRow key={b.id} bookmark={b} translated={translatedContent[b.id]} onRemove={handleRemove} isArchive />
                 ))}
               </div>
             </section>
@@ -101,7 +139,7 @@ export default function BookmarksPanel({ onClose }: Props) {
               )}
               <div className="flex flex-col divide-y divide-gray-100">
                 {newsBookmarks.map((b) => (
-                  <BookmarkRow key={b.id} bookmark={b} onRemove={handleRemove} isArchive={false} />
+                  <BookmarkRow key={b.id} bookmark={b} translated={translatedContent[b.id]} onRemove={handleRemove} isArchive={false} />
                 ))}
               </div>
             </section>
@@ -162,7 +200,15 @@ export default function BookmarksPanel({ onClose }: Props) {
   )
 }
 
-function BookmarkRow({ bookmark: b, onRemove, isArchive }: { bookmark: BookmarkSnapshot; onRemove: (id: string) => void; isArchive: boolean }) {
+function BookmarkRow({ bookmark: b, translated, onRemove, isArchive }: {
+  bookmark: BookmarkSnapshot
+  translated?: { title: string; summary: string | null }
+  onRemove: (id: string) => void
+  isArchive: boolean
+}) {
+  const title = translated?.title ?? b.title
+  const summary = translated?.summary ?? b.summary
+
   return (
     <div className="flex gap-3 py-4">
       {b.image_url && (
@@ -180,7 +226,7 @@ function BookmarkRow({ bookmark: b, onRemove, isArchive }: { bookmark: BookmarkS
               href={b.url}
               className="text-gray-900 font-semibold text-sm leading-snug hover:text-emerald-700 transition-colors line-clamp-2"
             >
-              {b.title}
+              {title}
             </Link>
           ) : (
             <a
@@ -189,7 +235,7 @@ function BookmarkRow({ bookmark: b, onRemove, isArchive }: { bookmark: BookmarkS
               rel="noopener noreferrer"
               className="text-gray-900 font-semibold text-sm leading-snug hover:text-emerald-700 transition-colors line-clamp-2"
             >
-              {b.title}
+              {title}
             </a>
           )}
           <button
@@ -206,8 +252,8 @@ function BookmarkRow({ bookmark: b, onRemove, isArchive }: { bookmark: BookmarkS
           {b.category ? `${b.category} · ` : ''}{b.source}
           {b.occurred_year ? ` · ${b.occurred_year}` : ''}
         </p>
-        {!isArchive && b.summary && (
-          <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{b.summary}</p>
+        {!isArchive && summary && (
+          <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{summary}</p>
         )}
       </div>
     </div>
