@@ -41,7 +41,7 @@ export type ArchivePageStrings = {
 
 export const ARCHIVE_PAGE_EN: ArchivePageStrings = {
   navArchive: 'Archive',
-  navShareStory: 'Share a Story',
+  navShareStory: 'Share a Story of Goodness',
   archiveTitle: 'The Archive of Human Goodness',
   archiveSubtitle: 'A permanent record of human kindness, courage, and goodness — collected from every corner of the world.',
   allStories: 'All Stories',
