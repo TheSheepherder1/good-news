@@ -32,6 +32,10 @@ export type ArchivePageStrings = {
   emptyShareFirst: string
   historicalBadge: string
   anonymous: string
+  storySharedBy: string
+  peopleLabel: string
+  backToArchive: string
+  shareYourStory: string
 }
 
 export const ARCHIVE_PAGE_EN: ArchivePageStrings = {
@@ -66,6 +70,10 @@ export const ARCHIVE_PAGE_EN: ArchivePageStrings = {
   emptyShareFirst: 'Share the first story',
   historicalBadge: 'Historical Account',
   anonymous: 'Anonymous',
+  storySharedBy: 'Story shared by',
+  peopleLabel: 'People',
+  backToArchive: '← Back to Archive',
+  shareYourStory: 'Share your own story',
 }
 
 export type ArchiveSubmitStrings = {

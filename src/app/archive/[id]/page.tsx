@@ -2,8 +2,9 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { supabaseAdmin } from '@/lib/supabase'
 import { CHAPTER_COLORS } from '@/components/ArchiveCard'
-import LocalizedCountry from '@/components/LocalizedCountry'
 import ArchiveStoryContent from '@/components/ArchiveStoryContent'
+import ArchiveStoryShareBtn from '@/components/ArchiveStoryShareBtn'
+import ArchiveStoryDetailMeta from '@/components/ArchiveStoryDetailMeta'
 
 export const revalidate = 3600
 
@@ -43,12 +44,7 @@ export default async function ArchiveStoryPage({ params }: { params: Promise<{ i
         <Link href="/" className="flex items-center gap-2">
           <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
         </Link>
-        <Link
-          href="/archive/submit"
-          className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full text-sm transition-colors"
-        >
-          Share a Story
-        </Link>
+        <ArchiveStoryShareBtn />
       </header>
 
       <article className="max-w-2xl mx-auto px-4 py-10">
@@ -103,87 +99,19 @@ export default async function ArchiveStoryPage({ params }: { params: Promise<{ i
           </div>
         )}
 
-        {/* Story metadata */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 mt-8 flex flex-col gap-3 text-sm border border-white/60">
-
-          {/* Author */}
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-gray-500">Story shared by </span>
-              <span className="font-medium text-gray-800">{displayName}</span>
-              {story.is_seed && (
-                <span className="ml-2 text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">Historical Account</span>
-              )}
-            </div>
-            <span className="text-xs text-gray-400">{story.relationship}</span>
-          </div>
-
-          {/* Location + time */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-gray-500">
-            <span>
-              {[story.city, story.state_province].filter(Boolean).join(', ')}
-              {(story.city || story.state_province) && story.country ? ', ' : ''}
-              {story.country && <LocalizedCountry code={story.country} />}
-            </span>
-            <span>
-              {story.occurred_month
-                ? `${new Date(2000, story.occurred_month - 1).toLocaleString('default', { month: 'long' })} ${story.occurred_year}`
-                : String(story.occurred_year)}
-            </span>
-          </div>
-
-          {/* Characters */}
-          {characters.length > 0 && (
-            <div className="text-gray-500">
-              <span className="text-gray-400">People: </span>
-              {characters.map((c) => c.name).join(', ')}
-            </div>
-          )}
-
-          {/* World event */}
-          {worldEvent && (
-            <div>
-              <Link
-                href={`/archive?event=${worldEvent.id}`}
-                className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2.5 py-1 rounded-full hover:opacity-70 transition-opacity"
-              >
-                {worldEvent.name}
-                {worldEvent.event_year ? ` (${worldEvent.event_year})` : ''}
-              </Link>
-            </div>
-          )}
-
-          {/* Tags */}
-          {story.tags?.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {story.tags.map((t: string) => (
-                <Link
-                  key={t}
-                  href={`/archive?tag=${encodeURIComponent(t)}`}
-                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full transition-colors"
-                >
-                  #{t}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Back + share a story */}
-        <div className="flex flex-col sm:flex-row gap-3 mt-8">
-          <Link
-            href="/archive"
-            className="flex-1 text-center bg-white border border-gray-200 hover:border-emerald-300 text-gray-600 font-medium py-3 rounded-xl transition-colors"
-          >
-            ← Back to Archive
-          </Link>
-          <Link
-            href="/archive/submit"
-            className="flex-1 text-center bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3 rounded-xl transition-colors"
-          >
-            Share your own story
-          </Link>
-        </div>
+        <ArchiveStoryDetailMeta
+          displayName={displayName}
+          isSeed={story.is_seed}
+          relationship={story.relationship}
+          city={story.city}
+          stateProvince={story.state_province}
+          country={story.country}
+          occurredYear={story.occurred_year}
+          occurredMonth={story.occurred_month}
+          characters={characters}
+          worldEvent={worldEvent}
+          tags={story.tags || []}
+        />
 
       </article>
     </main>
