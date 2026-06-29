@@ -431,6 +431,7 @@ export default function ArchivePage() {
                   story={story}
                   lang={lang}
                   translatedOpening={translatedOpenings[story.id]}
+                  translatedChapterName={story.chapter ? translatedChapters[story.chapter.id] : undefined}
                   historicalBadge={s.historicalBadge}
                   anonymousLabel={s.anonymous}
                   onChapterClick={setChapter}

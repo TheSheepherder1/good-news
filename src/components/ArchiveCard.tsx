@@ -35,6 +35,7 @@ export default function ArchiveCard({
   story,
   lang = 'en',
   translatedOpening,
+  translatedChapterName,
   historicalBadge = 'Historical Account',
   anonymousLabel = 'Anonymous',
   onChapterClick,
@@ -46,6 +47,7 @@ export default function ArchiveCard({
   story: ArchiveCardStory
   lang?: string
   translatedOpening?: string | null
+  translatedChapterName?: string
   historicalBadge?: string
   anonymousLabel?: string
   onChapterClick?: (slug: string) => void
@@ -85,7 +87,7 @@ export default function ArchiveCard({
             onClick={(e) => { e.preventDefault(); onChapterClick?.(story.chapter!.slug) }}
             className={`self-start text-xs font-medium px-2.5 py-1 rounded-full border transition-opacity hover:opacity-70 ${chapterColor}`}
           >
-            {story.chapter.name}
+            {translatedChapterName || story.chapter.name}
           </button>
         )}
 
