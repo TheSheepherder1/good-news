@@ -1,4 +1,4 @@
-const LANG_TO_LOCALE: Record<string, string> = {
+export const LANG_TO_LOCALE: Record<string, string> = {
   en: 'en', zh: 'zh-CN', de: 'de', nl: 'nl', es: 'es',
   fr: 'fr', pl: 'pl', pt: 'pt', ja: 'ja', sr: 'sr',
 }

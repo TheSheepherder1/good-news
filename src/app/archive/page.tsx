@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import ArchiveCard, { CHAPTER_COLORS } from '@/components/ArchiveCard'
 import { getCountryName } from '@/lib/countries'
+import { useArchivePageStrings } from '@/lib/useArchiveStrings'
 
 const LANG_LABELS: Record<string, string> = {
   en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch',
@@ -47,12 +48,15 @@ export default function ArchivePage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [translatedOpenings, setTranslatedOpenings] = useState<Record<string, string>>({})
 
   const [lang, setLang] = useState('en')
   useEffect(() => {
     const stored = localStorage.getItem('tgif_lang')
     if (stored) setLang(stored)
   }, [])
+
+  const s = useArchivePageStrings(lang)
 
   // Active filters
   const [chapter, setChapter] = useState('')
@@ -109,6 +113,32 @@ export default function ArchivePage() {
 
   useEffect(() => { fetchStories() }, [fetchStories])
 
+  // Batch-translate all story openings when language or stories change
+  useEffect(() => {
+    if (lang === 'en' || stories.length === 0) {
+      setTranslatedOpenings({})
+      return
+    }
+    let cancelled = false
+    const texts = stories.map((s) => s.opening || s.body || '')
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, target: lang }),
+    })
+      .then((r) => r.json())
+      .then((data: { translations?: string[] }) => {
+        if (cancelled) return
+        const map: Record<string, string> = {}
+        stories.forEach((story, i) => {
+          if (data.translations?.[i]) map[story.id] = data.translations[i]
+        })
+        setTranslatedOpenings(map)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [lang, stories])
+
   function clearAll() {
     setChapter(''); setCountry(''); setYear(''); setEvent(''); setLanguage(''); setTag('')
     setAuthor(''); setAuthorInput('')
@@ -128,12 +158,12 @@ export default function ArchivePage() {
           <Link href="/" className="text-sm font-semibold text-gray-800">← Today&rsquo;s News</Link>
         </div>
         <nav className="flex items-center gap-4 text-sm">
-          <Link href="/archive" className="font-semibold text-gray-800">Archive</Link>
+          <Link href="/archive" className="font-semibold text-gray-800">{s.navArchive}</Link>
           <Link
             href="/archive/submit"
             className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors"
           >
-            Share a Story
+            {s.navShareStory}
           </Link>
         </nav>
       </header>
@@ -142,10 +172,8 @@ export default function ArchivePage() {
 
         {/* Hero text */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">The Archive of Human Goodness</h1>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            A permanent record of human kindness, courage, and goodness — collected from every corner of the world.
-          </p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{s.archiveTitle}</h1>
+          <p className="text-gray-500 max-w-xl mx-auto">{s.archiveSubtitle}</p>
         </div>
 
         {/* Chapter pills */}
@@ -159,7 +187,7 @@ export default function ArchivePage() {
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
               }`}
             >
-              All Stories
+              {s.allStories}
             </button>
             {filters.chapters.map((c) => {
               const colorClass = CHAPTER_COLORS[c.slug] || 'bg-gray-50 text-gray-600 border-gray-200'
@@ -196,7 +224,7 @@ export default function ArchivePage() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
             </svg>
-            Filter
+            {s.filter}
             {activeCount > 0 && (
               <span className="bg-emerald-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">{activeCount}</span>
             )}
@@ -211,12 +239,12 @@ export default function ArchivePage() {
           {author && <FilterChip label={`Author: ${author}`} onRemove={() => { setAuthor(''); setAuthorInput('') }} />}
           {activeCount > 1 && (
             <button onClick={clearAll} className="text-xs text-gray-400 hover:text-red-500 transition-colors ml-1">
-              Clear all
+              {s.clearAll}
             </button>
           )}
 
           <span className="ml-auto text-sm text-gray-400">
-            {total} {total === 1 ? 'story' : 'stories'}
+            {total} {total === 1 ? s.storySingular : s.storyPlural}
           </span>
         </div>
         )}
@@ -228,50 +256,50 @@ export default function ArchivePage() {
             {/* Country */}
             {filters.countries.length > 0 && (
               <FilterSelect
-                label="Country"
+                label={s.filterCountry}
                 value={country}
                 onChange={setCountry}
                 options={filters.countries.map((c) => ({ value: c.value, label: `${getCountryName(c.value, lang)} (${c.count})` }))}
-                placeholder="Any country"
+                placeholder={s.anyCountry}
               />
             )}
 
             {/* Year */}
             {filters.years.length > 0 && (
               <FilterSelect
-                label="Year"
+                label={s.filterYear}
                 value={year}
                 onChange={setYear}
                 options={filters.years.map((y) => ({ value: String(y.value), label: `${y.value} (${y.count})` }))}
-                placeholder="Any year"
+                placeholder={s.anyYear}
               />
             )}
 
             {/* World Event */}
             {filters.events.length > 0 && (
               <FilterSelect
-                label="World Event"
+                label={s.filterWorldEvent}
                 value={event}
                 onChange={setEvent}
                 options={filters.events.map((e) => ({ value: e.id, label: `${e.name}${e.event_year ? ` (${e.event_year})` : ''} · ${e.count}` }))}
-                placeholder="Any event"
+                placeholder={s.anyEvent}
               />
             )}
 
             {/* Language */}
             {filters.languages.length > 0 && (
               <FilterSelect
-                label="Language"
+                label={s.filterLanguage}
                 value={language}
                 onChange={setLanguage}
                 options={filters.languages.map((l) => ({ value: l.value, label: `${LANG_LABELS[l.value] || l.value} (${l.count})` }))}
-                placeholder="Any language"
+                placeholder={s.anyLanguage}
               />
             )}
 
             {/* Author name — fuzzy autocomplete */}
             <div className="relative">
-              <p className="text-xs font-medium text-gray-500 mb-1">Author Name</p>
+              <p className="text-xs font-medium text-gray-500 mb-1">{s.filterAuthor}</p>
               <input
                 type="text"
                 value={authorInput}
@@ -289,25 +317,25 @@ export default function ArchivePage() {
                 }}
                 onFocus={() => setAuthorFocused(true)}
                 onBlur={() => setTimeout(() => setAuthorFocused(false), 150)}
-                placeholder="Type a name…"
+                placeholder={s.authorPlaceholder}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
               />
               {/* Suggestions dropdown */}
               {authorFocused && authorSuggestions.length > 0 && (
                 <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-                  {authorSuggestions.map((s) => (
+                  {authorSuggestions.map((suggestion) => (
                     <button
-                      key={s.name}
+                      key={suggestion.name}
                       type="button"
                       onMouseDown={() => {
-                        setAuthor(s.name)
-                        setAuthorInput(s.name)
+                        setAuthor(suggestion.name)
+                        setAuthorInput(suggestion.name)
                         setAuthorSuggestions([])
                       }}
                       className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors text-left"
                     >
-                      <span>{s.name}</span>
-                      <span className="text-xs text-gray-400 ml-2">{s.story_count} {s.story_count === 1 ? 'story' : 'stories'}</span>
+                      <span>{suggestion.name}</span>
+                      <span className="text-xs text-gray-400 ml-2">{suggestion.story_count} {suggestion.story_count === 1 ? s.storySingular : s.storyPlural}</span>
                     </button>
                   ))}
                 </div>
@@ -317,7 +345,7 @@ export default function ArchivePage() {
                   onClick={() => { setAuthor(''); setAuthorInput(''); setAuthorSuggestions([]) }}
                   className="text-xs text-gray-400 hover:text-red-500 mt-1 transition-colors"
                 >
-                  Clear
+                  {s.clearAuthor}
                 </button>
               )}
             </div>
@@ -325,7 +353,7 @@ export default function ArchivePage() {
             {/* Tags */}
             {filters.tags.length > 0 && (
               <div className="sm:col-span-2 lg:col-span-2">
-                <p className="text-xs font-medium text-gray-500 mb-2">Tags</p>
+                <p className="text-xs font-medium text-gray-500 mb-2">{s.filterTags}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {filters.tags.map((t) => (
                     <button
@@ -349,28 +377,26 @@ export default function ArchivePage() {
 
         {/* Stories grid */}
         {loading ? (
-          <div className="text-center text-gray-400 py-24">Loading stories…</div>
+          <div className="text-center text-gray-400 py-24">{s.loadingStories}</div>
         ) : stories.length === 0 ? (
           <div className="text-center py-24 max-w-md mx-auto">
             {activeCount > 0 ? (
               <>
-                <p className="text-gray-400 mb-3">No stories found for these filters.</p>
+                <p className="text-gray-400 mb-3">{s.noStoriesFiltered}</p>
                 <button onClick={clearAll} className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
-                  Clear all filters
+                  {s.clearAllFilters}
                 </button>
               </>
             ) : (
               <>
                 <div className="text-5xl mb-4">📖</div>
-                <h2 className="text-xl font-semibold text-gray-700 mb-2">The archive is just getting started</h2>
-                <p className="text-gray-400 mb-6">
-                  Be one of the first to add a story. Every great archive begins with a single act of goodness worth remembering.
-                </p>
+                <h2 className="text-xl font-semibold text-gray-700 mb-2">{s.emptyTitle}</h2>
+                <p className="text-gray-400 mb-6">{s.emptyBody}</p>
                 <Link
                   href="/archive/submit"
                   className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-6 py-3 rounded-xl transition-colors"
                 >
-                  Share the first story
+                  {s.emptyShareFirst}
                 </Link>
               </>
             )}
@@ -383,6 +409,9 @@ export default function ArchivePage() {
                   key={story.id}
                   story={story}
                   lang={lang}
+                  translatedOpening={translatedOpenings[story.id]}
+                  historicalBadge={s.historicalBadge}
+                  anonymousLabel={s.anonymous}
                   onChapterClick={setChapter}
                   onCountryClick={setCountry}
                   onYearClick={(y) => setYear(String(y))}
@@ -399,7 +428,7 @@ export default function ArchivePage() {
                   disabled={loadingMore}
                   className="bg-white border border-gray-200 hover:border-emerald-300 text-gray-600 font-medium px-8 py-3 rounded-xl transition-colors disabled:opacity-50"
                 >
-                  {loadingMore ? 'Loading…' : `Load more stories (${total - stories.length} remaining)`}
+                  {loadingMore ? s.loadingMore : s.loadMore.replace('{n}', String(total - stories.length))}
                 </button>
               </div>
             )}

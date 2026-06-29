@@ -34,6 +34,9 @@ type ArchiveCardStory = {
 export default function ArchiveCard({
   story,
   lang = 'en',
+  translatedOpening,
+  historicalBadge = 'Historical Account',
+  anonymousLabel = 'Anonymous',
   onChapterClick,
   onCountryClick,
   onYearClick,
@@ -42,6 +45,9 @@ export default function ArchiveCard({
 }: {
   story: ArchiveCardStory
   lang?: string
+  translatedOpening?: string | null
+  historicalBadge?: string
+  anonymousLabel?: string
   onChapterClick?: (slug: string) => void
   onCountryClick?: (country: string) => void
   onYearClick?: (year: number) => void
@@ -52,8 +58,8 @@ export default function ArchiveCard({
     ? (CHAPTER_COLORS[story.chapter.slug] || 'bg-gray-50 text-gray-600 border-gray-200')
     : ''
 
-  const excerpt = story.opening || story.body || ''
-  const displayName = story.is_anonymous ? 'Anonymous' : story.author_name
+  const excerpt = translatedOpening ?? story.opening ?? story.body ?? ''
+  const displayName = story.is_anonymous ? anonymousLabel : story.author_name
 
   return (
     <Link
@@ -109,7 +115,7 @@ export default function ArchiveCard({
           <div className="flex items-center gap-1.5 text-xs text-gray-400 min-w-0">
             <span className="truncate">{displayName}</span>
             {story.is_seed && (
-              <span className="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0">Historical</span>
+              <span className="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0">{historicalBadge}</span>
             )}
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-400 flex-shrink-0">

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { supabaseAdmin } from '@/lib/supabase'
 import { CHAPTER_COLORS } from '@/components/ArchiveCard'
 import LocalizedCountry from '@/components/LocalizedCountry'
+import ArchiveStoryContent from '@/components/ArchiveStoryContent'
 
 export const revalidate = 3600
 
@@ -78,10 +79,7 @@ export default async function ArchiveStoryPage({ params }: { params: Promise<{ i
           </div>
         )}
 
-        {/* Opening */}
-        {story.opening && (
-          <p className="text-lg text-gray-800 leading-relaxed mb-6 font-medium">{story.opening}</p>
-        )}
+        <ArchiveStoryContent opening={story.opening} body={null} impact={null} />
 
         {/* Mid image */}
         {story.image_2_url && (
@@ -93,17 +91,7 @@ export default async function ArchiveStoryPage({ params }: { params: Promise<{ i
           </div>
         )}
 
-        {/* Body */}
-        {story.body && (
-          <div className="text-base text-gray-700 leading-relaxed whitespace-pre-wrap mb-6">{story.body}</div>
-        )}
-
-        {/* Impact */}
-        {story.impact && (
-          <div className="border-l-4 border-emerald-300 pl-4 mb-6">
-            <p className="text-base text-gray-600 leading-relaxed italic">{story.impact}</p>
-          </div>
-        )}
+        <ArchiveStoryContent opening={null} body={story.body} impact={story.impact} />
 
         {/* Closing image */}
         {story.image_3_url && (
