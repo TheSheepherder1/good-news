@@ -8,14 +8,16 @@ import ArticleSheet from '@/components/ArticleSheet'
 import FooterModal from '@/components/FooterModal'
 import LanguagePicker from '@/components/LanguagePicker'
 import { type Story } from '@/lib/supabase'
-import { type ArchiveFeatured } from '@/app/page'
-import { UI, LANGUAGES, type Language, LANG_STORAGE_KEY } from '@/lib/translations'
+import { LANG_STORAGE_KEY } from '@/lib/translations'
+import { getCategoryLabel } from '@/lib/uiStrings'
+import { useUIStrings } from '@/lib/useUIStrings'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 import LikeButton from '@/components/LikeButton'
 import BookmarkButton from '@/components/BookmarkButton'
 import BookmarksPanel from '@/components/BookmarksPanel'
 import { getBookmarks } from '@/lib/bookmarks'
 import { getCountryName } from '@/lib/countries'
+import { type ArchiveFeatured } from '@/app/page'
 
 type Section = { category: string; stories: Story[] }
 type TranslatedStory = { title: string; summary: string }
@@ -97,10 +99,10 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
   const [aboutTranslations, setAboutTranslations] = useState<Record<string, string[]>>({})
   const [translatingAbout, setTranslatingAbout] = useState(false)
-  const [lang, setLang] = useState<Language>('en')
+  const [lang, setLang] = useState('en')
   const [translating, setTranslating] = useState(false)
   // Cache: lang → Map<storyId, TranslatedStory>
-  const cache = useRef<Partial<Record<Language, Map<string, TranslatedStory>>>>({})
+  const cache = useRef<Record<string, Map<string, TranslatedStory>>>({})
   const [currentTranslations, setCurrentTranslations] = useState<Map<string, TranslatedStory>>(new Map())
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const desktopInputRef = useRef<HTMLInputElement>(null)
@@ -224,7 +226,7 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
     window.scrollTo({ top, behavior: 'smooth' })
   }
 
-  const t = UI[lang]
+  const t = useUIStrings(lang)
 
   // Deduplicate by ID — "New!" section contains the same stories as their
   // regular sections, so we avoid double-translating or double-searching them.
@@ -233,7 +235,7 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
     ...displaySections.flatMap((s) => s.stories),
   ].filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i)
 
-  const handleLanguageChange = useCallback(async (newLang: Language) => {
+  const handleLanguageChange = useCallback(async (newLang: string) => {
     setLang(newLang)
     localStorage.setItem(LANG_STORAGE_KEY, newLang)
     if (newLang === 'en') {
@@ -267,8 +269,8 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
 
   // Restore the reader's previously chosen language on first load
   useEffect(() => {
-    const stored = localStorage.getItem(LANG_STORAGE_KEY) as Language | null
-    if (stored && stored !== 'en' && LANGUAGES.some((l) => l.code === stored)) {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY)
+    if (stored && stored !== 'en') {
       handleLanguageChange(stored)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -308,14 +310,16 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
   const totalResults = (filteredFeatured ? 1 : 0) + filteredSections.reduce((n, s) => n + s.stories.length, 0)
   const sortedCategories = filteredSections.map((s) => s.category)
 
+  const categoryLabels = useMemo(() => {
+    const cats = ['New!', 'Animals', 'Art', 'Culture', 'Environment', 'Good News', 'Health', 'History', 'Humanity', 'Science', 'Space', 'Sports', 'Technology']
+    return Object.fromEntries(cats.map((c) => [c, getCategoryLabel(c, t)]))
+  }, [t])
+
   function getDisplayTitle(story: Story) {
     return currentTranslations.get(story.id)?.title || story.title
   }
   function getDisplaySummary(story: Story) {
     return currentTranslations.get(story.id)?.summary || story.summary || ''
-  }
-  function getCategoryLabel(cat: string) {
-    return t.categories[cat] || cat
   }
 
   function handleOpen(story: Story) {
@@ -380,15 +384,15 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
                   <p className="mt-1 text-emerald-500 text-base">{localDate}</p>
                 )}
               </div>
-              {(archiveFeatured || sections.length > 0) && (
+              {(featured || sections.length > 0) && (
                 <div className="mt-4 flex justify-center items-center gap-3 flex-wrap">
                   <SectionNav
                     categories={sortedCategories}
-                    categoryLabels={t.categories}
-                    hasFeatured={!!archiveFeatured}
+                    categoryLabels={categoryLabels}
+                    hasFeatured={!!filteredFeatured}
                     topOfPageLabel={t.topOfPage}
                     sectionsLabel={t.sections}
-                    featuredLabel={t.storyOfGoodness}
+                    featuredLabel={t.brightSpot}
                     onNavigate={scrollToSection}
                     onReorder={handleReorder}
                     pinnedCategories={['New!']}
@@ -455,15 +459,61 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
         {isSearching && (
           <p className="text-sm text-gray-400 -mb-6 pt-4">
             {totalResults === 0
-              ? t.noResults(query)
-              : t.resultCount(totalResults, query)}
+              ? t.noResults.replace('{q}', query)
+              : t.resultCount.replace('{n}', String(totalResults)).replace('{q}', query)}
           </p>
         )}
 
-        {!isSearching && archiveFeatured === null && sections.length === 0 ? (
+        {!isSearching && featured === null && sections.length === 0 ? (
           <div className="text-center text-gray-400 py-20 text-lg">{t.noStories}</div>
         ) : (
           <>
+            {filteredFeatured && (
+              <div id="featured" className="scroll-mt-56 md:scroll-mt-60 bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/70">
+                <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest mb-3" style={{ color: '#F0B429' }}>
+                  {t.brightSpot}
+                </h2>
+                <div
+                  className="bg-white rounded-3xl shadow-md overflow-hidden flex flex-col md:grid md:grid-cols-3 cursor-pointer md:cursor-default border-4"
+                  style={{ borderColor: '#F0B429' }}
+                  onClick={() => handleOpen(filteredFeatured)}
+                >
+                  {filteredFeatured.image_url && (
+                    <img
+                      src={filteredFeatured.image_url}
+                      alt=""
+                      className="w-full h-52 md:h-full object-cover md:col-span-1"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                  )}
+                  <div className={`p-6 flex flex-col gap-3 justify-center ${filteredFeatured.image_url ? 'md:col-span-2' : 'md:col-span-3'}`}>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                        {getCategoryLabel(filteredFeatured.category || filteredFeatured.source, t)}
+                      </span>
+                      <span>{t.sourcePrefix}{filteredFeatured.source}</span>
+                      <LikeButton storyId={filteredFeatured.id} initialCount={filteredFeatured.likes ?? 0} />
+                      <BookmarkButton story={filteredFeatured} displayTitle={getDisplayTitle(filteredFeatured)} />
+                    </div>
+                    <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
+                      {getDisplayTitle(filteredFeatured)}
+                    </p>
+                    {filteredFeatured.summary && (
+                      filteredFeatured.content_format === 'rich' ? (
+                        <div className="text-gray-500 text-sm leading-relaxed line-clamp-4">
+                          {renderSummaryMarkdown(getDisplaySummary(filteredFeatured))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-4">
+                          {getDisplaySummary(filteredFeatured)}
+                        </p>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {!isSearching && archiveFeatured && (
               <div id="featured" className="scroll-mt-56 md:scroll-mt-60 bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/70">
                 <div className="flex items-center justify-between mb-3">
@@ -547,7 +597,7 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
               <React.Fragment key={category}>
                 <div id={slugify(category)} className="scroll-mt-56 md:scroll-mt-60 bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/70">
                   <h2 className="text-lg font-semibold text-emerald-800 uppercase tracking-widest mb-5">
-                    {getCategoryLabel(category)}
+                    {getCategoryLabel(category, t)}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {stories.map((story) => (
@@ -558,7 +608,7 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
                         displayTitle={getDisplayTitle(story)}
                         displaySummary={getDisplaySummary(story)}
                         sourcePrefix={t.sourcePrefix}
-                        categoryLabel={getCategoryLabel(story.category || story.source)}
+                        categoryLabel={getCategoryLabel(story.category || story.source, t)}
                       />
                     ))}
                   </div>
@@ -589,7 +639,7 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
             ))}
 
             {isSearching && totalResults === 0 && (
-              <div className="text-center text-gray-400 py-20 text-lg">{t.noResults(query)}</div>
+              <div className="text-center text-gray-400 py-20 text-lg">{t.noResults.replace('{q}', query)}</div>
             )}
           </>
         )}

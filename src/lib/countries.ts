@@ -1,6 +1,19 @@
 export const LANG_TO_LOCALE: Record<string, string> = {
-  en: 'en', zh: 'zh-CN', de: 'de', nl: 'nl', es: 'es',
-  fr: 'fr', pl: 'pl', pt: 'pt', ja: 'ja', sr: 'sr',
+  // Cases where the Google Translate code differs from the BCP 47 locale
+  en: 'en', zh: 'zh-CN', 'zh-TW': 'zh-TW', no: 'nb', fil: 'fil',
+  // Standard codes that Intl.DisplayNames accepts directly
+  af: 'af', am: 'am', az: 'az', bg: 'bg', bn: 'bn', bs: 'bs',
+  ca: 'ca', cs: 'cs', cy: 'cy', da: 'da', de: 'de', el: 'el',
+  es: 'es', et: 'et', eu: 'eu', fi: 'fi', fr: 'fr', ga: 'ga',
+  gl: 'gl', gu: 'gu', ha: 'ha', hi: 'hi', hr: 'hr', hu: 'hu',
+  hy: 'hy', id: 'id', ig: 'ig', is: 'is', it: 'it', ja: 'ja',
+  ka: 'ka', kk: 'kk', km: 'km', kn: 'kn', ko: 'ko', lo: 'lo',
+  lt: 'lt', lv: 'lv', mg: 'mg', mk: 'mk', ml: 'ml', mn: 'mn',
+  mr: 'mr', ms: 'ms', my: 'my', ne: 'ne', nl: 'nl', pa: 'pa',
+  pl: 'pl', pt: 'pt', ro: 'ro', ru: 'ru', si: 'si', sk: 'sk',
+  sl: 'sl', so: 'so', sq: 'sq', sr: 'sr', sv: 'sv', sw: 'sw',
+  ta: 'ta', te: 'te', th: 'th', tr: 'tr', uk: 'uk', uz: 'uz',
+  vi: 'vi', yo: 'yo', zu: 'zu',
 }
 
 export const COUNTRY_CODES = [

@@ -5,13 +5,7 @@ import Link from 'next/link'
 import ArchiveCard, { CHAPTER_COLORS } from '@/components/ArchiveCard'
 import { getCountryName } from '@/lib/countries'
 import { useArchivePageStrings } from '@/lib/useArchiveStrings'
-
-const LANG_LABELS: Record<string, string> = {
-  en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch',
-  pt: 'Português', zh: '中文', ja: '日本語', ar: 'العربية',
-  nl: 'Nederlands', pl: 'Polski', sr: 'Srpski', it: 'Italiano',
-  ru: 'Русский', ko: '한국어', hi: 'हिंदी',
-}
+import { getLangLabel } from '@/lib/languages'
 
 type Story = {
   id: string
@@ -234,7 +228,7 @@ export default function ArchivePage() {
           {country && <FilterChip label={getCountryName(country, lang)} onRemove={() => setCountry('')} />}
           {year && <FilterChip label={year} onRemove={() => setYear('')} />}
           {event && <FilterChip label={filters.events.find((e) => e.id === event)?.name || event} onRemove={() => setEvent('')} />}
-          {language && <FilterChip label={LANG_LABELS[language] || language} onRemove={() => setLanguage('')} />}
+          {language && <FilterChip label={getLangLabel(language)} onRemove={() => setLanguage('')} />}
           {tag && <FilterChip label={`#${tag}`} onRemove={() => setTag('')} />}
           {author && <FilterChip label={`Author: ${author}`} onRemove={() => { setAuthor(''); setAuthorInput('') }} />}
           {activeCount > 1 && (
@@ -292,7 +286,7 @@ export default function ArchivePage() {
                 label={s.filterLanguage}
                 value={language}
                 onChange={setLanguage}
-                options={filters.languages.map((l) => ({ value: l.value, label: `${LANG_LABELS[l.value] || l.value} (${l.count})` }))}
+                options={filters.languages.map((l) => ({ value: l.value, label: `${getLangLabel(l.value)} (${l.count})` }))}
                 placeholder={s.anyLanguage}
               />
             )}

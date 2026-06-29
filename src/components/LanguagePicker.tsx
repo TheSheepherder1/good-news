@@ -1,18 +1,20 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { LANGUAGES, type Language } from '@/lib/translations'
+import { SUPPORTED_LANGUAGES, getLangLabel } from '@/lib/languages'
 
 type Props = {
-  current: Language
+  current: string
   translating: boolean
-  onChange: (lang: Language) => void
+  onChange: (lang: string) => void
   translatingLabel?: string
 }
 
 export default function LanguagePicker({ current, translating, onChange, translatingLabel = 'Translating…' }: Props) {
   const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const ref = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -22,7 +24,29 @@ export default function LanguagePicker({ current, translating, onChange, transla
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const currentLabel = LANGUAGES.find((l) => l.code === current)?.label ?? 'English'
+  useEffect(() => {
+    if (open) {
+      setSearch('')
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }, [open])
+
+  const q = search.toLowerCase()
+  const filtered = q
+    ? SUPPORTED_LANGUAGES.filter(
+        (l) => l.native.toLowerCase().includes(q) || l.english.toLowerCase().includes(q)
+      )
+    : SUPPORTED_LANGUAGES
+
+  // English always pinned first; remove it from the filtered list then prepend
+  const english = SUPPORTED_LANGUAGES.find((l) => l.code === 'en')!
+  const withoutEn = filtered.filter((l) => l.code !== 'en')
+  const displayList = [english, ...withoutEn]
+
+  function handleSelect(code: string) {
+    onChange(code)
+    setOpen(false)
+  }
 
   return (
     <div ref={ref} className="relative inline-block">
@@ -37,7 +61,7 @@ export default function LanguagePicker({ current, translating, onChange, transla
         {translating ? (
           <span className="text-emerald-600">{translatingLabel}</span>
         ) : (
-          <span>{currentLabel}</span>
+          <span>{getLangLabel(current)}</span>
         )}
         <svg
           className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
@@ -48,20 +72,35 @@ export default function LanguagePicker({ current, translating, onChange, transla
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
-          {LANGUAGES.map(({ code, label }) => (
-            <button
-              key={code}
-              onClick={() => { onChange(code); setOpen(false) }}
-              className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                code === current
-                  ? 'text-emerald-700 font-semibold bg-emerald-50'
-                  : 'text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-100 z-50 flex flex-col">
+          <div className="px-3 pt-3 pb-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search languages…"
+              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-300 placeholder-gray-400"
+            />
+          </div>
+          <div className="max-h-72 overflow-y-auto py-1">
+            {displayList.map(({ code, native, english }) => (
+              <button
+                key={code}
+                onClick={() => handleSelect(code)}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                  code === current
+                    ? 'text-emerald-700 font-semibold bg-emerald-50'
+                    : 'text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                }`}
+              >
+                {native === english ? native : `${native} · ${english}`}
+              </button>
+            ))}
+            {displayList.length === 0 && (
+              <p className="px-4 py-3 text-sm text-gray-400">No languages found.</p>
+            )}
+          </div>
         </div>
       )}
     </div>

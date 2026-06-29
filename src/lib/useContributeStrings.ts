@@ -1,21 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { type Language } from '@/lib/translations'
 import { CONTRIBUTE_EN, CONTRIBUTE_OVERRIDES, type ContributeStrings } from '@/lib/contributeStrings'
 
-const cache: Partial<Record<Language, ContributeStrings>> = { en: CONTRIBUTE_EN }
+const cache: Record<string, ContributeStrings> = { en: CONTRIBUTE_EN }
 
 // Translates the static /contribute UI strings into the reader's chosen
 // language via /api/translate (same free Google Translate endpoint used
 // for story summaries), caching the result per language for the session.
-export function useContributeStrings(lang: Language) {
+export function useContributeStrings(lang: string) {
   const [strings, setStrings] = useState<ContributeStrings>(cache[lang] || CONTRIBUTE_EN)
   const [translating, setTranslating] = useState(false)
 
   useEffect(() => {
     if (cache[lang]) {
-      setStrings(cache[lang]!)
+      setStrings(cache[lang])
       return
     }
 
@@ -38,7 +37,7 @@ export function useContributeStrings(lang: Language) {
         keys.forEach((key, i) => {
           result[key] = translated[i] || CONTRIBUTE_EN[key]
         })
-        Object.assign(result, CONTRIBUTE_OVERRIDES[lang as Exclude<Language, 'en'>])
+        Object.assign(result, CONTRIBUTE_OVERRIDES[lang])
         cache[lang] = result
         setStrings(result)
       })
