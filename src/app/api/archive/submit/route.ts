@@ -37,7 +37,6 @@ Passing criteria (ALL must be met):
 - Specific enough to be credible — real people, real situation, not vague inspiration
 - An original personal account, witnessed event, or documented historical story — not a copy/paste of a news article
 - No hate speech, political agenda, or negativity as the primary focus
-- Something worth preserving permanently — would still matter to read in 50 years
 - Not purely promotional for a person, brand, or organization`,
     }],
   })
