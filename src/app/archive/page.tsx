@@ -199,20 +199,14 @@ export default function ArchivePage() {
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-white/60 px-6 py-4">
-        {/* Desktop: single row */}
+        {/* Desktop: logo + Share a Story only */}
         <div className="hidden md:flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2">
-              <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
-            </Link>
-            <Link href="/" className="text-sm font-semibold text-gray-800">{s.todaysNews}</Link>
-          </div>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/archive" className="font-semibold text-gray-800">{s.navArchive}</Link>
-            <Link href="/archive/submit" className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors">
-              {s.navShareStory}
-            </Link>
-          </nav>
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
+          </Link>
+          <Link href="/archive/submit" className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors text-sm">
+            {s.navShareStory}
+          </Link>
         </div>
         {/* Mobile: logo + Share a Story only */}
         <div className="md:hidden flex items-center justify-between">
