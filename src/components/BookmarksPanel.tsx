@@ -97,7 +97,7 @@ export default function BookmarksPanel({ onClose }: Props) {
           {newsBookmarks.length > 0 && (
             <section>
               {archiveBookmarks.length > 0 && (
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">{t.newsSection}</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">{t.newsSection}</h3>
               )}
               <div className="flex flex-col divide-y divide-gray-100">
                 {newsBookmarks.map((b) => (
