@@ -228,7 +228,7 @@ export const ARCHIVE_SUBMIT_EN: ArchiveSubmitStrings = {
   relationshipRead: 'I read about this',
   checkButton: '✦ Check My Story Before Submitting',
   checkingButton: 'Checking your story…',
-  checkOptionalNote: 'Optional — run the same AI quality check our archive uses, before you submit.',
+  checkOptionalNote: 'Optional — run the same AI quality check our archive uses, before you submit. AI nor Human review will make any textual changes, only review to ensure the story is within the safety and legal guidelines of this library.',
   checkPassed: '✓ Looks great!',
   checkSuggestions: '✎ A few suggestions',
   checkScore: 'Score: {n}/10',
