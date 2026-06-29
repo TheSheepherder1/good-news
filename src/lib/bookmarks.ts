@@ -1,12 +1,15 @@
 export type BookmarkSnapshot = {
+  type?: 'news' | 'archive'   // undefined = 'news' for backward compat with existing saved bookmarks
   id: string
-  title: string
-  summary: string | null
-  source: string
-  url: string
+  title: string               // news: story title; archive: truncated opening
+  summary: string | null      // news: summary; archive: null
+  source: string              // news: publisher name; archive: author name
+  url: string                 // news: external URL; archive: /archive/[id]
   image_url: string | null
-  category: string | null
+  category: string | null     // news: section; archive: chapter name
   site_published_at: string | null
+  country?: string            // archive only
+  occurred_year?: number      // archive only
 }
 
 const KEY = 'tgif_bookmarks'
@@ -37,4 +40,12 @@ export function addBookmark(snapshot: BookmarkSnapshot) {
 
 export function removeBookmark(id: string) {
   saveBookmarks(getBookmarks().filter((b) => b.id !== id))
+}
+
+export function getArchiveBookmarks(): BookmarkSnapshot[] {
+  return getBookmarks().filter((b) => b.type === 'archive')
+}
+
+export function getNewsBookmarks(): BookmarkSnapshot[] {
+  return getBookmarks().filter((b) => !b.type || b.type === 'news')
 }

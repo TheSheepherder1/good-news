@@ -21,6 +21,10 @@ export type UIStrings = {
   supportUs: string
   supportTheGood: string
   footerCopyright: string
+  savedStories: string
+  archiveSection: string
+  newsSection: string
+  noSavedStories: string
   catNew: string
   catAnimals: string
   catArt: string
@@ -59,6 +63,10 @@ export const UI_EN: UIStrings = {
   supportUs: 'Support Us ❤️',
   supportTheGood: 'Support the Good',
   footerCopyright: 'All stories © their respective publishers. The Good I Found curates links to original sources and does not claim ownership of any content.',
+  savedStories: 'Saved Stories',
+  archiveSection: 'Archived Stories',
+  newsSection: 'News Stories',
+  noSavedStories: 'No saved stories yet. Tap the bookmark icon on any story to save it.',
   catNew: 'New!',
   catAnimals: 'Animals',
   catArt: 'Art',

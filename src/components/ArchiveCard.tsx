@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { getCountryName } from '@/lib/countries'
+import ArchiveBookmarkButton from '@/components/ArchiveBookmarkButton'
 
 const CHAPTER_COLORS: Record<string, string> = {
   kindness:    'bg-rose-50 text-rose-600 border-rose-200',
@@ -138,6 +139,16 @@ export default function ArchiveCard({
             >
               {story.occurred_year}
             </button>
+            <ArchiveBookmarkButton
+              id={story.id}
+              opening={story.opening}
+              imageUrl={story.image_1_url}
+              authorName={story.author_name}
+              isAnonymous={story.is_anonymous}
+              country={story.country}
+              occurredYear={story.occurred_year}
+              chapterName={story.chapter?.name ?? null}
+            />
           </div>
         </div>
 

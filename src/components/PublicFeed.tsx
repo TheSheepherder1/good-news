@@ -15,6 +15,7 @@ import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 import LikeButton from '@/components/LikeButton'
 import BookmarkButton from '@/components/BookmarkButton'
 import BookmarksPanel from '@/components/BookmarksPanel'
+import ArchiveBookmarkButton from '@/components/ArchiveBookmarkButton'
 import { getBookmarks } from '@/lib/bookmarks'
 import { getCountryName } from '@/lib/countries'
 import { type ArchiveFeatured } from '@/app/page'
@@ -544,16 +545,28 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
                       ) : null
                     })()}
                     <div className={`p-6 flex flex-col gap-3 justify-center ${(archiveFeatured.image_1_url ?? archiveFeatured.image_2_url ?? archiveFeatured.image_3_url) ? 'md:col-span-2' : 'md:col-span-3'}`}>
-                      <div className="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
-                        {archiveFeatured.archive_chapters && (
-                          <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                            {archiveFeatured.archive_chapters.name}
-                          </span>
-                        )}
-                        {archiveFeatured.occurred_year && <span>{archiveFeatured.occurred_year}</span>}
-                        {archiveFeatured.country && (
-                          <span>· {getCountryName(archiveFeatured.country, lang)}</span>
-                        )}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+                          {archiveFeatured.archive_chapters && (
+                            <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                              {archiveFeatured.archive_chapters.name}
+                            </span>
+                          )}
+                          {archiveFeatured.occurred_year && <span>{archiveFeatured.occurred_year}</span>}
+                          {archiveFeatured.country && (
+                            <span>· {getCountryName(archiveFeatured.country, lang)}</span>
+                          )}
+                        </div>
+                        <ArchiveBookmarkButton
+                          id={archiveFeatured.id}
+                          opening={archiveFeatured.opening}
+                          imageUrl={archiveFeatured.image_1_url ?? archiveFeatured.image_2_url ?? archiveFeatured.image_3_url}
+                          authorName={archiveFeatured.author_name}
+                          isAnonymous={archiveFeatured.is_anonymous}
+                          country={archiveFeatured.country}
+                          occurredYear={archiveFeatured.occurred_year}
+                          chapterName={archiveFeatured.archive_chapters?.name ?? null}
+                        />
                       </div>
                       <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
                         {archiveTranslated?.opening ?? archiveFeatured.opening}
