@@ -209,6 +209,10 @@ The submission form is separate from the story itself. It is metadata — never 
 - Language detection
 - Attribute extraction from story text as fallback for any fields left blank
 
+**Pre-submit AI check (optional):** A "Check My Story Before Submitting" button runs the same AI quality check the archive uses internally, giving the writer early feedback on score and suggested chapter before they submit. The check note reads: *"Optional — run the same AI quality check our archive uses, before you submit. AI nor Human review will make any textual changes, only review to ensure the story is within the safety and legal guidelines of this library."* This is a firm promise — no edits are ever made to a writer's words.
+
+**Sort order:** Stories on the `/archive` browse page are ordered by `published_at` descending — newest approved stories appear at the top. This is intentional: it rewards recent contributors and keeps the archive feeling alive.
+
 ### Archive — World Events
 
 A curated list of world events maintained by Mike, used to connect stories to larger historical moments (World Cup 2026, COVID-19 Pandemic, Hurricane Katrina, etc.).
@@ -462,18 +466,19 @@ A speaker icon appears in the category/source row of the story slide-in panel (a
 **Component:** `src/components/TextToSpeechButton.tsx`.
 
 ### Bookmarks (Save for Later)
-Readers can bookmark any story with a bookmark icon — bottom-right of every story card (alongside the like button) and inline on the Bright Spot card. No login required.
+Readers can bookmark any story with a bookmark icon — bottom-right of every news story card, on every archive card (alongside country and year), and inline on the archive hero card on the home page. No login required.
 
-**Storage:** A full snapshot is written to `localStorage` under `tgif_bookmarks` (JSON array). Each snapshot includes: `id`, `title`, `summary`, `source`, `url`, `image_url`, `category`, `site_published_at`. Because the full content is saved locally, bookmarks remain accessible even if the story is later removed or unpublished from the site — the original source URL still works.
+**Storage:** A full snapshot is written to `localStorage` under `tgif_bookmarks` (JSON array). `BookmarkSnapshot` type includes: `type` ('news' | 'archive'; undefined treated as 'news' for backward compat), `id`, `title`, `summary`, `source`, `url`, `image_url`, `category`, `site_published_at`, plus archive-only fields `country` and `occurred_year`. Because the full content is saved locally, bookmarks remain accessible even if a story is later removed — the URL still works.
 
 **UI:**
 - Outline gray bookmark icon when not saved; filled green when saved.
 - Tapping toggles save/remove with instant visual feedback.
-- Cross-card sync via `tgif:bookmark-change` custom event — liking in "New!" instantly reflects in the section card and vice versa.
+- Cross-card sync via `tgif:bookmark-change` custom event — bookmarking in one view instantly reflects everywhere the same story appears.
 - Header bookmark button shows a green badge with the count of saved stories (hidden when zero).
-- Clicking the header button opens the **Saved Stories panel** — mobile bottom sheet / desktop centered modal. Each item shows a thumbnail, title (links to original article in a new tab), source, category, and summary snippet, with an X to remove. Empty state shows a friendly prompt.
+- Clicking the header button opens the **Saved Stories panel** — mobile bottom sheet / desktop centered modal. Panel splits into two labeled sections: **Archived Stories** first, **News Stories** second (both section headers in emerald). Archive items link internally via Next.js `Link`; news items open the original article in a new tab. Each row shows thumbnail, title, subtitle (chapter · author · year for archive; category · source for news), and summary snippet for news stories. X button removes the bookmark. Empty state shows a friendly prompt.
+- All panel text — section headers, panel title, empty state, and story titles/summaries — translates to the reader's chosen language. Titles and summaries are batch-translated in a single API call on panel open.
 
-**Components:** `src/components/BookmarkButton.tsx`, `src/components/BookmarksPanel.tsx`, `src/lib/bookmarks.ts` (shared type + localStorage utilities).
+**Components:** `src/components/BookmarkButton.tsx` (news), `src/components/ArchiveBookmarkButton.tsx` (archive), `src/components/BookmarksPanel.tsx`, `src/lib/bookmarks.ts` (shared type + localStorage utilities).
 
 ### RSS Reader Feed
 Readers can subscribe to published stories via a standard RSS 2.0 feed at `/feed.xml` (`src/app/feed.xml/route.ts`). Returns the 50 most recent published stories with title, summary, source, category, image, and a link to the original article. Each item's description includes a Ko-fi donation callout. The feed is cached for 5 minutes (`Cache-Control: public, max-age=300`). An RSS autodiscovery `<link>` tag is included in the site `<head>` via `layout.tsx` metadata (`alternates.types`), so RSS readers can auto-detect it. A small RSS icon in the footer links to the feed directly.
@@ -496,8 +501,7 @@ Public readers can like (and unlike) any story. No login required — state is a
 - `LikeButton` component (`src/components/LikeButton.tsx`) — outline gray heart when not liked, filled red heart when liked. Like count shown beside the heart. Clicking toggles like/unlike with optimistic UI (instant visual response; API fires in background).
 
 **Where it appears:**
-- On every story card in section grids (bottom-right of card, not shown in admin mode).
-- On the Today's Bright Spot (featured) card inline to the right of the source name.
+- ~~On every story card in section grids (bottom-right of card).~~ **Removed.** Like hearts were removed from news story cards — they were confusing without a matching interaction on archive stories, and the bookmark button serves the save intent better.
 - Not on the slide-in panel (shares panel already serves that space).
 
 **Persistence & ISR resilience:**
