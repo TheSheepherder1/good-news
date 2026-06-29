@@ -152,6 +152,9 @@ export type ArchiveSubmitStrings = {
   submitDisclaimer: string
   // Validation errors
   errorStoryRequired: string
+  errorOpeningTooShort: string   // contains {min}
+  errorBodyTooShort: string      // contains {min}
+  errorImpactTooShort: string    // contains {min}
   errorYearRequired: string
   errorCountryRequired: string
   errorNameRequired: string
@@ -237,6 +240,9 @@ export const ARCHIVE_SUBMIT_EN: ArchiveSubmitStrings = {
   submittingButton: 'Submitting your story…',
   submitDisclaimer: 'By submitting, you confirm this is your own original account and that you have the right to share it.',
   errorStoryRequired: 'Please write at least the opening or body of your story.',
+  errorOpeningTooShort: 'Opening must be at least {min} characters.',
+  errorBodyTooShort: 'Story must be at least {min} characters.',
+  errorImpactTooShort: 'Impact must be at least {min} characters if provided.',
   errorYearRequired: 'Year the story occurred is required.',
   errorCountryRequired: 'Country is required.',
   errorNameRequired: 'Your name is required.',

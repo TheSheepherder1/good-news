@@ -66,6 +66,15 @@ export async function POST(req: NextRequest) {
     if (!opening?.trim() && !storyBody?.trim()) {
       return NextResponse.json({ error: 'Story opening or body is required' }, { status: 400 })
     }
+    if (opening?.trim() && opening.trim().length < 200) {
+      return NextResponse.json({ error: 'Opening must be at least 200 characters.' }, { status: 400 })
+    }
+    if (storyBody?.trim() && storyBody.trim().length < 500) {
+      return NextResponse.json({ error: 'Story must be at least 500 characters.' }, { status: 400 })
+    }
+    if (impact?.trim() && impact.trim().length < 200) {
+      return NextResponse.json({ error: 'Impact must be at least 200 characters if provided.' }, { status: 400 })
+    }
     if (!occurred_year || !country?.trim()) {
       return NextResponse.json({ error: 'Year and country are required' }, { status: 400 })
     }

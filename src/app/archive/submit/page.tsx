@@ -12,6 +12,10 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+const MIN_OPENING = 200
+const MIN_BODY = 500
+const MIN_IMPACT = 200
+
 // English values stored in DB — order must match ARCHIVE_SUBMIT_EN relationship keys
 const RELATIONSHIP_VALUES = [
   'I witnessed this',
@@ -128,10 +132,10 @@ export default function ArchiveSubmitPage() {
   }
 
   async function checkMyStory() {
-    if (!opening.trim() && !body.trim()) {
-      setError(s.errorStoryRequired)
-      return
-    }
+    if (!opening.trim() && !body.trim()) { setError(s.errorStoryRequired); return }
+    if (opening.trim() && opening.trim().length < MIN_OPENING) { setError(s.errorOpeningTooShort.replace('{min}', String(MIN_OPENING))); return }
+    if (body.trim() && body.trim().length < MIN_BODY) { setError(s.errorBodyTooShort.replace('{min}', String(MIN_BODY))); return }
+    if (impact.trim() && impact.trim().length < MIN_IMPACT) { setError(s.errorImpactTooShort.replace('{min}', String(MIN_IMPACT))); return }
     setError('')
     setChecking(true)
     setCheckResult(null)
@@ -157,6 +161,9 @@ export default function ArchiveSubmitPage() {
     setError('')
 
     if (!opening.trim() && !body.trim()) { setError(s.errorStoryRequired); return }
+    if (opening.trim().length < MIN_OPENING) { setError(s.errorOpeningTooShort.replace('{min}', String(MIN_OPENING))); return }
+    if (body.trim().length < MIN_BODY) { setError(s.errorBodyTooShort.replace('{min}', String(MIN_BODY))); return }
+    if (impact.trim() && impact.trim().length < MIN_IMPACT) { setError(s.errorImpactTooShort.replace('{min}', String(MIN_IMPACT))); return }
     if (!occurredYear.trim()) { setError(s.errorYearRequired); return }
     if (!country.trim()) { setError(s.errorCountryRequired); return }
     if (!authorName.trim()) { setError(s.errorNameRequired); return }
@@ -296,6 +303,7 @@ export default function ArchiveSubmitPage() {
               placeholder={s.openingPlaceholder}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none bg-white"
             />
+            <CharCounter count={opening.trim().length} min={MIN_OPENING} />
           </div>
 
           {/* Image 2 — mid-story */}
@@ -322,6 +330,7 @@ export default function ArchiveSubmitPage() {
               placeholder={s.bodyPlaceholder}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none bg-white"
             />
+            <CharCounter count={body.trim().length} min={MIN_BODY} />
           </div>
 
           {/* Impact */}
@@ -336,6 +345,7 @@ export default function ArchiveSubmitPage() {
               placeholder={s.impactPlaceholder}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none bg-white"
             />
+            {impact.trim().length > 0 && <CharCounter count={impact.trim().length} min={MIN_IMPACT} />}
           </div>
 
           {/* Image 3 — closing */}
@@ -710,5 +720,14 @@ function ImageUpload({
         />
       </label>
     </div>
+  )
+}
+
+function CharCounter({ count, min }: { count: number; min: number }) {
+  const met = count >= min
+  return (
+    <p className={`text-xs mt-1 text-right tabular-nums transition-colors ${met ? 'text-emerald-500' : 'text-gray-400'}`}>
+      {met ? `✓ ${count}` : `${count} / ${min}`}
+    </p>
   )
 }
