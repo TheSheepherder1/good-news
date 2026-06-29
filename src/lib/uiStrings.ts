@@ -4,6 +4,7 @@ export type UIStrings = {
   brightSpot: string
   storyOfGoodness: string
   browseArchive: string
+  shareStoryOfGoodness: string
   searchPlaceholder: string
   topOfPage: string
   sections: string
@@ -41,6 +42,7 @@ export const UI_EN: UIStrings = {
   brightSpot: "Today's Bright Spot",
   storyOfGoodness: 'A Story of Goodness',
   browseArchive: 'Browse the Archive',
+  shareStoryOfGoodness: 'Share a Story of Goodness',
   searchPlaceholder: 'Search stories…',
   topOfPage: 'Top of Page',
   sections: 'Sections',

@@ -516,10 +516,13 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
 
             {!isSearching && archiveFeatured && (
               <div id="featured" className="scroll-mt-56 md:scroll-mt-60 bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/70">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest text-emerald-600">
                     {t.storyOfGoodness}
                   </h2>
+                  <Link href="/archive/submit" className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors text-sm">
+                    {t.shareStoryOfGoodness}
+                  </Link>
                   <Link href="/archive" className="text-[1.35rem] text-emerald-500 hover:text-emerald-700 font-semibold transition-colors">
                     {t.browseArchive} →
                   </Link>
