@@ -30,6 +30,7 @@ export type ArchivePageStrings = {
   emptyTitle: string
   emptyBody: string
   emptyShareFirst: string
+  todaysNews: string
   historicalBadge: string
   anonymous: string
   storySharedBy: string
@@ -68,6 +69,7 @@ export const ARCHIVE_PAGE_EN: ArchivePageStrings = {
   emptyTitle: 'The archive is just getting started',
   emptyBody: 'Be one of the first to add a story. Every great archive begins with a single act of goodness worth remembering.',
   emptyShareFirst: 'Share the first story',
+  todaysNews: "← Today's News",
   historicalBadge: 'Historical Account',
   anonymous: 'Anonymous',
   storySharedBy: 'Story shared by',

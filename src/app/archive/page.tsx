@@ -43,6 +43,7 @@ export default function ArchivePage() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [translatedOpenings, setTranslatedOpenings] = useState<Record<string, string>>({})
+  const [translatedChapters, setTranslatedChapters] = useState<Record<string, string>>({})
 
   const [lang, setLang] = useState('en')
   useEffect(() => {
@@ -133,6 +134,32 @@ export default function ArchivePage() {
     return () => { cancelled = true }
   }, [lang, stories])
 
+  // Translate chapter names when language or chapters change
+  useEffect(() => {
+    if (lang === 'en' || filters.chapters.length === 0) {
+      setTranslatedChapters({})
+      return
+    }
+    let cancelled = false
+    const texts = filters.chapters.map((c) => c.name)
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, target: lang }),
+    })
+      .then((r) => r.json())
+      .then((data: { translations?: string[] }) => {
+        if (cancelled) return
+        const map: Record<string, string> = {}
+        filters.chapters.forEach((c, i) => {
+          if (data.translations?.[i]) map[c.id] = data.translations[i]
+        })
+        setTranslatedChapters(map)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [lang, filters.chapters])
+
   function clearAll() {
     setChapter(''); setCountry(''); setYear(''); setEvent(''); setLanguage(''); setTag('')
     setAuthor(''); setAuthorInput('')
@@ -149,7 +176,7 @@ export default function ArchivePage() {
           <Link href="/" className="flex items-center gap-2">
             <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
           </Link>
-          <Link href="/" className="text-sm font-semibold text-gray-800">← Today&rsquo;s News</Link>
+          <Link href="/" className="text-sm font-semibold text-gray-800">{s.todaysNews}</Link>
         </div>
         <nav className="flex items-center gap-4 text-sm">
           <Link href="/archive" className="font-semibold text-gray-800">{s.navArchive}</Link>
@@ -196,7 +223,7 @@ export default function ArchivePage() {
                       : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  {c.name}
+                  {translatedChapters[c.id] || c.name}
                   <span className="ml-1.5 text-xs opacity-60">{c.count}</span>
                 </button>
               )
