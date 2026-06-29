@@ -51,7 +51,11 @@ Clicking "Share a Story" leads to `/contribute`, which shows two cards:
 - **Open dataset** — make the archive a publicly downloadable dataset so stories survive even if the site ever goes down.
 - **Legal/estate planning** — a non-profit structure would protect the archive long-term and ensure it outlives any single person's involvement.
 
-**Curation standard:** AI holds a high bar — not just "is this positive?" but "is this a genuine story of human goodness worthy of permanent preservation?" Specific criteria: a real human act at the center, specific enough to be credible (vague feel-good fluff doesn't pass), an original personal account (not a retelling of a news article), and something that would still matter to read in 50 years. The "Check My Story" pre-check button coaches writers to meet this bar before submitting.
+**Curation standard:** AI holds a high bar — not just "is this positive?" but "is this a genuine story of human goodness worthy of permanent preservation?" Specific criteria: a real human act at the center, specific enough to be credible (vague feel-good fluff doesn't pass), an original personal account (not a retelling of a news article). The "Check My Story" pre-check button coaches writers to meet this bar before submitting.
+
+**Character minimums (submit form):** Opening ≥ 200 chars, Body ≥ 500 chars, Impact ≥ 200 chars (if filled). Live counters show `{n} / {min}` in gray while under the minimum, switching to `✓ {n}` in emerald green once met. Counters and error messages are fully translated to the reader's chosen language.
+
+**AI check — suggestions on failure:** When a story fails the pre-submit check, the AI returns 2–4 short, specific, encouraging bullet points telling the writer exactly what to add or change (referencing the actual story content, not generic advice). These are batch-translated alongside the reason text before display. On pass, `suggestions` is an empty array. The "worth preserving permanently in 50 years" criterion was removed from the AI check — the remaining criteria are sufficient.
 
 **Story template:** Stories follow a structured magazine-style layout with prompted text areas and optional images — mirrors how a great feature story reads, not a form. Structure:
 1. **Hero image** (optional) + caption
@@ -126,7 +130,7 @@ The archive is fully translated into the reader's chosen language — the same `
 
 **Archive page header:** Logo (left) + "Share a Story of Goodness" button (right) — identical on mobile and desktop. "← Today's News" and "Archive" nav links were removed from the header: the logo already returns to the home page, and "Archive" linked to the page the reader was already on. Keeping only the logo and the CTA button makes the header clean and unambiguous.
 
-**Home page "A Story of Goodness" card header row:** Three items — "A STORY OF GOODNESS" heading (left), "Share a Story of Goodness" emerald button linking to `/archive/submit` (center), "Archive of Goodness →" link to `/archive` (right). Font sizes: heading and "Archive of Goodness" are both `text-[1.35rem] font-semibold`; the button is `text-xl` (20px). Previously the button was labelled "Browse the Archive" at `text-xs`.
+**Home page "A Story of Goodness" card header row:** Three items — "A STORY OF GOODNESS" heading (left), "Share a Story of Goodness" emerald button linking to `/archive/submit` (center), "Archive of Goodness →" link to `/archive` (right). Font sizes on desktop: heading and "Archive of Goodness" are both `text-[1.35rem] font-semibold`; the button is `text-xl` (20px). On mobile only, all three elements are reduced by 20% (`text-[1.08rem]` for heading and archive link, `text-base` for the button) and the row is center-aligned (`justify-center`); desktop keeps `justify-between`. Previously the button was labelled "Browse the Archive" at `text-xs`.
 
 **"Share a Story of Goodness with Us!":** All links and buttons previously labelled "Share a Story with Us!" were renamed to "Share a Story of Goodness with Us!" across all 10 languages in `src/lib/translations.ts` (`shareStoryWithUs` key).
 
@@ -209,7 +213,9 @@ The submission form is separate from the story itself. It is metadata — never 
 - Language detection
 - Attribute extraction from story text as fallback for any fields left blank
 
-**Pre-submit AI check (optional):** A "Check My Story Before Submitting" button runs the same AI quality check the archive uses internally, giving the writer early feedback on score and suggested chapter before they submit. The check note reads: *"Optional — run the same AI quality check our archive uses, before you submit. AI nor Human review will make any textual changes, only review to ensure the story is within the safety and legal guidelines of this library."* This is a firm promise — no edits are ever made to a writer's words.
+**Pre-submit AI check (optional):** A "Check My Story Before Submitting" button runs the same AI quality check the archive uses internally, giving the writer early feedback on score, suggested chapter, and (on failure) 2–4 specific improvement suggestions before they submit. The check note reads: *"Optional — run the same AI quality check our archive uses, before you submit. AI nor Human review will make any textual changes, only review to ensure the story is within the safety and legal guidelines of this library."* This is a firm promise — no edits are ever made to a writer's words.
+
+**Attestation modal (archive submit):** When the writer taps "Submit to the Archive," a modal appears before the story is sent. It shows a warm thank-you message followed by a bulleted list of terms (original work, no plagiarism/copyright issues, no others' personal info without permission, written by a real person not AI, true story to the best of their knowledge, no compensation — credited by the name they provide unless they choose Anonymous, The Good I Found will not edit/spell-check the text, The Good I Found may decline to publish or remove the story at its sole editorial discretion). A single checkbox ("I have read and agree to all of the above") must be checked before "Confirm & Submit" becomes active. All modal text is fully translated to the reader's chosen language. On submission, `/api/archive/submit` writes a row to `submission_attestations` (with `archive_story_id` and `submitter_name`). `submission_id` remains null for archive attestations; `archive_story_id` remains null for reader-submission attestations. Both are purged after 7 years by `/api/cleanup`.
 
 **Sort order:** Stories on the `/archive` browse page are ordered by `published_at` descending — newest approved stories appear at the top. This is intentional: it rewards recent contributors and keeps the archive feeling alive.
 
@@ -679,10 +685,11 @@ reader_submissions (
 
 submission_attestations (        -- proof of agreement to submission terms, kept 7 years
   id uuid primary key,
-  submission_id uuid,            -- the reader_submissions row this attestation belongs to
+  submission_id uuid,            -- the reader_submissions row (null for archive entries)
+  archive_story_id uuid,         -- the archive_stories row (null for reader-submission entries)
   submitted_at timestamptz not null default now(),
   submitter_name text not null,
-  submitter_email text           -- optional
+  submitter_email text           -- optional (reader submissions only)
 )
 ```
 
