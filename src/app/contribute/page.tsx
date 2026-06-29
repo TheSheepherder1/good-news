@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import RichTextEditor from '@/components/RichTextEditor'
 import LanguagePicker from '@/components/LanguagePicker'
-import { LANGUAGES, LANG_STORAGE_KEY, type Language } from '@/lib/translations'
+import { LANG_STORAGE_KEY } from '@/lib/translations'
 import { useContributeStrings } from '@/lib/useContributeStrings'
 import { translateServerMessage } from '@/lib/contributeStrings'
 
@@ -17,15 +17,15 @@ function isEmptyRich(value: string): boolean {
 
 export default function ContributePage() {
   const router = useRouter()
-  const [lang, setLang] = useState<Language>('en')
+  const [lang, setLang] = useState('en')
   const { s, translating } = useContributeStrings(lang)
 
   useEffect(() => {
-    const stored = localStorage.getItem(LANG_STORAGE_KEY) as Language | null
-    if (stored && LANGUAGES.some((l) => l.code === stored)) setLang(stored)
+    const stored = localStorage.getItem(LANG_STORAGE_KEY)
+    if (stored) setLang(stored)
   }, [])
 
-  function handleLanguageChange(newLang: Language) {
+  function handleLanguageChange(newLang: string) {
     setLang(newLang)
     localStorage.setItem(LANG_STORAGE_KEY, newLang)
   }

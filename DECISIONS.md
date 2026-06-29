@@ -1,13 +1,13 @@
 # The Good I Found — Project Decisions
 
 ## Project Overview
-A daily curated good-news website, live at **www.thegoodifound.com**. Stories are fetched from 35 RSS feeds across the globe, filtered by AI for positivity and politics, reviewed by the admin, and published to the public site. Human-in-the-loop: nothing publishes automatically. Supports 5 languages, search, mobile slide-up reader, custom hand-written stories, and admin-editable footer content.
+A daily curated good-news website, live at **www.thegoodifound.com**. Stories are fetched from 35 RSS feeds across the globe, filtered by AI for positivity and politics, reviewed by the admin, and published to the public site. Human-in-the-loop: nothing publishes automatically. Supports 10 languages, search, mobile slide-up reader, custom hand-written stories, and admin-editable footer content.
 
 **To resume work in a fresh conversation:** read this whole file, then continue. It is the source of truth for the project's state and decisions.
 
 ---
 
-## The Archive — Big Idea (In Planning)
+## The Archive — Big Idea (Built — live on `archive-dev`, merging to production after QA)
 
 The site is evolving toward a two-layer destination:
 
@@ -18,6 +18,24 @@ Curated good news, fresh every day. Stays exactly as-is.
 A permanent, searchable, public library of human goodness. Anyone can submit a story — a personal account, a witnessed act, a family memory. Stories live forever, translated on demand, organized so anyone can find them. No ads, no PII collected, no accounts required.
 
 ### Archive — Decisions Made
+
+**Chapter taxonomy (9 chapters, defined and seeded):**
+Kindness, Courage, Community, Sacrifice, Love, Resilience, Innovation, Environment, Joy. One level of chapters to start — sub-chapters added later when volume and natural groupings earn them.
+
+**Seeding complete:** 27 stories seeded across all 9 chapters (3 per chapter) before public launch. 25 stories without world-event ties; 2 tied to world events still in the database (COVID-19 Pandemic, Paris Olympics 2024). Stories covering multiple countries, time periods, and historical moments.
+
+**Home page integration — "A Story of Goodness":**
+The opening/home page features one archive story as its hero card under the label "A Story of Goodness" (emerald color scheme). This replaced the "Today's Bright Spot" featured-news slot. All news stories now go into sections — none has a separate hero. Admin can pin any live archive story as the home feature via the admin panel; when none is pinned the most recently published live story is shown automatically. Image fallback: `image_1_url → image_2_url → image_3_url` (shows best available photo). A "Browse the Archive →" link sits alongside the hero label.
+
+**Admin home curation (`is_home_featured`):**
+`archive_stories.is_home_featured boolean not null default false`. A partial index (`where is_home_featured = true`) supports fast lookup. Admin "Live Stories" tab in the Archive group shows all live stories with "Set as Home Story" / "Remove from Home" buttons. Feature action unsets any previously pinned story first (only one at a time). Revalidate button clears the ISR cache (120s) so the change appears immediately.
+
+**`/contribute` is now a choice landing page:**
+Clicking "Share a Story" leads to `/contribute`, which shows two cards:
+1. **"Share a story of goodness"** — links to `/archive/submit` (the archive submission form)
+2. **"Recommend a news article"** — expands the existing URL recommendation form inline
+
+"Write an Article" (custom news article mode) is retired — the archive replaces it as the way readers contribute personal writing.
 
 **Submission:** Open to anyone in the world. No account required.
 - AI reviews each submission on arrival — passes automatically → goes live immediately
@@ -50,12 +68,8 @@ A permanent, searchable, public library of human goodness. Anyone can submit a s
 
 ### Archive — Decisions Pending
 
-- **Chapter taxonomy:** The actual list of theme-based chapters (to be defined — let the first 1,000 stories inform the final list)
 - **Sub-chapters:** Start with one level; add sub-chapters when the archive earns them through volume
 - **Story grouping within chapters:** How stories are sorted/grouped once a reader is inside a chapter — chronological, by place, by world event, by something else. Let real stories inform this.
-- **Archive home page:** What a reader sees before making any selection — the entry point to the whole archive
-- **Browsing entry points:** Whether chapters and attribute search are the same page or separate entry points
-- **Seed story list:** Which specific historical events and acts of goodness to use as anchor stories for each chapter at launch
 
 ### Archive — Launch Seeding
 
@@ -78,6 +92,43 @@ The archive will be seeded with AI-generated stories before public launch so the
 - Define what archive-worthy looks like for future submitters
 - Populate the Kayak filters so attribute search works from day one
 - Seed the world events list with historical events worth connecting stories to
+
+### Archive — Translation & Localization
+
+The archive is fully translated into the reader's chosen language — the same `tgif_lang` key in `localStorage` that drives the home page.
+
+**What translates:**
+- All UI chrome on `/archive` (title, subtitle, filter labels, buttons, empty states, pagination, badges) via `useArchivePageStrings(lang)` hook
+- Story card openings — all cards batch-translate in a single API call per page load; result stored in `Record<storyId, string>` and passed as props to `ArchiveCard`
+- Chapter names — batch-translated on language change, keyed by chapter id; used in both the chapter filter pills at the top of `/archive` and the chapter badge on each `ArchiveCard`. Tags are intentionally left untranslated — they are user-submitted words that readers search by and should remain in their original form.
+- World event names — batch-translated on language change, keyed by event id; used in the world event filter pill on `/archive` and the world event badge on each `ArchiveCard`
+- All UI on `/archive/submit` (section headers, field labels, placeholders, relationship options, error messages, success messages) via `useArchiveSubmitStrings(lang)` hook
+- Story content (opening, body, impact) on `/archive/[id]` via `ArchiveStoryContent` — a client component that reads `tgif_lang` on mount and calls `/api/translate` for the three fields together
+- Month names in the submission form derived from `Intl.DateTimeFormat` with the reader's locale — no extra string keys needed
+- Country names in the submission form and on archive cards / story detail page via `Intl.DisplayNames` — no library, no translation API call
+
+**Key files:**
+- `src/lib/archiveStrings.ts` — English source strings for both archive pages (`ARCHIVE_PAGE_EN`, `ARCHIVE_SUBMIT_EN`)
+- `src/lib/useArchiveStrings.ts` — `useArchivePageStrings(lang)` and `useArchiveSubmitStrings(lang)` hooks, same batch-translate + per-language cache pattern as `useContributeStrings`
+- `src/components/ArchiveStoryContent.tsx` — client component for story detail page; dims content with `opacity-70` during translation
+- `src/lib/countries.ts` — exports `LANG_TO_LOCALE` map (used by submit page for month locale) + `getCountryName(code, lang)` + `getAllCountriesSorted(lang)`
+- `src/components/LocalizedCountry.tsx` — client wrapper for server-rendered story detail page; reads `tgif_lang` and resolves country name via `Intl.DisplayNames`
+
+**Translate API (`sl=auto`):** Changed from `sl=en` to `sl=auto` so stories written in any language (not just English) translate correctly to the reader's chosen language.
+
+**Relationship values vs. display:** Relationship options (e.g. "I witnessed this") are stored in the DB as English strings. The submission form maps these to translated display labels (`s.relationshipWitnessed` etc.) at render time — the stored value never changes, only the label shown to the reader.
+
+**Country data integrity:** Country field stores ISO 3166-1 alpha-2 codes (e.g. "BR"), not free-text names. This prevents duplicate spellings across languages ("Brazil" vs. "Brasil"). Display name is resolved client-side by the reader's language via `Intl.DisplayNames`. A migration (`migration_archive_country_codes.sql`) converted the 15 existing country name strings to ISO codes before launch.
+
+**Country select dropdown:** The `/archive/submit` form replaced the free-text country input with a `<select>` populated by `getAllCountriesSorted(lang)` — names appear in the reader's chosen language and the ISO code is stored as the value.
+
+### Archive — Navigation
+
+**Archive page header:** Logo (left) + "Share a Story of Goodness" button (right) — identical on mobile and desktop. "← Today's News" and "Archive" nav links were removed from the header: the logo already returns to the home page, and "Archive" linked to the page the reader was already on. Keeping only the logo and the CTA button makes the header clean and unambiguous.
+
+**Home page "A Story of Goodness" card header row:** Three items — "A STORY OF GOODNESS" heading (left), "Share a Story of Goodness" emerald button linking to `/archive/submit` (center), "Archive of Goodness →" link to `/archive` (right). Font sizes: heading and "Archive of Goodness" are both `text-[1.35rem] font-semibold`; the button is `text-xl` (20px). Previously the button was labelled "Browse the Archive" at `text-xs`.
+
+**"Share a Story of Goodness with Us!":** All links and buttons previously labelled "Share a Story with Us!" were renamed to "Share a Story of Goodness with Us!" across all 10 languages in `src/lib/translations.ts` (`shareStoryWithUs` key).
 
 ### Archive — Build Plan
 
@@ -103,17 +154,17 @@ The archive will be seeded with AI-generated stories before public launch so the
 
 **Build phases:**
 
-**Phase 1 — Database + admin foundation**
+**Phase 1 — Database + admin foundation** ✓ DONE
 New tables, world events admin panel, archive moderation queue
 
-**Phase 2 — Submission experience**
+**Phase 2 — Submission experience** ✓ DONE
 `/archive/submit` with story template, prompted text areas, 3-image upload, submission form fields, AI quality check, pre-submit "Check My Story" button
 
-**Phase 3 — Public archive**
+**Phase 3 — Public archive** ✓ DONE
 `/archive` browsing with Kayak-effect attribute filters, chapter navigation, individual story pages at `/archive/[id]`
 
-**Phase 4 — Seeding + launch**
-AI-generate seed stories across all chapters, populate world events list with historical events, open to public, push to production
+**Phase 4 — Seeding + launch** ✓ DONE
+27 seed stories across all 9 chapters, home page integration ("A Story of Goodness" hero), admin home curation, `/contribute` choice page. Ready for production merge after QA.
 
 ### Archive — Browsing & Discovery
 
@@ -157,6 +208,10 @@ The submission form is separate from the story itself. It is metadata — never 
 - Chapter assignment (theme)
 - Language detection
 - Attribute extraction from story text as fallback for any fields left blank
+
+**Pre-submit AI check (optional):** A "Check My Story Before Submitting" button runs the same AI quality check the archive uses internally, giving the writer early feedback on score and suggested chapter before they submit. The check note reads: *"Optional — run the same AI quality check our archive uses, before you submit. AI nor Human review will make any textual changes, only review to ensure the story is within the safety and legal guidelines of this library."* This is a firm promise — no edits are ever made to a writer's words.
+
+**Sort order:** Stories on the `/archive` browse page are ordered by `published_at` descending — newest approved stories appear at the top. This is intentional: it rewards recent contributors and keeps the archive feeling alive.
 
 ### Archive — World Events
 
@@ -283,9 +338,11 @@ Custom stories go directly to Approved, bypass AI filter, survive fetch clears, 
 Admin can upload images (including WebP) to any story card from any tab. Images stored in Supabase Storage (`featured-images` bucket). Upload button shows "Uploading…" then "✓ Image added!" on success. Auth passed as URL query param (header approach caused issues on Vercel).
 
 ### Reader Submissions
-Public page has a "Share a Story" footer link (`/contribute`, translates into the reader's chosen language — see "Language translation" below) with two modes:
-1. **Write an Article** — title, card summary, full story, optional 1 image, name, optional email, and a required submission agreement checkbox (see "Submission agreement" below).
-2. **Recommend a Story** — name, URL, optional "why does this belong here?" note, optional email.
+Public page has a "Share a Story" footer link (`/contribute`, translates into the reader's chosen language — see "Language translation" below). `/contribute` is a **choice landing page** with two paths:
+1. **"Share a story of goodness"** — links to `/archive/submit`, the archive story submission form (see Archive section above). This is the primary contribution path.
+2. **"Recommend a news article"** — expands an inline URL recommendation form (name, URL, optional note, optional email).
+
+"Write an Article" (custom news article mode) is retired — the archive replaces it. The URL recommendation path remains.
 
 Both submit (multipart, with a hidden honeypot field) to `/api/submit` (unauthenticated) and land as `new` rows in the `reader_submissions` table, reviewed in the admin **Public Created** tab.
 
@@ -313,12 +370,18 @@ The Short Summary and Full Story fields on `/contribute` use a Tiptap-based `Ric
 - `SubmissionCard` (admin Public Created review) always renders article submissions with `renderSummaryMarkdown`/`sanitizeStoryHtml`, since all new article submissions use these formats regardless of the `content_format` flag (which only exists on `stories`).
 
 ### Admin tabs
-Five tabs: **Pending | Approved | Skipped | Published | Public Created**
+
+**Daily Feed group — five tabs: Pending | Approved | Skipped | Published | Public Created**
 - **Pending:** approve/skip, section override dropdown (with AI suggested label), image upload
 - **Approved:** set as featured (conflict confirmation), image upload, custom story badge, section override dropdown
 - **Skipped:** rescue back to approved, section override dropdown
 - **Published:** mirrors public page order; section change, image add/replace/remove, unpublish (→ Skipped), featured change; search + Section/Date Published filters; **Unpublish All** button (with confirmation) bulk-unpublishes every story matching the active filters
 - **Public Created:** review queue for reader submissions (see **Reader Submissions** below). Tab shows an unread-count badge. Each card has a Section dropdown (required) plus **Approve** / **Dismiss**.
+
+**Archive group — three tabs: Archive Review | Live Stories | World Events**
+- **Archive Review:** stories that failed AI auto-approval, awaiting human decision. Approve (with chapter assignment) or Decline.
+- **Live Stories:** all live archive stories. Each has "Set as Home Story" button (or "Remove from Home" + ⭐ badge if currently pinned). Setting a new home story automatically unsets the previous one.
+- **World Events:** add new events, retire active ones, re-activate retired ones. Active events appear in the archive submission dropdown; retired ones stay in reader search forever.
 
 ### Admin header buttons
 **Edit Content** | **Refresh Site** | **Create Story** | **Publish Stories** | **Fetch New Stories**
@@ -342,15 +405,23 @@ On mobile only, scrolling DOWN collapses the title/tagline/date away (smooth tra
 Shows the VIEWER's local date (their timezone), computed client-side via `toLocaleDateString` in a `useEffect`. Not the server/UTC date.
 
 ### Sections dropdown
-Dynamically populated from whichever categories have published stories. Includes "Top of Page" and "Today's Bright Spot" as fixed nav items at the top, followed by the section list. Each section row has ↑ ↓ reorder arrows on the right (see **Reader section reordering** above). Labels translate with selected language.
+Dynamically populated from whichever categories have published stories. Includes "Top of Page" and "A Story of Goodness" (the archive hero) as fixed nav items at the top when an archive story is featured, followed by the section list. "Today's Bright Spot" is retained in translations but no longer rendered — archive hero replaced it. Each section row has ↑ ↓ reorder arrows on the right (see **Reader section reordering** above). Labels translate with selected language.
 
 ### Search
 Client-side filtering by title, summary, and source. Desktop: always-visible search bar inline with Sections/Language row. Mobile: tap 🔍 to expand full-width search bar. Font size 16px on mobile input prevents iOS Safari auto-zoom.
 
 ### Language translation
-10 languages: English, 中文, Deutsch, Nederlands, Español, Français, 日本語, Polski, Português, Srpski (`src/lib/translations.ts`). Static site-chrome UI strings are pre-translated by hand in the `UI` table. Story content/summaries and the About/Policy modal content translate dynamically via Google Translate through `/api/translate`, cached per session. Card sizes consistent with `line-clamp-2` titles and `line-clamp-3` summaries.
+**Universal 74-language system** — readers choose any of 74 languages from a searchable `LanguagePicker` dropdown (rows show native name · English name, English always pinned first). Language choice saved to `localStorage` (`LANG_STORAGE_KEY = 'tgif_lang'`) and restored on load — synced across home page, `/archive`, and `/contribute`.
 
-The reader's chosen language is saved to `localStorage` (`LANG_STORAGE_KEY = 'tgif_lang'`) and restored on load, so the choice carries from the home page to `/contribute`.
+- `src/lib/languages.ts` — typed list of 74 `{ code, native, english }` entries sorted alphabetically by English name. `getLangLabel(code)` returns the native label (used in the archive browse page filter).
+- `src/lib/uiStrings.ts` — `UIStrings` type + `UI_EN` English source for all site-chrome strings (site title, tagline, search, sections, footer, category labels, etc.). Template strings with `{q}` / `{n}` placeholders replace function-valued strings. `getCategoryLabel(cat, t)` maps an English category name to its translated key.
+- `src/lib/useUIStrings.ts` — `useUIStrings(lang)` hook. Module-level cache seeded with `{ en: UI_EN }`. English is instant (no API call); other languages batch-translate `UI_EN` values via `/api/translate` and cache the result for the session.
+- `src/lib/contributeStrings.ts` + `useContributeStrings.ts` — same pattern for the ~50 `/contribute` page strings.
+- `src/lib/archiveStrings.ts` + `useArchivePageStrings.ts` / `useArchiveSubmitStrings.ts` — same pattern for archive page and submit-form strings.
+- `lang` is typed as `string` everywhere (was a 10-value union). All existing `localStorage` values remain valid.
+- `/api/translate` uses `sl=auto` (source language auto-detected) so stories written in any language translate correctly into the reader's chosen language.
+- `src/lib/countries.ts` `LANG_TO_LOCALE` maps all 74 language codes to BCP 47 locales for `Intl.DisplayNames` (country names) and `Intl.DateTimeFormat` (month names) — no API call needed for these.
+- Card sizes consistent with `line-clamp-2` titles and `line-clamp-3` summaries.
 
 ### `/contribute` page translation
 The "Share a Story" form's UI chrome (labels, descriptions, buttons, validation/result messages, and the `RichTextEditor` toolbar — see "Rich text formatting" above) translates into the reader's chosen language. These ~50 strings are too numerous to hand-translate for 10 languages like the `UI` table, so instead:
@@ -364,7 +435,8 @@ The "Share a Story" form's UI chrome (labels, descriptions, buttons, validation/
 - **Background:** linear gradient top-to-bottom soft blue `#c8dde6` → near-white `#f8fbfa` (set in `page.tsx`; sticky header bg matches at `rgba(200,221,230,0.95)`)
 - **Section panels:** `bg-white/50 backdrop-blur-sm rounded-3xl` frosted glass containers, `gap-16` between sections
 - **Section headers:** `text-emerald-800`, 18px (`text-lg`), uppercase, tracking-widest
-- **Today's Bright Spot:** bright gold `#F0B429`, 1.35rem, uppercase; featured card has 4px gold border, sits in its own frosted panel
+- **Today's Bright Spot:** retired as a news hero slot. Label retained in translations but no longer rendered.
+- **A Story of Goodness:** emerald (`text-emerald-600`), 1.35rem, uppercase; archive hero card sits in its own `bg-white/50` frosted panel above all news sections. "Browse the Archive →" link sits alongside the label.
 - **Site title:** SVG logo (`public/logo.svg`) — icon + "The Good / I Found" wordmark in Georgia serif, rendered as `<img>` at `h-[72px]` mobile / `h-[90px]` desktop. Replaces the old Merriweather text `<h1>`.
 - **Tagline:** `text-gray-600` (still shown below the logo, still translates with selected language)
 - **Header date:** `text-emerald-500` — matches the brand green (#10B981), same font size/weight as tagline
@@ -394,18 +466,19 @@ A speaker icon appears in the category/source row of the story slide-in panel (a
 **Component:** `src/components/TextToSpeechButton.tsx`.
 
 ### Bookmarks (Save for Later)
-Readers can bookmark any story with a bookmark icon — bottom-right of every story card (alongside the like button) and inline on the Bright Spot card. No login required.
+Readers can bookmark any story with a bookmark icon — bottom-right of every news story card, on every archive card (alongside country and year), and inline on the archive hero card on the home page. No login required.
 
-**Storage:** A full snapshot is written to `localStorage` under `tgif_bookmarks` (JSON array). Each snapshot includes: `id`, `title`, `summary`, `source`, `url`, `image_url`, `category`, `site_published_at`. Because the full content is saved locally, bookmarks remain accessible even if the story is later removed or unpublished from the site — the original source URL still works.
+**Storage:** A full snapshot is written to `localStorage` under `tgif_bookmarks` (JSON array). `BookmarkSnapshot` type includes: `type` ('news' | 'archive'; undefined treated as 'news' for backward compat), `id`, `title`, `summary`, `source`, `url`, `image_url`, `category`, `site_published_at`, plus archive-only fields `country` and `occurred_year`. Because the full content is saved locally, bookmarks remain accessible even if a story is later removed — the URL still works.
 
 **UI:**
 - Outline gray bookmark icon when not saved; filled green when saved.
 - Tapping toggles save/remove with instant visual feedback.
-- Cross-card sync via `tgif:bookmark-change` custom event — liking in "New!" instantly reflects in the section card and vice versa.
+- Cross-card sync via `tgif:bookmark-change` custom event — bookmarking in one view instantly reflects everywhere the same story appears.
 - Header bookmark button shows a green badge with the count of saved stories (hidden when zero).
-- Clicking the header button opens the **Saved Stories panel** — mobile bottom sheet / desktop centered modal. Each item shows a thumbnail, title (links to original article in a new tab), source, category, and summary snippet, with an X to remove. Empty state shows a friendly prompt.
+- Clicking the header button opens the **Saved Stories panel** — mobile bottom sheet / desktop centered modal. Panel splits into two labeled sections: **Archived Stories** first, **News Stories** second (both section headers in emerald). Archive items link internally via Next.js `Link`; news items open the original article in a new tab. Each row shows thumbnail, title, subtitle (chapter · author · year for archive; category · source for news), and summary snippet for news stories. X button removes the bookmark. Empty state shows a friendly prompt.
+- All panel text — section headers, panel title, empty state, and story titles/summaries — translates to the reader's chosen language. Titles and summaries are batch-translated in a single API call on panel open.
 
-**Components:** `src/components/BookmarkButton.tsx`, `src/components/BookmarksPanel.tsx`, `src/lib/bookmarks.ts` (shared type + localStorage utilities).
+**Components:** `src/components/BookmarkButton.tsx` (news), `src/components/ArchiveBookmarkButton.tsx` (archive), `src/components/BookmarksPanel.tsx`, `src/lib/bookmarks.ts` (shared type + localStorage utilities).
 
 ### RSS Reader Feed
 Readers can subscribe to published stories via a standard RSS 2.0 feed at `/feed.xml` (`src/app/feed.xml/route.ts`). Returns the 50 most recent published stories with title, summary, source, category, image, and a link to the original article. Each item's description includes a Ko-fi donation callout. The feed is cached for 5 minutes (`Cache-Control: public, max-age=300`). An RSS autodiscovery `<link>` tag is included in the site `<head>` via `layout.tsx` metadata (`alternates.types`), so RSS readers can auto-detect it. A small RSS icon in the footer links to the feed directly.
@@ -428,8 +501,7 @@ Public readers can like (and unlike) any story. No login required — state is a
 - `LikeButton` component (`src/components/LikeButton.tsx`) — outline gray heart when not liked, filled red heart when liked. Like count shown beside the heart. Clicking toggles like/unlike with optimistic UI (instant visual response; API fires in background).
 
 **Where it appears:**
-- On every story card in section grids (bottom-right of card, not shown in admin mode).
-- On the Today's Bright Spot (featured) card inline to the right of the source name.
+- ~~On every story card in section grids (bottom-right of card).~~ **Removed.** Like hearts were removed from news story cards — they were confusing without a matching interaction on archive stories, and the bookmark button serves the save intent better.
 - Not on the slide-in panel (shares panel already serves that space).
 
 **Persistence & ISR resilience:**
@@ -614,7 +686,67 @@ submission_attestations (        -- proof of agreement to submission terms, kept
 )
 ```
 
-RLS enabled on all four tables. `stories`: public SELECT where status = `published`. `site_settings`: public SELECT all. `reader_submissions` and `submission_attestations`: no public policies — fully locked down, all access via service role. All writes use service role key (bypasses RLS).
+```
+
+**Archive tables:**
+
+```sql
+archive_chapters (
+  id uuid primary key,
+  name text not null,
+  slug text not null unique,
+  description text,
+  sort_order integer
+)
+-- 9 chapters: Kindness, Courage, Community, Sacrifice, Love, Resilience, Innovation, Environment, Joy
+
+world_events (
+  id uuid primary key,
+  name text not null,
+  slug text not null unique,
+  year integer,
+  status text not null default 'active',  -- active | retired
+  created_at timestamptz not null default now()
+)
+
+archive_stories (
+  id uuid primary key,
+  chapter_id uuid references archive_chapters(id),
+  world_event_id uuid references world_events(id),
+  opening text not null,
+  body text,
+  impact text,
+  image_1_url text,
+  image_2_url text,
+  image_3_url text,
+  image_1_caption text,
+  image_2_caption text,
+  image_3_caption text,
+  author_name text,
+  is_anonymous boolean not null default false,
+  relationship text,
+  occurred_year integer,
+  occurred_month integer,
+  country text,
+  city text,
+  tags text[],
+  status text not null default 'review',  -- review | live | declined
+  submitted_at timestamptz not null default now(),
+  reviewed_at timestamptz,
+  published_at timestamptz,
+  is_home_featured boolean not null default false  -- admin-pinned home page hero; partial index for fast lookup
+)
+-- partial index: archive_stories_home_featured_idx on archive_stories(is_home_featured) where is_home_featured = true
+
+archive_story_characters (
+  id uuid primary key,
+  story_id uuid references archive_stories(id),
+  name text not null,
+  sort_order integer not null default 0
+)
+```
+
+RLS enabled on all four daily-feed tables. `stories`: public SELECT where status = `published`. `site_settings`: public SELECT all. `reader_submissions` and `submission_attestations`: no public policies — fully locked down, all access via service role. All writes use service role key (bypasses RLS).
 
 ---
 
@@ -670,3 +802,22 @@ RLS enabled on all four tables. `stories`: public SELECT where status = `publish
     - **Client-side compression (simplest):** resize/compress the image in the browser before sending using the Canvas API, targeting ~1MB. Story card images display at ~400px wide so there's no quality loss.
     - **Direct-to-Supabase upload (cleanest):** generate a signed upload URL server-side, then have the browser send the file straight to Supabase Storage — bypassing Vercel entirely and removing the 4.5MB ceiling.
     - **Visible size warning (quick patch):** add a "Max 4MB" note to the upload button so the limit is obvious before attempting.
+28. **Daily story reminder email (Archive)** — opt-in daily email reminding the subscriber to submit a story of goodness to the archive. Subscriber chooses the time of day they'd like to receive it. Key considerations: no account required to subscribe (just an email + preferred send time), one-click unsubscribe, email platform needed for scheduling and delivery (Mailchimp, Beehiiv, or similar), reminder copy should be warm and personal — not a marketing blast. Ties closely to to-do #21 (weekly digest) so the same email platform and subscriber list can serve both purposes.
+29. **Video uploads alongside photos** — allow submitters to upload a short video clip where photos are currently accepted (archive stories, news story submissions). Key decisions and constraints:
+    - **Vercel's 4.5MB serverless limit** blocks any video upload through the current route. Must use direct-to-Supabase signed uploads (browser sends the file straight to Supabase Storage, bypassing Vercel) — this is the same fix needed for to-do #27 and should be solved together.
+    - **Supabase Storage cost model:** Pro plan ($25/mo) includes 100GB storage + 200GB bandwidth/month. Storage is cheap (~50MB per short clip = ~2,000 clips per 100GB). Bandwidth is the real cost — if 500 viewers/day each stream one 50MB clip, that's ~750GB/month in egress, roughly $50/month in overages at $0.09/GB. Costs grow with traffic.
+    - **Supabase Storage is an object store, not a video platform** — no transcoding, no adaptive bitrate streaming, no thumbnail generation. Videos play as raw files. Fine for short clips; poor experience for anything over ~2 minutes.
+    - **Recommended alternative for serious video: Cloudflare Stream** — $5 per 1,000 minutes stored + $1 per 1,000 minutes delivered. Handles transcoding, adaptive bitrate, thumbnail extraction. At modest archive traffic likely under $5/month. Tradeoff: third-party platform (though video data is exportable and ownership stays with submitter).
+    - **Decision needed before building:** (a) archive only or news stories too? (b) file upload (permanence) or YouTube/Vimeo embed URL (simpler, no cost, but external platform can remove it)? For the archive, file upload is the right call given the permanence principle — Cloudflare Stream is the recommended host. For news stories, a YouTube/Vimeo embed URL is appropriate.
+30. **Translation API upgrade** — the current `/api/translate` route proxies a free, unofficial Google Translate endpoint with no SLA, no rate-limit guarantees, and no support for auto source-language detection on some paths. Evaluate upgrading to a paid API for better reliability and quality as traffic grows. Options:
+    - **Google Cloud Translation API (v2)** — same translation engine as the free endpoint, but with an official SLA, per-key rate limits, and a dashboard. Cost: $20 per 1M characters. First step to evaluate — minimal migration work since the translation quality is identical and the response format is nearly the same.
+    - **Microsoft Azure Translator** — 100+ languages, $10 per 1M characters (free tier: 2M chars/month). Competitive quality, especially for less-common languages. Slightly higher migration effort (different auth model and response shape).
+    - **DeepL** — best-in-class quality for European languages (English, German, French, Spanish, Italian, Dutch, Polish, Portuguese, etc.). Only 33 languages total; no support for many of the 74 currently offered (e.g. Arabic, Thai, Vietnamese, Hindi, Swahili). Pricing: Free tier 500K chars/month; Pro from $7.50/month. Worth considering as a supplemental engine for European readers if quality matters more than coverage.
+    - **LLM-based translation (Claude / GPT-4o) for archive story content** — archive stories are personal, emotional narratives where context and nuance matter more than the news summaries on the home page. An LLM prompted with "translate this story faithfully, preserving the author's voice and emotional tone" would outperform any MT engine for the opening / body / impact fields. Cost is higher (per-token vs. per-character), so best applied only to archive story content, not site chrome or feed summaries.
+31. **Server-side translation cache** — currently every new visitor re-translates the same strings fresh via `/api/translate`. The module-level cache only lives for one browser session, so 500 people switching to Spanish means 500 identical API calls. At scale this is the single biggest lever for both performance and cost. Implement a server-side cache (Redis or a Supabase table keyed on `(text_hash, target_lang)`) so each unique string is translated once and served to all subsequent visitors. UI chrome strings never change, so a 99%+ cache hit rate is realistic. Archive story content is the expensive part — cache hits there matter most. Do this before or alongside upgrading to a paid translation API (to-do #30).
+    - **Current risk**: the unofficial Google Translate endpoint used today has no rate-limit guarantees. Heavy traffic (many users switching languages simultaneously, or Load More adding 24 more story batches) can trigger throttling or blocks with no warning.
+    - **Cost estimate at traffic scale**: at 1,000 daily non-English visitors, expect $5–15/month on Google Cloud Translation API. At 50K visitors, translation becomes a real line item. A server-side cache reduces billable character volume proportionally to cache hit rate.
+    - **Fallback behavior**: if the translate endpoint is down or rate-limited, the UI silently stays in English. Acceptable for now; consider a visible "translation unavailable" notice once the site has a meaningful non-English audience.
+32. **Review and update the AI Policy** — the current AI Policy content (editable via Edit Content in admin) was written early in the project. Review and update it to accurately reflect how AI is used today: story fetching and scoring (Claude Haiku), archive story quality checks and chapter suggestions, and any planned future uses such as LLM-based translation. Make the language accessible to a general reader, not just a technical one.
+34. **Archive story title field** — add a required `title` column (`text`, max 80 chars) to `archive_stories`. Display in the story detail page header, archive browse cards (replacing the truncated opening as the primary identifier), bookmarks panel, and admin review queue. Add to the submit form with a warm prompt ("Give your story a name") and include in full-text search. 80 characters chosen to match newspaper headline conventions — enough for a descriptive title without becoming a sentence. Requires a DB migration and updates to submit form, story detail page, archive cards, bookmarks, and admin.
+33. **Review archive submission notes and agreement** — review all text shown to a writer on `/archive/submit` before they submit: the page subtitle, the submission disclaimer below the Submit button, and the attestation terms they implicitly agree to by submitting. Ensure the language is warm and clear (not legalistic), accurately describes how stories are stored permanently, and sets the right expectations around moderation and what "permanent" means for their words.

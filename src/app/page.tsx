@@ -4,6 +4,20 @@ import { type Story } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { CATEGORY_ORDER } from '@/lib/sections'
 
+export type ArchiveFeatured = {
+  id: string
+  opening: string
+  impact: string | null
+  image_1_url: string | null
+  image_2_url: string | null
+  image_3_url: string | null
+  author_name: string | null
+  is_anonymous: boolean
+  occurred_year: number | null
+  country: string | null
+  archive_chapters: { name: string; slug: string } | null
+}
+
 export const revalidate = 120
 
 const jsonLd = {
@@ -29,6 +43,29 @@ async function getPublishedStories(): Promise<Story[]> {
   return data || []
 }
 
+async function getArchiveFeatured(): Promise<ArchiveFeatured | null> {
+  const SELECT = 'id, opening, impact, image_1_url, image_2_url, image_3_url, author_name, is_anonymous, occurred_year, country, archive_chapters(name, slug)'
+
+  // Prefer the admin-pinned story
+  const { data: pinned } = await supabaseAdmin
+    .from('archive_stories')
+    .select(SELECT)
+    .eq('status', 'live')
+    .eq('is_home_featured', true)
+    .maybeSingle()
+  if (pinned) return pinned as unknown as ArchiveFeatured
+
+  // Fall back to most recently published
+  const { data } = await supabaseAdmin
+    .from('archive_stories')
+    .select(SELECT)
+    .eq('status', 'live')
+    .order('published_at', { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle()
+  return data ? (data as unknown as ArchiveFeatured) : null
+}
+
 async function getSiteContent(): Promise<Record<string, string>> {
   const { data } = await supabaseAdmin
     .from('site_settings')
@@ -39,13 +76,14 @@ async function getSiteContent(): Promise<Record<string, string>> {
 }
 
 export default async function Home() {
-  const [stories, siteContent] = await Promise.all([getPublishedStories(), getSiteContent()])
-
-  const featured = stories.find((s) => s.is_featured) ?? null
-  const rest = stories.filter((s) => !s.is_featured)
+  const [stories, siteContent, archiveFeatured] = await Promise.all([
+    getPublishedStories(),
+    getSiteContent(),
+    getArchiveFeatured(),
+  ])
 
   const grouped = new Map<string, Story[]>()
-  for (const story of rest) {
+  for (const story of stories) {
     const cat = story.category || 'Good News'
     if (!grouped.has(cat)) grouped.set(cat, [])
     grouped.get(cat)!.push(story)
@@ -57,6 +95,9 @@ export default async function Home() {
       return bTime - aTime
     }))
   }
+
+  // All stories go into sections — no separate hero for news
+  const rest = stories
 
   const sortedCategories = [
     ...CATEGORY_ORDER.filter((c) => grouped.has(c)),
@@ -99,7 +140,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <main className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #c8dde6 0%, #f8fbfa 100%)' }}>
-        <PublicFeed featured={featured} sections={sections} publishDate={publishDate} siteContent={siteContent} />
+        <PublicFeed featured={null} archiveFeatured={archiveFeatured} sections={sections} publishDate={publishDate} siteContent={siteContent} />
       </main>
     </>
   )

@@ -1,5 +1,3 @@
-import { type Language } from '@/lib/translations'
-
 // English source strings for the /contribute ("Share a Story") page.
 // Translated on the fly via /api/translate for non-English readers —
 // see src/lib/useContributeStrings.ts. Error message values must match
@@ -87,7 +85,7 @@ type OverrideKey =
   | 'fontSizeSmall' | 'fontSizeNormal' | 'fontSizeLarge' | 'fontSizeHeading'
   | 'submit' | 'submitting' | 'translating'
 
-export const CONTRIBUTE_OVERRIDES: Partial<Record<Exclude<Language, 'en'>, Partial<Pick<ContributeStrings, OverrideKey>>>> = {
+export const CONTRIBUTE_OVERRIDES: Partial<Record<string, Partial<Pick<ContributeStrings, OverrideKey>>>> = {
   zh: {
     bold: '加粗', italic: '斜体', underline: '下划线', bulletList: '项目符号列表',
     fontSizeSmall: '小', fontSizeNormal: '正常', fontSizeLarge: '大', fontSizeHeading: '标题',

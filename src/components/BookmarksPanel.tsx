@@ -1,20 +1,31 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { type BookmarkSnapshot, getBookmarks, removeBookmark } from '@/lib/bookmarks'
+import Link from 'next/link'
+import { type BookmarkSnapshot, getArchiveBookmarks, getNewsBookmarks, removeBookmark } from '@/lib/bookmarks'
+import { useUIStrings } from '@/lib/useUIStrings'
+import { LANG_STORAGE_KEY } from '@/lib/translations'
 
 type Props = {
   onClose: () => void
 }
 
 export default function BookmarksPanel({ onClose }: Props) {
-  const [bookmarks, setBookmarks] = useState<BookmarkSnapshot[]>([])
+  const [archiveBookmarks, setArchiveBookmarks] = useState<BookmarkSnapshot[]>([])
+  const [newsBookmarks, setNewsBookmarks] = useState<BookmarkSnapshot[]>([])
   const [visible, setVisible] = useState(false)
+  const [lang, setLang] = useState('en')
+  const [translatedContent, setTranslatedContent] = useState<Record<string, { title: string; summary: string | null }>>({})
   const touchStartY = useRef(0)
   const [dragY, setDragY] = useState(0)
 
+  const t = useUIStrings(lang)
+
   useEffect(() => {
-    setBookmarks(getBookmarks())
+    const stored = localStorage.getItem(LANG_STORAGE_KEY)
+    if (stored) setLang(stored)
+    setArchiveBookmarks(getArchiveBookmarks())
+    setNewsBookmarks(getNewsBookmarks())
     requestAnimationFrame(() => setVisible(true))
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
@@ -27,10 +38,50 @@ export default function BookmarksPanel({ onClose }: Props) {
   }, [onClose])
 
   useEffect(() => {
-    function onUpdate() { setBookmarks(getBookmarks()) }
+    function onUpdate() {
+      setArchiveBookmarks(getArchiveBookmarks())
+      setNewsBookmarks(getNewsBookmarks())
+    }
     window.addEventListener('tgif:bookmarks-updated', onUpdate)
     return () => window.removeEventListener('tgif:bookmarks-updated', onUpdate)
   }, [])
+
+  // Translate bookmark titles and summaries when lang or bookmarks change
+  useEffect(() => {
+    const all = [...archiveBookmarks, ...newsBookmarks]
+    if (lang === 'en' || all.length === 0) { setTranslatedContent({}); return }
+    let cancelled = false
+    const texts: string[] = []
+    const indexMap: { id: string; titleIdx: number; summaryIdx: number | null }[] = []
+    for (const b of all) {
+      const titleIdx = texts.length
+      texts.push(b.title)
+      let summaryIdx: number | null = null
+      if (b.summary) { summaryIdx = texts.length; texts.push(b.summary) }
+      indexMap.push({ id: b.id, titleIdx, summaryIdx })
+    }
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, target: lang }),
+    })
+      .then((r) => r.json())
+      .then((data: { translations?: string[] }) => {
+        if (cancelled) return
+        const results = data.translations || []
+        const map: Record<string, { title: string; summary: string | null }> = {}
+        for (const { id, titleIdx, summaryIdx } of indexMap) {
+          const orig = all.find((b) => b.id === id)!
+          map[id] = {
+            title: results[titleIdx] || orig.title,
+            summary: summaryIdx !== null ? (results[summaryIdx] || orig.summary) : null,
+          }
+        }
+        setTranslatedContent(map)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [lang, archiveBookmarks, newsBookmarks])
 
   function handleRemove(id: string) {
     removeBookmark(id)
@@ -46,6 +97,57 @@ export default function BookmarksPanel({ onClose }: Props) {
     if (dragY > 100) onClose()
     setDragY(0)
   }
+
+  const hasAny = archiveBookmarks.length > 0 || newsBookmarks.length > 0
+
+  const closeButton = (
+    <button
+      onClick={onClose}
+      className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+    >
+      <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  )
+
+  const content = (
+    <>
+      {!hasAny ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+          <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+          </svg>
+          <p className="text-gray-400 text-sm">{t.noSavedStories}</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {archiveBookmarks.length > 0 && (
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">{t.archiveSection}</h3>
+              <div className="flex flex-col divide-y divide-gray-100">
+                {archiveBookmarks.map((b) => (
+                  <BookmarkRow key={b.id} bookmark={b} translated={translatedContent[b.id]} onRemove={handleRemove} isArchive />
+                ))}
+              </div>
+            </section>
+          )}
+          {newsBookmarks.length > 0 && (
+            <section>
+              {archiveBookmarks.length > 0 && (
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">{t.newsSection}</h3>
+              )}
+              <div className="flex flex-col divide-y divide-gray-100">
+                {newsBookmarks.map((b) => (
+                  <BookmarkRow key={b.id} bookmark={b} translated={translatedContent[b.id]} onRemove={handleRemove} isArchive={false} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+    </>
+  )
 
   return (
     <>
@@ -65,18 +167,9 @@ export default function BookmarksPanel({ onClose }: Props) {
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-        >
-          <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-        <h2 className="text-center text-base font-semibold text-gray-800 pb-3 flex-shrink-0">Saved Stories</h2>
-        <div className="overflow-y-auto flex-1 pb-8 px-4">
-          <BookmarkList bookmarks={bookmarks} onRemove={handleRemove} />
-        </div>
+        {closeButton}
+        <h2 className="text-center text-base font-semibold text-gray-800 pb-3 flex-shrink-0">{t.savedStories}</h2>
+        <div className="overflow-y-auto flex-1 pb-8 px-4">{content}</div>
       </div>
 
       {/* Desktop centered panel */}
@@ -90,7 +183,7 @@ export default function BookmarksPanel({ onClose }: Props) {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between px-8 py-5 border-b border-gray-100 flex-shrink-0">
-            <h2 className="text-lg font-semibold text-gray-800">Saved Stories</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{t.savedStories}</h2>
             <button
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -100,66 +193,69 @@ export default function BookmarksPanel({ onClose }: Props) {
               </svg>
             </button>
           </div>
-          <div className="overflow-y-auto flex-1 px-8 py-4">
-            <BookmarkList bookmarks={bookmarks} onRemove={handleRemove} />
-          </div>
+          <div className="overflow-y-auto flex-1 px-8 py-4">{content}</div>
         </div>
       </div>
     </>
   )
 }
 
-function BookmarkList({ bookmarks, onRemove }: { bookmarks: BookmarkSnapshot[]; onRemove: (id: string) => void }) {
-  if (bookmarks.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-        <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-        </svg>
-        <p className="text-gray-400 text-sm">No saved stories yet.<br />Tap the bookmark icon on any story to save it.</p>
-      </div>
-    )
-  }
+function BookmarkRow({ bookmark: b, translated, onRemove, isArchive }: {
+  bookmark: BookmarkSnapshot
+  translated?: { title: string; summary: string | null }
+  onRemove: (id: string) => void
+  isArchive: boolean
+}) {
+  const title = translated?.title ?? b.title
+  const summary = translated?.summary ?? b.summary
 
   return (
-    <div className="flex flex-col divide-y divide-gray-100">
-      {bookmarks.map((b) => (
-        <div key={b.id} className="flex gap-3 py-4">
-          {b.image_url && (
-            <img
-              src={b.image_url}
-              alt=""
-              className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
+    <div className="flex gap-3 py-4">
+      {b.image_url && (
+        <img
+          src={b.image_url}
+          alt=""
+          className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+        />
+      )}
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <div className="flex items-start justify-between gap-2">
+          {isArchive ? (
+            <Link
+              href={b.url}
+              className="text-gray-900 font-semibold text-sm leading-snug hover:text-emerald-700 transition-colors line-clamp-2"
+            >
+              {title}
+            </Link>
+          ) : (
+            <a
+              href={b.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-900 font-semibold text-sm leading-snug hover:text-emerald-700 transition-colors line-clamp-2"
+            >
+              {title}
+            </a>
           )}
-          <div className="flex-1 min-w-0 flex flex-col gap-1">
-            <div className="flex items-start justify-between gap-2">
-              <a
-                href={b.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-900 font-semibold text-sm leading-snug hover:text-emerald-700 transition-colors line-clamp-2"
-              >
-                {b.title}
-              </a>
-              <button
-                onClick={() => onRemove(b.id)}
-                aria-label="Remove bookmark"
-                className="flex-shrink-0 text-gray-300 hover:text-red-400 transition-colors mt-0.5"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <p className="text-xs text-gray-400">{b.category ? `${b.category} · ` : ''}{b.source}</p>
-            {b.summary && (
-              <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{b.summary}</p>
-            )}
-          </div>
+          <button
+            onClick={() => onRemove(b.id)}
+            aria-label="Remove bookmark"
+            className="flex-shrink-0 text-gray-300 hover:text-red-400 transition-colors mt-0.5"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      ))}
+        <p className="text-xs text-gray-400">
+          {b.category ? `${b.category} · ` : ''}{b.source}
+          {b.occurred_year ? ` · ${b.occurred_year}` : ''}
+        </p>
+        {!isArchive && summary && (
+          <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{summary}</p>
+        )}
+      </div>
     </div>
   )
 }

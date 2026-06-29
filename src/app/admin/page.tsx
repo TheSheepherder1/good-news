@@ -3,10 +3,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import StoryCard from '@/components/StoryCard'
 import SubmissionCard from '@/components/SubmissionCard'
-import { type Story, type ReaderSubmission } from '@/lib/supabase'
+import { type Story, type ReaderSubmission, type ArchiveChapter, type WorldEvent, type ArchiveStory } from '@/lib/supabase'
 import { SECTIONS, CATEGORY_ORDER } from '@/lib/sections'
 
-type Tab = 'pending' | 'approved' | 'skipped' | 'published' | 'submissions'
+type Tab = 'pending' | 'approved' | 'skipped' | 'published' | 'submissions' | 'chapters' | 'events' | 'archive-queue' | 'archive-live'
 
 const TAB_LABELS: Record<Tab, string> = {
   pending: 'Pending',
@@ -14,6 +14,10 @@ const TAB_LABELS: Record<Tab, string> = {
   skipped: 'Skipped',
   published: 'Published',
   submissions: 'Public Created',
+  chapters: 'Chapters',
+  events: 'World Events',
+  'archive-queue': 'Story Review',
+  'archive-live': 'Live Stories',
 }
 
 // Local (viewer's timezone) date, e.g. "2026-06-09" — not the UTC date from the ISO string.
@@ -84,6 +88,24 @@ export default function AdminPage() {
   const [submissions, setSubmissions] = useState<ReaderSubmission[]>([])
   const [submissionsCount, setSubmissionsCount] = useState<number | null>(null)
 
+  // Archive tabs
+  const [chapters, setChapters] = useState<ArchiveChapter[]>([])
+  const [worldEvents, setWorldEvents] = useState<WorldEvent[]>([])
+  const [archiveQueue, setArchiveQueue] = useState<ArchiveStory[]>([])
+  const [archiveQueueCount, setArchiveQueueCount] = useState<number | null>(null)
+  const [archiveLive, setArchiveLive] = useState<ArchiveStory[]>([])
+  const [settingHomeFeatured, setSettingHomeFeatured] = useState<string | null>(null)
+
+  // Chapter form modal
+  const [showChapterModal, setShowChapterModal] = useState(false)
+  const [chapterForm, setChapterForm] = useState({ name: '', slug: '', description: '', parent_id: '' })
+  const [savingChapter, setSavingChapter] = useState(false)
+
+  // Event form modal
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [eventForm, setEventForm] = useState({ name: '', slug: '', description: '', event_year: '', status: 'active' })
+  const [savingEvent, setSavingEvent] = useState(false)
+
   const fetchStories = useCallback(async (status: Exclude<Tab, 'submissions'>) => {
     setLoading(true)
     const res = await fetch(`/api/stories?status=${status}&limit=150`)
@@ -109,9 +131,47 @@ export default function AdminPage() {
     setLoading(false)
   }, [password])
 
+  const fetchChapters = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch('/api/archive/chapters', { headers: { Authorization: `Bearer ${password}` } })
+    const data = await res.json()
+    setChapters(Array.isArray(data) ? data : [])
+    setLoading(false)
+  }, [password])
+
+  const fetchWorldEvents = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch('/api/archive/events', { headers: { Authorization: `Bearer ${password}` } })
+    const data = await res.json()
+    setWorldEvents(Array.isArray(data) ? data : [])
+    setLoading(false)
+  }, [password])
+
+  const fetchArchiveQueue = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch('/api/archive/queue?status=review', { headers: { Authorization: `Bearer ${password}` } })
+    const data = await res.json()
+    const rows = Array.isArray(data) ? data : []
+    setArchiveQueue(rows)
+    setArchiveQueueCount(rows.length)
+    setLoading(false)
+  }, [password])
+
+  const fetchArchiveLive = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch('/api/archive/queue?status=live', { headers: { Authorization: `Bearer ${password}` } })
+    const data = await res.json()
+    setArchiveLive(Array.isArray(data) ? data : [])
+    setLoading(false)
+  }, [password])
+
   useEffect(() => {
     if (authed) {
       if (tab === 'submissions') fetchSubmissions()
+      else if (tab === 'chapters') fetchChapters()
+      else if (tab === 'events') fetchWorldEvents()
+      else if (tab === 'archive-queue') fetchArchiveQueue()
+      else if (tab === 'archive-live') fetchArchiveLive()
       else fetchStories(tab)
     }
     setPublishedSearch('')
@@ -119,14 +179,18 @@ export default function AdminPage() {
     setSelectedDates([])
     setSectionDropdownOpen(false)
     setDateDropdownOpen(false)
-  }, [authed, tab, fetchStories, fetchSubmissions])
+  }, [authed, tab, fetchStories, fetchSubmissions, fetchChapters, fetchWorldEvents, fetchArchiveQueue, fetchArchiveLive])
 
-  // Pick up the unread submissions count for the tab badge regardless of which tab is open.
+  // Badge counts for submissions and archive queue — fetched on load regardless of active tab.
   useEffect(() => {
     if (!authed) return
     fetch('/api/reader-submissions', { headers: { Authorization: `Bearer ${password}` } })
       .then((res) => res.json())
       .then((data) => setSubmissionsCount(Array.isArray(data) ? data.length : 0))
+      .catch(() => {})
+    fetch('/api/archive/queue?status=review', { headers: { Authorization: `Bearer ${password}` } })
+      .then((res) => res.json())
+      .then((data) => setArchiveQueueCount(Array.isArray(data) ? data.length : 0))
       .catch(() => {})
   }, [authed, password])
 
@@ -389,6 +453,110 @@ export default function AdminPage() {
     setMsg('Custom story created and added to Approved.')
     setTab('approved')
     fetchStories('approved')
+  }
+
+  function slugify(name: string) {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  }
+
+  async function saveChapter() {
+    if (!chapterForm.name.trim()) return
+    setSavingChapter(true)
+    const slug = chapterForm.slug.trim() || slugify(chapterForm.name)
+    const res = await fetch('/api/archive/chapters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ ...chapterForm, slug, parent_id: chapterForm.parent_id || null }),
+    })
+    const data = await res.json()
+    setSavingChapter(false)
+    if (data.ok) {
+      setShowChapterModal(false)
+      setChapterForm({ name: '', slug: '', description: '', parent_id: '' })
+      fetchChapters()
+      setMsg('Chapter saved.')
+    } else {
+      setMsg(`Error: ${data.error}`)
+    }
+  }
+
+  async function toggleChapterStatus(chapter: ArchiveChapter) {
+    const newStatus = chapter.status === 'active' ? 'retired' : 'active'
+    await fetch('/api/archive/chapters', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ id: chapter.id, status: newStatus }),
+    })
+    setChapters((prev) => prev.map((c) => c.id === chapter.id ? { ...c, status: newStatus } : c))
+    setMsg(`Chapter ${newStatus === 'active' ? 'restored' : 'retired'}.`)
+  }
+
+  async function saveEvent() {
+    if (!eventForm.name.trim()) return
+    setSavingEvent(true)
+    const slug = slugify(eventForm.name)
+    const res = await fetch('/api/archive/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ ...eventForm, slug, event_year: eventForm.event_year ? Number(eventForm.event_year) : null }),
+    })
+    const data = await res.json()
+    setSavingEvent(false)
+    if (data.ok) {
+      setShowEventModal(false)
+      setEventForm({ name: '', slug: '', description: '', event_year: '', status: 'active' })
+      fetchWorldEvents()
+      setMsg('World event saved.')
+    } else {
+      setMsg(`Error: ${data.error}`)
+    }
+  }
+
+  async function toggleEventStatus(event: WorldEvent) {
+    const newStatus = event.status === 'active' ? 'retired' : 'active'
+    await fetch('/api/archive/events', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ id: event.id, status: newStatus }),
+    })
+    setWorldEvents((prev) => prev.map((e) => e.id === event.id ? { ...e, status: newStatus } : e))
+    setMsg(`Event ${newStatus === 'active' ? 'restored (active)' : 'retired'}.`)
+  }
+
+  async function reviewArchiveStory(id: string, action: 'approve' | 'decline') {
+    const res = await fetch('/api/archive/queue', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ id, action }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setArchiveQueue((prev) => prev.filter((s) => s.id !== id))
+      setArchiveQueueCount((c) => Math.max(0, (c ?? 1) - 1))
+      setMsg(data.message)
+    } else {
+      setMsg(`Error: ${data.error}`)
+    }
+  }
+
+  async function setHomeFeatured(id: string, action: 'feature' | 'unfeature') {
+    setSettingHomeFeatured(id)
+    const res = await fetch('/api/archive/queue', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+      body: JSON.stringify({ id, action }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setArchiveLive((prev) => prev.map((s) => ({
+        ...s,
+        is_home_featured: action === 'feature' ? s.id === id : s.id === id ? false : s.is_home_featured,
+      })))
+      setMsg(data.message)
+    } else {
+      setMsg(`Error: ${data.error}`)
+    }
+    setSettingHomeFeatured(null)
   }
 
   async function runIngest() {
@@ -701,6 +869,148 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Add Chapter modal */}
+      {showChapterModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl flex flex-col gap-4">
+            <h2 className="font-bold text-gray-900 text-lg">Add Chapter</h2>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Name</label>
+              <input
+                type="text"
+                placeholder="e.g. Kindness"
+                value={chapterForm.name}
+                onChange={(e) => setChapterForm((f) => ({ ...f, name: e.target.value, slug: slugify(e.target.value) }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Slug (auto-generated)</label>
+              <input
+                type="text"
+                value={chapterForm.slug}
+                onChange={(e) => setChapterForm((f) => ({ ...f, slug: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 font-mono text-gray-500"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Description</label>
+              <textarea
+                rows={2}
+                placeholder="What kinds of stories belong here…"
+                value={chapterForm.description}
+                onChange={(e) => setChapterForm((f) => ({ ...f, description: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Parent Chapter <span className="text-gray-400 font-normal">(leave blank for top-level)</span></label>
+              <select
+                value={chapterForm.parent_id}
+                onChange={(e) => setChapterForm((f) => ({ ...f, parent_id: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              >
+                <option value="">— Top-level chapter —</option>
+                {chapters.filter((c) => !c.parent_id && c.status === 'active').map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={saveChapter}
+                disabled={savingChapter || !chapterForm.name.trim()}
+                className="flex-1 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-medium py-2 rounded-lg transition-colors"
+              >
+                {savingChapter ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                onClick={() => { setShowChapterModal(false); setChapterForm({ name: '', slug: '', description: '', parent_id: '' }) }}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add World Event modal */}
+      {showEventModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl flex flex-col gap-4">
+            <h2 className="font-bold text-gray-900 text-lg">Add World Event</h2>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Event Name</label>
+              <input
+                type="text"
+                placeholder="e.g. FIFA World Cup 2026"
+                value={eventForm.name}
+                onChange={(e) => setEventForm((f) => ({ ...f, name: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Description</label>
+              <textarea
+                rows={2}
+                placeholder="Brief description…"
+                value={eventForm.description}
+                onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-xs font-medium text-gray-500">Year</label>
+                <input
+                  type="number"
+                  placeholder="2026"
+                  value={eventForm.event_year}
+                  onChange={(e) => setEventForm((f) => ({ ...f, event_year: e.target.value }))}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-xs font-medium text-gray-500">Status</label>
+                <select
+                  value={eventForm.status}
+                  onChange={(e) => setEventForm((f) => ({ ...f, status: e.target.value }))}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                >
+                  <option value="active">Active (available for new stories)</option>
+                  <option value="retired">Retired (searchable, not selectable)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={saveEvent}
+                disabled={savingEvent || !eventForm.name.trim()}
+                className="flex-1 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-medium py-2 rounded-lg transition-colors"
+              >
+                {savingEvent ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                onClick={() => { setShowEventModal(false); setEventForm({ name: '', slug: '', description: '', event_year: '', status: 'active' }) }}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Featured conflict modal */}
       {featureConflict && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -730,9 +1040,10 @@ export default function AdminPage() {
       )}
 
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <h1 className="text-lg font-bold text-gray-900">The Good I Found · Admin</h1>
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
+            <span className="text-xs text-gray-300 self-center px-1">Feed</span>
             {(['pending', 'approved', 'skipped', 'published', 'submissions'] as Tab[]).map((t) => (
               <button
                 key={t}
@@ -745,6 +1056,23 @@ export default function AdminPage() {
                 {t === 'submissions' && !!submissionsCount && (
                   <span className="bg-rose-500 text-white text-xs font-semibold rounded-full px-1.5 py-0.5 leading-none">
                     {submissionsCount}
+                  </span>
+                )}
+              </button>
+            ))}
+            <span className="text-xs text-gray-300 self-center px-1 ml-1">Archive</span>
+            {(['chapters', 'events', 'archive-queue', 'archive-live'] as Tab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  tab === t ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {TAB_LABELS[t]}
+                {t === 'archive-queue' && !!archiveQueueCount && (
+                  <span className="bg-rose-500 text-white text-xs font-semibold rounded-full px-1.5 py-0.5 leading-none">
+                    {archiveQueueCount}
                   </span>
                 )}
               </button>
@@ -792,6 +1120,282 @@ export default function AdminPage() {
       <section className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center text-gray-400 py-20">Loading…</div>
+        ) : tab === 'chapters' ? (
+          <div className="max-w-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-base font-semibold text-gray-800">Archive Chapters</h2>
+              <button
+                onClick={() => setShowChapterModal(true)}
+                className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                + Add Chapter
+              </button>
+            </div>
+
+            {/* Top-level chapters */}
+            {chapters.filter((c) => !c.parent_id).map((chapter) => {
+              const subs = chapters.filter((c) => c.parent_id === chapter.id)
+              return (
+                <div key={chapter.id} className="bg-white rounded-xl border border-gray-100 mb-3 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div>
+                      <span className="font-medium text-gray-900">{chapter.name}</span>
+                      <span className="ml-2 text-xs text-gray-400 font-mono">{chapter.slug}</span>
+                      {chapter.status === 'retired' && (
+                        <span className="ml-2 text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">retired</span>
+                      )}
+                      {chapter.description && (
+                        <p className="text-xs text-gray-400 mt-0.5">{chapter.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => { setChapterForm({ name: '', slug: '', description: '', parent_id: chapter.id }); setShowChapterModal(true) }}
+                        className="text-xs text-indigo-500 hover:text-indigo-700 font-medium"
+                      >
+                        + Sub-chapter
+                      </button>
+                      <button
+                        onClick={() => toggleChapterStatus(chapter)}
+                        className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                          chapter.status === 'active'
+                            ? 'text-gray-400 hover:text-red-500'
+                            : 'text-emerald-500 hover:text-emerald-700'
+                        }`}
+                      >
+                        {chapter.status === 'active' ? 'Retire' : 'Restore'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {subs.length > 0 && (
+                    <div className="border-t border-gray-50">
+                      {subs.map((sub) => (
+                        <div key={sub.id} className="flex items-center justify-between px-4 py-2.5 pl-8 bg-gray-50/50 border-t border-gray-100/80">
+                          <div>
+                            <span className="text-sm text-gray-700">{sub.name}</span>
+                            <span className="ml-2 text-xs text-gray-400 font-mono">{sub.slug}</span>
+                            {sub.status === 'retired' && (
+                              <span className="ml-2 text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">retired</span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => toggleChapterStatus(sub)}
+                            className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                              sub.status === 'active'
+                                ? 'text-gray-400 hover:text-red-500'
+                                : 'text-emerald-500 hover:text-emerald-700'
+                            }`}
+                          >
+                            {sub.status === 'active' ? 'Retire' : 'Restore'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+
+            {chapters.length === 0 && (
+              <div className="text-center text-gray-400 py-16">No chapters yet.</div>
+            )}
+          </div>
+        ) : tab === 'events' ? (
+          <div className="max-w-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-base font-semibold text-gray-800">World Events</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Active events are selectable when submitting a story. Retired events are searchable but not available for new submissions.</p>
+              </div>
+              <button
+                onClick={() => setShowEventModal(true)}
+                className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors flex-shrink-0 ml-4"
+              >
+                + Add Event
+              </button>
+            </div>
+
+            {worldEvents.map((event) => (
+              <div key={event.id} className="bg-white rounded-xl border border-gray-100 mb-2 px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-900">{event.name}</span>
+                    {event.event_year && <span className="text-xs text-gray-400">{event.event_year}</span>}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      event.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {event.status}
+                    </span>
+                  </div>
+                  {event.description && <p className="text-xs text-gray-400 mt-0.5">{event.description}</p>}
+                </div>
+                <button
+                  onClick={() => toggleEventStatus(event)}
+                  className={`text-xs font-medium px-2 py-1 rounded transition-colors ml-4 flex-shrink-0 ${
+                    event.status === 'active'
+                      ? 'text-gray-400 hover:text-red-500'
+                      : 'text-emerald-500 hover:text-emerald-700'
+                  }`}
+                >
+                  {event.status === 'active' ? 'Retire' : 'Restore'}
+                </button>
+              </div>
+            ))}
+
+            {worldEvents.length === 0 && (
+              <div className="text-center text-gray-400 py-16">No world events yet.</div>
+            )}
+          </div>
+        ) : tab === 'archive-queue' ? (
+          <div className="max-w-3xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-base font-semibold text-gray-800">Archive Queue</h2>
+              <span className="text-xs text-gray-400">{archiveQueue.length} {archiveQueue.length === 1 ? 'story' : 'stories'} awaiting review</span>
+            </div>
+
+            {archiveQueue.length === 0 ? (
+              <div className="text-center text-gray-400 py-20">No stories in the queue.</div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {archiveQueue.map((story) => {
+                  const chapterName = (story as ArchiveStory & { chapter?: { name: string } }).chapter?.name
+                  const eventName = (story as ArchiveStory & { world_event?: { name: string } }).world_event?.name
+                  const chars = (story as ArchiveStory & { characters?: { name: string; sort_order: number }[] }).characters ?? []
+
+                  return (
+                    <div key={story.id} className="bg-white rounded-xl border border-gray-100 p-5">
+                      {/* Meta row */}
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400 mb-3">
+                        {chapterName && <span className="bg-indigo-50 text-indigo-600 font-medium px-2 py-0.5 rounded-full">{chapterName}</span>}
+                        {eventName && <span className="bg-amber-50 text-amber-600 font-medium px-2 py-0.5 rounded-full">{eventName}</span>}
+                        <span>{story.country}{story.city ? ` · ${story.city}` : ''}</span>
+                        <span>{story.occurred_month ? `${story.occurred_month}/` : ''}{story.occurred_year}</span>
+                        {story.tags.length > 0 && story.tags.map((tag) => (
+                          <span key={tag} className="bg-gray-100 px-2 py-0.5 rounded-full">{tag}</span>
+                        ))}
+                      </div>
+
+                      {/* Images */}
+                      {(story.image_1_url || story.image_2_url || story.image_3_url) && (
+                        <div className="flex gap-2 mb-3">
+                          {[story.image_1_url, story.image_2_url, story.image_3_url].filter(Boolean).map((url, i) => (
+                            <img
+                              key={i}
+                              src={url!}
+                              alt=""
+                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-gray-100"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Story content */}
+                      {story.opening && <p className="text-sm text-gray-800 font-medium mb-1">{story.opening}</p>}
+                      {story.body && <p className="text-sm text-gray-600 line-clamp-4 mb-1">{story.body}</p>}
+                      {story.impact && <p className="text-xs text-gray-400 italic line-clamp-2">{story.impact}</p>}
+
+                      {/* Characters */}
+                      {chars.length > 0 && (
+                        <p className="text-xs text-gray-400 mt-2">
+                          People: {chars.sort((a, b) => a.sort_order - b.sort_order).map((c) => c.name).join(', ')}
+                        </p>
+                      )}
+
+                      {/* Author & relationship */}
+                      <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between flex-wrap gap-2">
+                        <div className="text-xs text-gray-400">
+                          {story.is_anonymous ? 'Anonymous' : story.author_name} · {story.relationship} · {story.original_language.toUpperCase()}
+                        </div>
+
+                        {/* AI verdict */}
+                        {story.ai_score != null && (
+                          <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${story.ai_passed ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                            AI score {story.ai_score}/10 · {story.ai_passed ? 'passed' : 'flagged'}
+                          </div>
+                        )}
+                      </div>
+
+                      {story.ai_reason && (
+                        <p className="text-xs text-gray-400 mt-1 italic">"{story.ai_reason}"</p>
+                      )}
+
+                      {/* Action buttons */}
+                      <div className="flex gap-3 mt-4">
+                        <button
+                          onClick={() => reviewArchiveStory(story.id, 'approve')}
+                          className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+                        >
+                          Approve — Make Live
+                        </button>
+                        <button
+                          onClick={() => reviewArchiveStory(story.id, 'decline')}
+                          className="flex-1 bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-500 text-sm font-medium py-2 rounded-lg transition-colors"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        ) : tab === 'archive-live' ? (
+          <div className="max-w-3xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-base font-semibold text-gray-800">Live Stories</h2>
+              <span className="text-xs text-gray-400">{archiveLive.length} {archiveLive.length === 1 ? 'story' : 'stories'} live</span>
+            </div>
+
+            {archiveLive.length === 0 ? (
+              <div className="text-center text-gray-400 py-20">No live stories yet.</div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {archiveLive.map((story) => {
+                  const chapterName = (story as ArchiveStory & { chapter?: { name: string } }).chapter?.name
+                  const isFeatured = story.is_home_featured
+                  const isLoading = settingHomeFeatured === story.id
+
+                  return (
+                    <div
+                      key={story.id}
+                      className={`bg-white rounded-xl border p-4 flex items-start gap-4 ${isFeatured ? 'border-emerald-300 bg-emerald-50/30' : 'border-gray-100'}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400 mb-1">
+                          {chapterName && (
+                            <span className="bg-indigo-50 text-indigo-600 font-medium px-2 py-0.5 rounded-full">{chapterName}</span>
+                          )}
+                          {isFeatured && (
+                            <span className="bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded-full">⭐ Home Story</span>
+                          )}
+                          {story.occurred_year && <span>{story.occurred_year}</span>}
+                          {story.country && <span>· {story.country}</span>}
+                        </div>
+                        <p className="text-sm text-gray-800 line-clamp-2">{story.opening}</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {story.is_anonymous ? 'Anonymous' : story.author_name}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setHomeFeatured(story.id, isFeatured ? 'unfeature' : 'feature')}
+                        disabled={isLoading}
+                        className={`flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+                          isFeatured
+                            ? 'bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-500'
+                            : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                        }`}
+                      >
+                        {isLoading ? '…' : isFeatured ? 'Remove from Home' : 'Set as Home Story'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         ) : tab === 'submissions' ? (
           submissions.length === 0 ? (
             <div className="text-center text-gray-400 py-20">No new submissions.</div>

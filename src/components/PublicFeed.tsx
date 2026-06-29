@@ -8,18 +8,24 @@ import ArticleSheet from '@/components/ArticleSheet'
 import FooterModal from '@/components/FooterModal'
 import LanguagePicker from '@/components/LanguagePicker'
 import { type Story } from '@/lib/supabase'
-import { UI, LANGUAGES, type Language, LANG_STORAGE_KEY } from '@/lib/translations'
+import { LANG_STORAGE_KEY } from '@/lib/translations'
+import { getCategoryLabel } from '@/lib/uiStrings'
+import { useUIStrings } from '@/lib/useUIStrings'
 import { renderSummaryMarkdown } from '@/lib/summaryMarkdown'
 import LikeButton from '@/components/LikeButton'
 import BookmarkButton from '@/components/BookmarkButton'
 import BookmarksPanel from '@/components/BookmarksPanel'
+import ArchiveBookmarkButton from '@/components/ArchiveBookmarkButton'
 import { getBookmarks } from '@/lib/bookmarks'
+import { getCountryName } from '@/lib/countries'
+import { type ArchiveFeatured } from '@/app/page'
 
 type Section = { category: string; stories: Story[] }
 type TranslatedStory = { title: string; summary: string }
 
 type Props = {
   featured: Story | null
+  archiveFeatured: ArchiveFeatured | null
   sections: Section[]
   publishDate: string | null
   siteContent?: Record<string, string>
@@ -79,7 +85,7 @@ async function translateBatch(texts: string[], target: string): Promise<string[]
   }
 }
 
-export default function PublicFeed({ featured, sections, publishDate, siteContent = {} }: Props) {
+export default function PublicFeed({ featured, archiveFeatured, sections, publishDate, siteContent = {} }: Props) {
   const [sheetStory, setSheetStory] = useState<Story | null>(null)
   const [sheetDisplay, setSheetDisplay] = useState<{ title: string; summary: string } | null>(null)
   const [headerCollapsed, setHeaderCollapsed] = useState(false)
@@ -94,10 +100,10 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const [modal, setModal] = useState<'about' | 'ai-policy' | 'advertising' | null>(null)
   const [aboutTranslations, setAboutTranslations] = useState<Record<string, string[]>>({})
   const [translatingAbout, setTranslatingAbout] = useState(false)
-  const [lang, setLang] = useState<Language>('en')
+  const [lang, setLang] = useState('en')
   const [translating, setTranslating] = useState(false)
   // Cache: lang → Map<storyId, TranslatedStory>
-  const cache = useRef<Partial<Record<Language, Map<string, TranslatedStory>>>>({})
+  const cache = useRef<Record<string, Map<string, TranslatedStory>>>({})
   const [currentTranslations, setCurrentTranslations] = useState<Map<string, TranslatedStory>>(new Map())
   const mobileInputRef = useRef<HTMLInputElement>(null)
   const desktopInputRef = useRef<HTMLInputElement>(null)
@@ -105,6 +111,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const [userOrder, setUserOrder] = useState<string[] | null>(null)
   const [bookmarksOpen, setBookmarksOpen] = useState(false)
   const [bookmarkCount, setBookmarkCount] = useState(0)
+  const [archiveTranslated, setArchiveTranslated] = useState<{ opening: string; impact: string | null; anonymous: string } | null>(null)
 
   const aboutParagraphs = (siteContent.about_text || '').split('\n\n').filter(Boolean)
 
@@ -220,7 +227,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
     window.scrollTo({ top, behavior: 'smooth' })
   }
 
-  const t = UI[lang]
+  const t = useUIStrings(lang)
 
   // Deduplicate by ID — "New!" section contains the same stories as their
   // regular sections, so we avoid double-translating or double-searching them.
@@ -229,7 +236,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
     ...displaySections.flatMap((s) => s.stories),
   ].filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i)
 
-  const handleLanguageChange = useCallback(async (newLang: Language) => {
+  const handleLanguageChange = useCallback(async (newLang: string) => {
     setLang(newLang)
     localStorage.setItem(LANG_STORAGE_KEY, newLang)
     if (newLang === 'en') {
@@ -263,12 +270,29 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
 
   // Restore the reader's previously chosen language on first load
   useEffect(() => {
-    const stored = localStorage.getItem(LANG_STORAGE_KEY) as Language | null
-    if (stored && stored !== 'en' && LANGUAGES.some((l) => l.code === stored)) {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY)
+    if (stored && stored !== 'en') {
       handleLanguageChange(stored)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Translate archive featured story content when language changes
+  useEffect(() => {
+    if (!archiveFeatured) return
+    if (lang === 'en') { setArchiveTranslated(null); return }
+    let cancelled = false
+    const texts = [archiveFeatured.opening, archiveFeatured.impact || '', 'Anonymous']
+    translateBatch(texts, lang).then((results) => {
+      if (cancelled) return
+      setArchiveTranslated({
+        opening: results[0] || archiveFeatured.opening,
+        impact: archiveFeatured.impact ? (results[1] || archiveFeatured.impact) : null,
+        anonymous: results[2] || 'Anonymous',
+      })
+    }).catch(() => {})
+    return () => { cancelled = true }
+  }, [lang, archiveFeatured])
 
   const query = searchQuery.trim()
   const isSearching = query.length > 0
@@ -287,14 +311,16 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
   const totalResults = (filteredFeatured ? 1 : 0) + filteredSections.reduce((n, s) => n + s.stories.length, 0)
   const sortedCategories = filteredSections.map((s) => s.category)
 
+  const categoryLabels = useMemo(() => {
+    const cats = ['New!', 'Animals', 'Art', 'Culture', 'Environment', 'Good News', 'Health', 'History', 'Humanity', 'Science', 'Space', 'Sports', 'Technology']
+    return Object.fromEntries(cats.map((c) => [c, getCategoryLabel(c, t)]))
+  }, [t])
+
   function getDisplayTitle(story: Story) {
     return currentTranslations.get(story.id)?.title || story.title
   }
   function getDisplaySummary(story: Story) {
     return currentTranslations.get(story.id)?.summary || story.summary || ''
-  }
-  function getCategoryLabel(cat: string) {
-    return t.categories[cat] || cat
   }
 
   function handleOpen(story: Story) {
@@ -363,7 +389,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                 <div className="mt-4 flex justify-center items-center gap-3 flex-wrap">
                   <SectionNav
                     categories={sortedCategories}
-                    categoryLabels={t.categories}
+                    categoryLabels={categoryLabels}
                     hasFeatured={!!filteredFeatured}
                     topOfPageLabel={t.topOfPage}
                     sectionsLabel={t.sections}
@@ -434,8 +460,8 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
         {isSearching && (
           <p className="text-sm text-gray-400 -mb-6 pt-4">
             {totalResults === 0
-              ? t.noResults(query)
-              : t.resultCount(totalResults, query)}
+              ? t.noResults.replace('{q}', query)
+              : t.resultCount.replace('{n}', String(totalResults)).replace('{q}', query)}
           </p>
         )}
 
@@ -464,7 +490,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                   <div className={`p-6 flex flex-col gap-3 justify-center ${filteredFeatured.image_url ? 'md:col-span-2' : 'md:col-span-3'}`}>
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                        {getCategoryLabel(filteredFeatured.category || filteredFeatured.source)}
+                        {getCategoryLabel(filteredFeatured.category || filteredFeatured.source, t)}
                       </span>
                       <span>{t.sourcePrefix}{filteredFeatured.source}</span>
                       <LikeButton storyId={filteredFeatured.id} initialCount={filteredFeatured.likes ?? 0} />
@@ -486,6 +512,78 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {!isSearching && archiveFeatured && (
+              <div id="featured" className="scroll-mt-56 md:scroll-mt-60 bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/70">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest text-emerald-600">
+                    {t.storyOfGoodness}
+                  </h2>
+                  <Link href="/archive/submit" className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors text-xl">
+                    {t.shareStoryOfGoodness}
+                  </Link>
+                  <Link href="/archive" className="text-[1.35rem] text-emerald-500 hover:text-emerald-700 font-semibold transition-colors">
+                    {t.browseArchive} →
+                  </Link>
+                </div>
+                <Link
+                  href={`/archive/${archiveFeatured.id}`}
+                  className="block bg-white rounded-3xl shadow-md overflow-hidden border-2 border-emerald-100 hover:border-emerald-300 transition-colors"
+                >
+                  <div className="flex flex-col md:grid md:grid-cols-3">
+                    {(() => {
+                      const img = archiveFeatured.image_1_url ?? archiveFeatured.image_2_url ?? archiveFeatured.image_3_url
+                      return img ? (
+                        <img
+                          src={img}
+                          alt=""
+                          className="w-full h-52 md:h-full object-cover md:col-span-1"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
+                      ) : null
+                    })()}
+                    <div className={`p-6 flex flex-col gap-3 justify-center ${(archiveFeatured.image_1_url ?? archiveFeatured.image_2_url ?? archiveFeatured.image_3_url) ? 'md:col-span-2' : 'md:col-span-3'}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+                          {archiveFeatured.archive_chapters && (
+                            <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                              {archiveFeatured.archive_chapters.name}
+                            </span>
+                          )}
+                          {archiveFeatured.occurred_year && <span>{archiveFeatured.occurred_year}</span>}
+                          {archiveFeatured.country && (
+                            <span>· {getCountryName(archiveFeatured.country, lang)}</span>
+                          )}
+                        </div>
+                        <ArchiveBookmarkButton
+                          id={archiveFeatured.id}
+                          opening={archiveFeatured.opening}
+                          imageUrl={archiveFeatured.image_1_url ?? archiveFeatured.image_2_url ?? archiveFeatured.image_3_url}
+                          authorName={archiveFeatured.author_name}
+                          isAnonymous={archiveFeatured.is_anonymous}
+                          country={archiveFeatured.country}
+                          occurredYear={archiveFeatured.occurred_year}
+                          chapterName={archiveFeatured.archive_chapters?.name ?? null}
+                        />
+                      </div>
+                      <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
+                        {archiveTranslated?.opening ?? archiveFeatured.opening}
+                      </p>
+                      {archiveFeatured.impact && (
+                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 border-l-2 border-emerald-200 pl-3 italic">
+                          {archiveTranslated?.impact ?? archiveFeatured.impact}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-1">
+                        {archiveFeatured.is_anonymous
+                          ? (archiveTranslated?.anonymous ?? 'Anonymous')
+                          : archiveFeatured.author_name}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
               </div>
             )}
 
@@ -515,7 +613,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
               <React.Fragment key={category}>
                 <div id={slugify(category)} className="scroll-mt-56 md:scroll-mt-60 bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/70">
                   <h2 className="text-lg font-semibold text-emerald-800 uppercase tracking-widest mb-5">
-                    {getCategoryLabel(category)}
+                    {getCategoryLabel(category, t)}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {stories.map((story) => (
@@ -526,7 +624,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
                         displayTitle={getDisplayTitle(story)}
                         displaySummary={getDisplaySummary(story)}
                         sourcePrefix={t.sourcePrefix}
-                        categoryLabel={getCategoryLabel(story.category || story.source)}
+                        categoryLabel={getCategoryLabel(story.category || story.source, t)}
                       />
                     ))}
                   </div>
@@ -557,7 +655,7 @@ export default function PublicFeed({ featured, sections, publishDate, siteConten
             ))}
 
             {isSearching && totalResults === 0 && (
-              <div className="text-center text-gray-400 py-20 text-lg">{t.noResults(query)}</div>
+              <div className="text-center text-gray-400 py-20 text-lg">{t.noResults.replace('{q}', query)}</div>
             )}
           </>
         )}
