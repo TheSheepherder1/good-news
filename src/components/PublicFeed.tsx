@@ -15,6 +15,7 @@ import LikeButton from '@/components/LikeButton'
 import BookmarkButton from '@/components/BookmarkButton'
 import BookmarksPanel from '@/components/BookmarksPanel'
 import { getBookmarks } from '@/lib/bookmarks'
+import { getCountryName } from '@/lib/countries'
 
 type Section = { category: string; stories: Story[] }
 type TranslatedStory = { title: string; summary: string }
@@ -107,6 +108,7 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
   const [userOrder, setUserOrder] = useState<string[] | null>(null)
   const [bookmarksOpen, setBookmarksOpen] = useState(false)
   const [bookmarkCount, setBookmarkCount] = useState(0)
+  const [archiveTranslated, setArchiveTranslated] = useState<{ opening: string; impact: string | null; anonymous: string } | null>(null)
 
   const aboutParagraphs = (siteContent.about_text || '').split('\n\n').filter(Boolean)
 
@@ -271,6 +273,23 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Translate archive featured story content when language changes
+  useEffect(() => {
+    if (!archiveFeatured) return
+    if (lang === 'en') { setArchiveTranslated(null); return }
+    let cancelled = false
+    const texts = [archiveFeatured.opening, archiveFeatured.impact || '', 'Anonymous']
+    translateBatch(texts, lang).then((results) => {
+      if (cancelled) return
+      setArchiveTranslated({
+        opening: results[0] || archiveFeatured.opening,
+        impact: archiveFeatured.impact ? (results[1] || archiveFeatured.impact) : null,
+        anonymous: results[2] || 'Anonymous',
+      })
+    }).catch(() => {})
+    return () => { cancelled = true }
+  }, [lang, archiveFeatured])
 
   const query = searchQuery.trim()
   const isSearching = query.length > 0
@@ -479,18 +498,22 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
                           </span>
                         )}
                         {archiveFeatured.occurred_year && <span>{archiveFeatured.occurred_year}</span>}
-                        {archiveFeatured.country && <span>· {archiveFeatured.country}</span>}
+                        {archiveFeatured.country && (
+                          <span>· {getCountryName(archiveFeatured.country, lang)}</span>
+                        )}
                       </div>
                       <p className="text-gray-900 font-bold text-xl leading-snug line-clamp-3">
-                        {archiveFeatured.opening}
+                        {archiveTranslated?.opening ?? archiveFeatured.opening}
                       </p>
                       {archiveFeatured.impact && (
                         <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 border-l-2 border-emerald-200 pl-3 italic">
-                          {archiveFeatured.impact}
+                          {archiveTranslated?.impact ?? archiveFeatured.impact}
                         </p>
                       )}
                       <p className="text-xs text-gray-400 mt-1">
-                        {archiveFeatured.is_anonymous ? 'Anonymous' : archiveFeatured.author_name}
+                        {archiveFeatured.is_anonymous
+                          ? (archiveTranslated?.anonymous ?? 'Anonymous')
+                          : archiveFeatured.author_name}
                       </p>
                     </div>
                   </div>
