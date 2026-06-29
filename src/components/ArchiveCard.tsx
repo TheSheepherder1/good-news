@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { getCountryName } from '@/lib/countries'
 
 const CHAPTER_COLORS: Record<string, string> = {
   kindness:    'bg-rose-50 text-rose-600 border-rose-200',
@@ -32,6 +33,7 @@ type ArchiveCardStory = {
 
 export default function ArchiveCard({
   story,
+  lang = 'en',
   onChapterClick,
   onCountryClick,
   onYearClick,
@@ -39,6 +41,7 @@ export default function ArchiveCard({
   onTagClick,
 }: {
   story: ArchiveCardStory
+  lang?: string
   onChapterClick?: (slug: string) => void
   onCountryClick?: (country: string) => void
   onYearClick?: (year: number) => void
@@ -115,7 +118,7 @@ export default function ArchiveCard({
               onClick={(e) => { e.preventDefault(); onCountryClick?.(story.country) }}
               className="hover:text-emerald-600 transition-colors"
             >
-              {story.city ? `${story.city}, ` : ''}{story.country}
+              {story.city ? `${story.city}, ` : ''}{getCountryName(story.country, lang)}
             </button>
             <span>·</span>
             <button

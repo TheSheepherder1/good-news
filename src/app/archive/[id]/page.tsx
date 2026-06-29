@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { supabaseAdmin } from '@/lib/supabase'
 import { CHAPTER_COLORS } from '@/components/ArchiveCard'
+import LocalizedCountry from '@/components/LocalizedCountry'
 
 export const revalidate = 3600
 
@@ -132,7 +133,9 @@ export default async function ArchiveStoryPage({ params }: { params: Promise<{ i
           {/* Location + time */}
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-gray-500">
             <span>
-              {[story.city, story.state_province, story.country].filter(Boolean).join(', ')}
+              {[story.city, story.state_province].filter(Boolean).join(', ')}
+              {(story.city || story.state_province) && story.country ? ', ' : ''}
+              {story.country && <LocalizedCountry code={story.country} />}
             </span>
             <span>
               {story.occurred_month

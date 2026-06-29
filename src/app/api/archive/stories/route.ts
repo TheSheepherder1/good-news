@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     .select('id, opening, body, image_1_url, image_1_caption, occurred_year, occurred_month, country, city, state_province, original_language, tags, author_name, is_anonymous, is_seed, published_at, chapter_id, world_event_id, chapter:archive_chapters(id, name, slug), world_event:world_events(id, name)')
     .eq('status', 'live')
   if (chapterId)  storyQ = storyQ.eq('chapter_id', chapterId)
-  if (country)    storyQ = storyQ.ilike('country', country)
+  if (country)    storyQ = storyQ.eq('country', country)
   if (year)       storyQ = storyQ.eq('occurred_year', Number(year))
   if (eventId)    storyQ = storyQ.eq('world_event_id', eventId)
   if (language)   storyQ = storyQ.eq('original_language', language)

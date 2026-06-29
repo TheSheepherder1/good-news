@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import ArchiveCard, { CHAPTER_COLORS } from '@/components/ArchiveCard'
+import { getCountryName } from '@/lib/countries'
 
 const LANG_LABELS: Record<string, string> = {
   en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch',
@@ -46,6 +47,12 @@ export default function ArchivePage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
+
+  const [lang, setLang] = useState('en')
+  useEffect(() => {
+    const stored = localStorage.getItem('tgif_lang')
+    if (stored) setLang(stored)
+  }, [])
 
   // Active filters
   const [chapter, setChapter] = useState('')
@@ -196,7 +203,7 @@ export default function ArchivePage() {
           </button>
 
           {/* Active filter chips */}
-          {country && <FilterChip label={country} onRemove={() => setCountry('')} />}
+          {country && <FilterChip label={getCountryName(country, lang)} onRemove={() => setCountry('')} />}
           {year && <FilterChip label={year} onRemove={() => setYear('')} />}
           {event && <FilterChip label={filters.events.find((e) => e.id === event)?.name || event} onRemove={() => setEvent('')} />}
           {language && <FilterChip label={LANG_LABELS[language] || language} onRemove={() => setLanguage('')} />}
@@ -224,7 +231,7 @@ export default function ArchivePage() {
                 label="Country"
                 value={country}
                 onChange={setCountry}
-                options={filters.countries.map((c) => ({ value: c.value, label: `${c.value} (${c.count})` }))}
+                options={filters.countries.map((c) => ({ value: c.value, label: `${getCountryName(c.value, lang)} (${c.count})` }))}
                 placeholder="Any country"
               />
             )}
@@ -375,6 +382,7 @@ export default function ArchivePage() {
                 <ArchiveCard
                   key={story.id}
                   story={story}
+                  lang={lang}
                   onChapterClick={setChapter}
                   onCountryClick={setCountry}
                   onYearClick={(y) => setYear(String(y))}

@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { getAllCountriesSorted } from '@/lib/countries'
 import type { WorldEvent } from '@/lib/supabase'
 
 const supabase = createClient(
@@ -61,6 +62,14 @@ export default function ArchiveSubmitPage() {
   const [authorName, setAuthorName] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [relationship, setRelationship] = useState('')
+
+  // Reader language (for country names)
+  const [lang, setLang] = useState('en')
+  useEffect(() => {
+    const stored = localStorage.getItem('tgif_lang')
+    if (stored) setLang(stored)
+  }, [])
+  const countryOptions = useMemo(() => getAllCountriesSorted(lang), [lang])
 
   // World events (fetched)
   const [worldEvents, setWorldEvents] = useState<WorldEvent[]>([])
@@ -366,13 +375,16 @@ export default function ArchiveSubmitPage() {
           <div className="flex flex-col gap-3 mb-5">
             <div>
               <label className="text-xs font-medium text-gray-500">Country <span className="text-red-400">*</span></label>
-              <input
-                type="text"
-                placeholder="e.g. Brazil"
+              <select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
                 className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
-              />
+              >
+                <option value="">Select a country…</option>
+                {countryOptions.map(({ code, name }) => (
+                  <option key={code} value={code}>{name}</option>
+                ))}
+              </select>
             </div>
             <div className="flex gap-3">
               <div className="flex-1">
