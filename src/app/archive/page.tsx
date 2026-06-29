@@ -198,22 +198,37 @@ export default function ArchivePage() {
     <main className="min-h-screen bg-gradient-to-b from-[#c8dde6] to-[#f8fbfa]">
 
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-white/60 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
-          </Link>
-          <Link href="/" className="text-sm font-semibold text-gray-800">{s.todaysNews}</Link>
+      <header className="bg-white/80 backdrop-blur-sm border-b border-white/60 px-6 py-4">
+        {/* Desktop: single row */}
+        <div className="hidden md:flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
+            </Link>
+            <Link href="/" className="text-sm font-semibold text-gray-800">{s.todaysNews}</Link>
+          </div>
+          <nav className="flex items-center gap-4 text-sm">
+            <Link href="/archive" className="font-semibold text-gray-800">{s.navArchive}</Link>
+            <Link href="/archive/submit" className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors">
+              {s.navShareStory}
+            </Link>
+          </nav>
         </div>
-        <nav className="flex items-center gap-4 text-sm">
-          <Link href="/archive" className="font-semibold text-gray-800">{s.navArchive}</Link>
-          <Link
-            href="/archive/submit"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors"
-          >
-            {s.navShareStory}
-          </Link>
-        </nav>
+        {/* Mobile: two balanced rows */}
+        <div className="md:hidden flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
+            </Link>
+            <Link href="/archive/submit" className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors text-sm">
+              {s.navShareStory}
+            </Link>
+          </div>
+          <div className="flex items-center justify-between text-sm font-semibold text-gray-800">
+            <Link href="/">{s.todaysNews}</Link>
+            <Link href="/archive">{s.navArchive}</Link>
+          </div>
+        </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
