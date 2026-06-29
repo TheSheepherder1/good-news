@@ -36,6 +36,7 @@ export default function ArchiveCard({
   lang = 'en',
   translatedOpening,
   translatedChapterName,
+  translatedEventName,
   historicalBadge = 'Historical Account',
   anonymousLabel = 'Anonymous',
   onChapterClick,
@@ -48,6 +49,7 @@ export default function ArchiveCard({
   lang?: string
   translatedOpening?: string | null
   translatedChapterName?: string
+  translatedEventName?: string
   historicalBadge?: string
   anonymousLabel?: string
   onChapterClick?: (slug: string) => void
@@ -146,7 +148,7 @@ export default function ArchiveCard({
             onClick={(e) => { e.preventDefault(); onEventClick?.(story.world_event!.id) }}
             className="self-start text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full hover:opacity-70 transition-opacity"
           >
-            {story.world_event.name}
+            {translatedEventName || story.world_event.name}
           </button>
         )}
       </div>

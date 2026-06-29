@@ -44,6 +44,7 @@ export default function ArchivePage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [translatedOpenings, setTranslatedOpenings] = useState<Record<string, string>>({})
   const [translatedChapters, setTranslatedChapters] = useState<Record<string, string>>({})
+  const [translatedEvents, setTranslatedEvents] = useState<Record<string, string>>({})
 
   const [lang, setLang] = useState('en')
   useEffect(() => {
@@ -159,6 +160,32 @@ export default function ArchivePage() {
       .catch(() => {})
     return () => { cancelled = true }
   }, [lang, filters.chapters])
+
+  // Translate world event names when language or events change
+  useEffect(() => {
+    if (lang === 'en' || filters.events.length === 0) {
+      setTranslatedEvents({})
+      return
+    }
+    let cancelled = false
+    const texts = filters.events.map((e) => e.name)
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, target: lang }),
+    })
+      .then((r) => r.json())
+      .then((data: { translations?: string[] }) => {
+        if (cancelled) return
+        const map: Record<string, string> = {}
+        filters.events.forEach((e, i) => {
+          if (data.translations?.[i]) map[e.id] = data.translations[i]
+        })
+        setTranslatedEvents(map)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [lang, filters.events])
 
   function clearAll() {
     setChapter(''); setCountry(''); setYear(''); setEvent(''); setLanguage(''); setTag('')
@@ -432,6 +459,7 @@ export default function ArchivePage() {
                   lang={lang}
                   translatedOpening={translatedOpenings[story.id]}
                   translatedChapterName={story.chapter ? translatedChapters[story.chapter.id] : undefined}
+                  translatedEventName={story.world_event ? translatedEvents[story.world_event.id] : undefined}
                   historicalBadge={s.historicalBadge}
                   anonymousLabel={s.anonymous}
                   onChapterClick={setChapter}
