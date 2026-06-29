@@ -145,6 +145,7 @@ export type ArchiveSubmitStrings = {
   checkOptionalNote: string
   checkPassed: string
   checkSuggestions: string
+  checkHowToImprove: string
   checkScore: string      // "Score: {n}/10"
   checkChapter: string    // "Suggested chapter: {name}"
   submitButton: string
@@ -234,6 +235,7 @@ export const ARCHIVE_SUBMIT_EN: ArchiveSubmitStrings = {
   checkOptionalNote: 'Optional — run the same AI quality check our archive uses, before you submit. AI nor Human review will make any textual changes, only review to ensure the story is within the safety and legal guidelines of this library.',
   checkPassed: '✓ Looks great!',
   checkSuggestions: '✎ A few suggestions',
+  checkHowToImprove: 'Here\'s how to strengthen your story:',
   checkScore: 'Score: {n}/10',
   checkChapter: 'Suggested chapter: {name}',
   submitButton: 'Submit to the Archive',

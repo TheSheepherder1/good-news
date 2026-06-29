@@ -33,10 +33,15 @@ Evaluate this story and respond with ONLY valid JSON (no markdown, no explanatio
 {
   "passed": boolean,
   "score": number (1-10),
-  "reason": "2-3 friendly, specific sentences. If passed: affirm what makes it archive-worthy. If failed: tell the writer exactly what to improve — be encouraging, not harsh.",
+  "reason": "1-2 warm, friendly sentences summarizing your overall verdict.",
+  "suggestions": ["specific actionable improvement 1", "specific actionable improvement 2"],
   "chapter": "the single best-fit chapter from: ${CHAPTERS.join(', ')}",
   "language": "BCP 47 code, e.g. en, es, fr, de, zh, pt, ar, ja"
 }
+
+Rules for "suggestions":
+- If the story PASSED: return an empty array [].
+- If the story FAILED: return 2-4 short, specific, encouraging bullet points telling the writer exactly what to add or change. Reference the actual story content — not generic advice. Each suggestion should be one sentence. Be kind — the writer cares about this story.
 
 Passing criteria (ALL must be met):
 - A genuine act of human goodness at the center — something a real person did
@@ -55,6 +60,7 @@ Passing criteria (ALL must be met):
       passed: Boolean(result.passed),
       score: Number(result.score),
       reason: String(result.reason),
+      suggestions: Array.isArray(result.suggestions) ? result.suggestions.map(String) : [],
       chapter: CHAPTERS.includes(result.chapter) ? result.chapter : null,
       language: String(result.language || 'en'),
     })

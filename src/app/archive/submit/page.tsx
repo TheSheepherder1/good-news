@@ -29,6 +29,7 @@ type CheckResult = {
   passed: boolean
   score: number
   reason: string
+  suggestions: string[]
   chapter: string | null
 }
 
@@ -147,6 +148,26 @@ export default function ArchiveSubmitPage() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
+
+      // Translate reason + suggestions into the reader's language
+      if (lang !== 'en') {
+        const texts = [data.reason, ...data.suggestions]
+        try {
+          const tr = await fetch('/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texts, target: lang }),
+          })
+          const trData = await tr.json()
+          if (trData.translations?.length) {
+            data.reason = trData.translations[0] || data.reason
+            data.suggestions = data.suggestions.map((_: string, i: number) =>
+              trData.translations[i + 1] || data.suggestions[i]
+            )
+          }
+        } catch {}
+      }
+
       setCheckResult(data)
     } catch (err) {
       console.error(err)
@@ -619,6 +640,19 @@ export default function ArchiveSubmitPage() {
               </span>
             </div>
             <p>{checkResult.reason}</p>
+            {!checkResult.passed && checkResult.suggestions.length > 0 && (
+              <div className="mt-3">
+                <p className="text-xs font-semibold mb-1.5 opacity-80">{s.checkHowToImprove}</p>
+                <ul className="space-y-1">
+                  {checkResult.suggestions.map((suggestion, i) => (
+                    <li key={i} className="flex gap-2 text-xs leading-relaxed">
+                      <span className="opacity-50 flex-shrink-0">•</span>
+                      <span>{suggestion}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {checkResult.chapter && checkResult.passed && (
               <p className="mt-1 text-xs opacity-70">
                 {s.checkChapter.replace('{name}', checkResult.chapter)}
