@@ -118,7 +118,7 @@ export default function ArchivePage() {
           <Link href="/" className="flex items-center gap-2">
             <img src="/logo.svg" alt="The Good I Found" className="h-10 w-auto" />
           </Link>
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">← Today&rsquo;s News</Link>
+          <Link href="/" className="text-sm font-semibold text-gray-800">← Today&rsquo;s News</Link>
         </div>
         <nav className="flex items-center gap-4 text-sm">
           <Link href="/archive" className="font-semibold text-gray-800">Archive</Link>
