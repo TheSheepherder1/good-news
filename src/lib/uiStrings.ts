@@ -41,7 +41,7 @@ export const UI_EN: UIStrings = {
   tagline: 'Stories of Kindness, Progress, and Hope from Around the World',
   brightSpot: "Today's Bright Spot",
   storyOfGoodness: 'A Story of Goodness',
-  browseArchive: 'Browse the Archive',
+  browseArchive: 'Archive of Goodness',
   shareStoryOfGoodness: 'Share a Story of Goodness',
   searchPlaceholder: 'Search stories…',
   topOfPage: 'Top of Page',
