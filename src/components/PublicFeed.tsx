@@ -520,7 +520,7 @@ export default function PublicFeed({ featured, archiveFeatured, sections, publis
                   <h2 className="text-[1.35rem] font-semibold uppercase tracking-widest text-emerald-600">
                     {t.storyOfGoodness}
                   </h2>
-                  <Link href="/archive/submit" className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors text-sm">
+                  <Link href="/archive/submit" className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded-full transition-colors text-base">
                     {t.shareStoryOfGoodness}
                   </Link>
                   <Link href="/archive" className="text-[1.35rem] text-emerald-500 hover:text-emerald-700 font-semibold transition-colors">
