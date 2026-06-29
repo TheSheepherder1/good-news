@@ -93,6 +93,39 @@ The archive will be seeded with AI-generated stories before public launch so the
 - Populate the Kayak filters so attribute search works from day one
 - Seed the world events list with historical events worth connecting stories to
 
+### Archive — Translation & Localization
+
+The archive is fully translated into the reader's chosen language — the same `tgif_lang` key in `localStorage` that drives the home page.
+
+**What translates:**
+- All UI chrome on `/archive` (title, subtitle, filter labels, buttons, empty states, pagination, badges) via `useArchivePageStrings(lang)` hook
+- Story card openings — all cards batch-translate in a single API call per page load; result stored in `Record<storyId, string>` and passed as props to `ArchiveCard`
+- All UI on `/archive/submit` (section headers, field labels, placeholders, relationship options, error messages, success messages) via `useArchiveSubmitStrings(lang)` hook
+- Story content (opening, body, impact) on `/archive/[id]` via `ArchiveStoryContent` — a client component that reads `tgif_lang` on mount and calls `/api/translate` for the three fields together
+- Month names in the submission form derived from `Intl.DateTimeFormat` with the reader's locale — no extra string keys needed
+- Country names in the submission form and on archive cards / story detail page via `Intl.DisplayNames` — no library, no translation API call
+
+**Key files:**
+- `src/lib/archiveStrings.ts` — English source strings for both archive pages (`ARCHIVE_PAGE_EN`, `ARCHIVE_SUBMIT_EN`)
+- `src/lib/useArchiveStrings.ts` — `useArchivePageStrings(lang)` and `useArchiveSubmitStrings(lang)` hooks, same batch-translate + per-language cache pattern as `useContributeStrings`
+- `src/components/ArchiveStoryContent.tsx` — client component for story detail page; dims content with `opacity-70` during translation
+- `src/lib/countries.ts` — exports `LANG_TO_LOCALE` map (used by submit page for month locale) + `getCountryName(code, lang)` + `getAllCountriesSorted(lang)`
+- `src/components/LocalizedCountry.tsx` — client wrapper for server-rendered story detail page; reads `tgif_lang` and resolves country name via `Intl.DisplayNames`
+
+**Translate API (`sl=auto`):** Changed from `sl=en` to `sl=auto` so stories written in any language (not just English) translate correctly to the reader's chosen language.
+
+**Relationship values vs. display:** Relationship options (e.g. "I witnessed this") are stored in the DB as English strings. The submission form maps these to translated display labels (`s.relationshipWitnessed` etc.) at render time — the stored value never changes, only the label shown to the reader.
+
+**Country data integrity:** Country field stores ISO 3166-1 alpha-2 codes (e.g. "BR"), not free-text names. This prevents duplicate spellings across languages ("Brazil" vs. "Brasil"). Display name is resolved client-side by the reader's language via `Intl.DisplayNames`. A migration (`migration_archive_country_codes.sql`) converted the 15 existing country name strings to ISO codes before launch.
+
+**Country select dropdown:** The `/archive/submit` form replaced the free-text country input with a `<select>` populated by `getAllCountriesSorted(lang)` — names appear in the reader's chosen language and the ISO code is stored as the value.
+
+### Archive — Navigation
+
+**"← Today's News" link:** In the archive browse and story detail page headers, a "← Today's News" link sits to the right of the logo and both point back to `/` (the home page). The link text matches the same font size, color, and weight as the "Archive" text in the banner — visually symmetrical. Decision: keep the daily feed as the front page for now; the archive is linked from it, not the other way around.
+
+**"Share a Story of Goodness with Us!":** All links and buttons previously labelled "Share a Story with Us!" were renamed to "Share a Story of Goodness with Us!" across all 10 languages in `src/lib/translations.ts` (`shareStoryWithUs` key).
+
 ### Archive — Build Plan
 
 **Architecture:** The archive lives inside the existing Next.js app — same codebase, same repo, same Supabase database, same Vercel deployment. Shares translation, styling, admin panel, and hosting. No separate app or monorepo needed.
