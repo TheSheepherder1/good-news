@@ -100,6 +100,8 @@ The archive is fully translated into the reader's chosen language — the same `
 **What translates:**
 - All UI chrome on `/archive` (title, subtitle, filter labels, buttons, empty states, pagination, badges) via `useArchivePageStrings(lang)` hook
 - Story card openings — all cards batch-translate in a single API call per page load; result stored in `Record<storyId, string>` and passed as props to `ArchiveCard`
+- Chapter names — batch-translated on language change, keyed by chapter id; used in both the chapter filter pills at the top of `/archive` and the chapter badge on each `ArchiveCard`. Tags are intentionally left untranslated — they are user-submitted words that readers search by and should remain in their original form.
+- World event names — batch-translated on language change, keyed by event id; used in the world event filter pill on `/archive` and the world event badge on each `ArchiveCard`
 - All UI on `/archive/submit` (section headers, field labels, placeholders, relationship options, error messages, success messages) via `useArchiveSubmitStrings(lang)` hook
 - Story content (opening, body, impact) on `/archive/[id]` via `ArchiveStoryContent` — a client component that reads `tgif_lang` on mount and calls `/api/translate` for the three fields together
 - Month names in the submission form derived from `Intl.DateTimeFormat` with the reader's locale — no extra string keys needed
@@ -122,7 +124,9 @@ The archive is fully translated into the reader's chosen language — the same `
 
 ### Archive — Navigation
 
-**"← Today's News" link:** In the archive browse and story detail page headers, a "← Today's News" link sits to the right of the logo and both point back to `/` (the home page). The link text matches the same font size, color, and weight as the "Archive" text in the banner — visually symmetrical. Decision: keep the daily feed as the front page for now; the archive is linked from it, not the other way around.
+**Archive page header:** Logo (left) + "Share a Story of Goodness" button (right) — identical on mobile and desktop. "← Today's News" and "Archive" nav links were removed from the header: the logo already returns to the home page, and "Archive" linked to the page the reader was already on. Keeping only the logo and the CTA button makes the header clean and unambiguous.
+
+**Home page "A Story of Goodness" card header row:** Three items — "A STORY OF GOODNESS" heading (left), "Share a Story of Goodness" emerald button linking to `/archive/submit` (center), "Archive of Goodness →" link to `/archive` (right). Font sizes: heading and "Archive of Goodness" are both `text-[1.35rem] font-semibold`; the button is `text-xl` (20px). Previously the button was labelled "Browse the Archive" at `text-xs`.
 
 **"Share a Story of Goodness with Us!":** All links and buttons previously labelled "Share a Story with Us!" were renamed to "Share a Story of Goodness with Us!" across all 10 languages in `src/lib/translations.ts` (`shareStoryWithUs` key).
 
