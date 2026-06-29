@@ -99,6 +99,8 @@ export default function ArchiveSubmitPage() {
   const [submittedLive, setSubmittedLive] = useState(false)
   const [submittedChapter, setSubmittedChapter] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [showAttestation, setShowAttestation] = useState(false)
+  const [attestationChecked, setAttestationChecked] = useState(false)
 
   useEffect(() => {
     fetch('/api/archive/events')
@@ -177,7 +179,7 @@ export default function ArchiveSubmitPage() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
 
@@ -190,6 +192,13 @@ export default function ArchiveSubmitPage() {
     if (!authorName.trim()) { setError(s.errorNameRequired); return }
     if (!relationship) { setError(s.errorRelationshipRequired); return }
 
+    // Validation passed — show attestation modal
+    setAttestationChecked(false)
+    setShowAttestation(true)
+  }
+
+  async function doSubmit() {
+    setShowAttestation(false)
     setSubmitting(true)
     try {
       const res = await fetch('/api/archive/submit', {
@@ -675,6 +684,66 @@ export default function ArchiveSubmitPage() {
         </p>
 
       </form>
+
+      {/* Attestation modal */}
+      {showAttestation && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowAttestation(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden"
+              style={{ maxHeight: '90vh' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="overflow-y-auto flex-1 px-8 py-7">
+                <p className="text-sm text-gray-600 mb-5 leading-relaxed">{s.attestationThanks}</p>
+                <p className="text-sm font-semibold text-gray-800 mb-3">{s.attestationIntro}</p>
+                <ul className="space-y-2.5 mb-6">
+                  {[
+                    s.attestationOriginal,
+                    s.attestationCopyright,
+                    s.attestationPrivacy,
+                    s.attestationHuman,
+                    s.attestationTrue,
+                    s.attestationNoCompensation,
+                    s.attestationNoEdits,
+                    s.attestationEditorial,
+                  ].map((item, i) => (
+                    <li key={i} className="flex gap-2.5 text-sm text-gray-600 leading-relaxed">
+                      <span className="text-emerald-400 flex-shrink-0 mt-0.5">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={attestationChecked}
+                    onChange={(e) => setAttestationChecked(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded accent-emerald-500 flex-shrink-0 cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-800">{s.attestationCheckbox}</span>
+                </label>
+              </div>
+              <div className="flex gap-3 px-8 py-5 border-t border-gray-100 flex-shrink-0">
+                <button
+                  onClick={() => setShowAttestation(false)}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-3 rounded-xl transition-colors text-sm"
+                >
+                  {s.attestationCancel}
+                </button>
+                <button
+                  onClick={doSubmit}
+                  disabled={!attestationChecked}
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+                >
+                  {s.attestationConfirm}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </main>
   )
 }

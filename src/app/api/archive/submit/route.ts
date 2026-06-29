@@ -168,6 +168,15 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Log proof of attestation agreement — retained 7 years (purged by /api/cleanup)
+    const { error: attestationError } = await supabaseAdmin
+      .from('submission_attestations')
+      .insert({
+        archive_story_id: story.id,
+        submitter_name: author_name.trim(),
+      })
+    if (attestationError) console.error('Failed to log archive attestation:', attestationError.message)
+
     return NextResponse.json({
       ok: true,
       id: story.id,
